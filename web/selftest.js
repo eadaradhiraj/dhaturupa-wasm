@@ -4,7 +4,8 @@
 // hit-link navigation with prefix preselection, family default, and the
 // kṛdanta click-through declension. Verdict lands in #selftest-out.
 //
-// Run by ./check.sh (headless Firefox, DOM dumped after completion):
+// Run by ./check.sh (headless Chromium via chromedriver, DOM dumped after
+// completion):
 //   SELFTEST: PASS | SELFTEST: FAIL + per-check failures + console errors
 
 const out = document.getElementById('selftest-out');
@@ -137,16 +138,18 @@ try {
   $('detail-prayoga').value = 'kartari';
   $('detail-prayoga').dispatchEvent(new Event('change'));
 
-  // ---- kṛdanta click-through: a स्य-* cell must decline (regression class)
-  const wanted = ['स्य-भावकर्म-शानच्', 'स्य-शानच्', 'स्य-शतृ'];
+  // ---- kṛdanta click-through: a prefixed cell must decline (regression
+  // class). Pinned corpus cells carry the corpus's kṛt names; the live
+  // engine fallback carries upstream names (स्यादि) — accept either.
+  const wanted = ['स्य-भावकर्म-शानच्', 'स्य-शानच्', 'स्य-शतृ', 'शानच्', 'शतृ'];
   const cell = [...$('detail-krut').querySelectorAll('a[data-krt]')]
     .find((a) => wanted.includes(a.dataset.krt));
-  ok('detail: a स्य-* kṛdanta cell is present', Boolean(cell));
+  ok('detail: a prefixed kṛdanta cell is present', Boolean(cell));
   if (cell) {
     cell.click();
     await waitFor(() => text($('detail-subanta')).trim().length > 0, { timeout: 5000 });
     const dec = text($('detail-subanta'));
-    ok('click-through: स्य-* cell declines', dec.includes('प्र') && !dec.includes('Neither'), dec.slice(0, 80));
+    ok('click-through: prefixed cell declines', dec.includes('प्र') && !dec.includes('Neither'), dec.slice(0, 80));
     ok('click-through: renders a paradigm table', Boolean($('detail-subanta').querySelector('table')));
   }
 
@@ -155,6 +158,18 @@ try {
   $('detail-stack').dispatchEvent(new Event('change'));
   const baseKrut = text($('detail-krut'));
   ok('base view: cells unprefixed (दद… present)', /दद/.test(baseKrut), baseKrut.slice(0, 60));
+  // Upstream table cells carry the स्य-* kṛt names — the original
+  // click-through regression class stays covered on the base view.
+  const syCell = [...$('detail-krut').querySelectorAll('a[data-krt]')]
+    .find((a) => a.dataset.krt.startsWith('स्य-'));
+  ok('base view: a स्य-* kṛdanta cell is present', Boolean(syCell));
+  if (syCell) {
+    syCell.click();
+    await waitFor(() => text($('detail-subanta')).trim().length > 0, { timeout: 5000 });
+    const decBase = text($('detail-subanta'));
+    ok('click-through (base): स्य-* cell declines',
+      !decBase.includes('Neither') && decBase.trim().length > 10, decBase.slice(0, 80));
+  }
   } // end detail checks (skipped when navigation failed)
   const praddec = await formSearch('प्रददद्भिः');
   ok('search: प्रददद्भिः (declined+prefixed) hits > 0', praddec.hits > 0, praddec.note);

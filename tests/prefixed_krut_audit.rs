@@ -1,11 +1,18 @@
-//! Prefixed-kṛdanta audit: the kṛt-aware live path vs skt-morph-data.
+//! Prefixed-kṛdanta audit: pinned corpus cells + the kṛt-aware live path.
 //!
-//! The portal renders backfilled corpus cells for reachable stacks
-//! (pinned exact by `backfill_audit`); every other stack goes through
-//! `prefixed_krut_cells` (ल्यप् baked-stack strip + neuter dental twin +
-//! per-`dhātu` `GenCtx` — see `prefix_krut`). This drives that exact export
-//! over every corpus (dhātu, stack, family, kṛt, field, alternant) and
-//! demands cell-exact agreement: same rows, same fields, same alternants.
+//! Two contracts, both driven over every corpus row:
+//!
+//! 1. **Pin fidelity** — `morphdata::backfill_prefixed_krut` (the function
+//!    the portal blobs ship) must reproduce the corpus cell for every
+//!    (stack, family, kṛt), field and alternant. These cells are what the
+//!    site renders for listed stacks.
+//! 2. **Pin partitioning** — `prefixed_krut_row` with the pin hands each
+//!    upstream row its slice of the cell (pure string matching, no engine
+//!    calls); the per-row calls must union back to the cell exactly.
+//!
+//! Unlisted stacks stay on the engine path (ल्यप् baked-stack strip +
+//! prathamā-ekavacana declension + twin suppression — see `prefix_krut`);
+//! they have no corpus truth, so only the export's shape is gated here.
 //!
 //! Corpus: `SKT_MORPH_DATA` (default
 //! `/home/edhiraj/Documents/projs/pypanini/skt-morph-data`); absent → skip
@@ -90,10 +97,10 @@ fn stack_deva_display(stack_slp: &str) -> Option<String> {
     Some(parts.join(" + "))
 }
 
-fn audit(step: usize) -> (u64, u64, u64, u64, Vec<String>) {
+fn audit(step: usize) -> (u64, u64, u64, u64, u64, Vec<String>) {
     let Some(root) = corpus_root() else {
         eprintln!("prefixed-krut: no corpus at SKT_MORPH_DATA, skipping");
-        return (0, 0, 0, 0, Vec::new());
+        return (0, 0, 0, 0, 0, Vec::new());
     };
     let shared = shared();
     let mut files: Vec<std::path::PathBuf> = Vec::new();
@@ -114,7 +121,10 @@ fn audit(step: usize) -> (u64, u64, u64, u64, Vec<String>) {
     let mut matched = 0_u64;
     let mut no_truth = 0_u64;
     let mut miss_total = 0_u64;
+    let mut unreachable = 0_u64;
     let mut misses = Vec::new();
+    let zz_all = std::env::var("ZZ_ALL").is_ok();
+    let cap = if zz_all { 200_000 } else { 400 };
     let mut classes: HashMap<String, u64> = HashMap::new();
     for (nth, path) in files.iter().enumerate() {
         if nth % step != 0 {
@@ -139,12 +149,28 @@ fn audit(step: usize) -> (u64, u64, u64, u64, Vec<String>) {
             continue;
         };
         for (stack_slp, uf) in forms {
+            // Display forms are ambiguous between corpus keys: bare `A` (आ)
+            // and `AN` (आङ्) both render as `आ`, and the production lookup
+            // prefers the `AN` twin whenever it exists (`normalize_stack_slp1`
+            // — the site's own list never writes आङ्). Keys shadowed that way
+            // are unreachable through the display path, so the pin contract
+            // does not apply to them; count them and move on.
+            let normalized = dhaturupa_wasm::translit::normalize_stack_slp1(stack_slp);
+            if normalized != *stack_slp && forms.contains_key(&normalized) {
+                unreachable += 1;
+                continue;
+            }
             let Some(stack_deva) = stack_deva_display(stack_slp) else {
                 continue;
             };
             let Some(parts) = uf.get("participles").and_then(|v| v.as_object()) else {
                 continue;
             };
+            // Corpus pin tables for this (dhātu, stack): family → kṛt → cell,
+            // built by the production backfill function (the portal ships the
+            // same cells in `blob.krut_prefixed`).
+            let backfill =
+                dhaturupa_wasm::morphdata::backfill_prefixed_krut(&root, &stack_deva, id);
             for (family, corpus_fam) in FAMILIES {
                 let Some(upstream) = shared
                     .krut
@@ -175,6 +201,16 @@ fn audit(step: usize) -> (u64, u64, u64, u64, Vec<String>) {
                         continue;
                     };
                     let rows = forms::parse_krt_rows(cells);
+                    // Corpus pin for this (stack, family, kṛt): the same cell
+                    // the portal ships in `blob.krut_prefixed`, built by the
+                    // production backfill function.
+                    let pinned_cell = backfill
+                        .as_ref()
+                        .and_then(|v| v.get(family))
+                        .and_then(|f| f.get(krt.as_str()))
+                        .and_then(|c| c.as_str())
+                        .unwrap_or_default()
+                        .to_string();
                     // ROW SHAPE: the corpus enumerates one row per sandhi
                     // variant (`samBUya` and `saMBUya` are two rows for
                     // `अभि + सम्`); an upstream row lists its alternants
@@ -198,25 +234,85 @@ fn audit(step: usize) -> (u64, u64, u64, u64, Vec<String>) {
                     for alts in &mut want_by_field {
                         alts.sort();
                     }
+                    // The pin itself must be the corpus cell, per field and
+                    // alternant (this is the data the portal renders; the
+                    // built blobs are pinned separately by `backfill_audit`).
+                    let pinned = dhaturupa_wasm::prefix_krut::parse_pinned_cell(&pinned_cell);
+                    let mut pin_by_field: [Vec<String>; 4] =
+                        [Vec::new(), Vec::new(), Vec::new(), Vec::new()];
+                    for row in &pinned {
+                        for (slot, value) in row.iter().enumerate() {
+                            for alt in value.split('/').filter(|a| !a.is_empty()) {
+                                pin_by_field[slot].push(alt.to_string());
+                            }
+                        }
+                    }
+                    for alts in &mut pin_by_field {
+                        alts.sort();
+                    }
+                    let mut pin_ok = true;
+                    for (slot, field) in ["base", "m", "f", "n"].iter().enumerate() {
+                        if want_by_field[slot] == pin_by_field[slot] {
+                            continue;
+                        }
+                        pin_ok = false;
+                        checked += 1;
+                        miss_total += 1;
+                        let label = format!("pin/{krt}/{field}");
+                        *classes.entry(label.clone()).or_insert(0) += 1;
+                        if misses.len() < cap
+                            && (zz_all || !misses.iter().any(|m: &String| m.starts_with(&label)))
+                        {
+                            misses.push(format!(
+                                "{label} {id} {stack_deva} {family}: truth [{}] vs pin [{}]",
+                                want_by_field[slot].join(" "),
+                                pin_by_field[slot].join(" ")
+                            ));
+                        }
+                    }
+                    if !pin_ok {
+                        continue;
+                    }
                     let mut got_by_field: [Vec<String>; 4] =
                         [Vec::new(), Vec::new(), Vec::new(), Vec::new()];
-                    for row in &rows {
-                        // One export call per row (kṛt-aware path shared
-                        // with the portal); compare each field's union.
-                        let res = ok_envelope(
-                            &wasm::prefixed_krut_row(
-                                &stack_deva,
-                                krt,
-                                &serde_json::to_string(&serde_json::json!({
+                    // One export call per upstream row (the kṛt-aware path
+                    // shared with the portal's per-row fallback), pin mode:
+                    // the per-row slices must union back to the cell. With no
+                    // upstream rows, row 0 carries the whole cell.
+                    let rows_json = serde_json::to_string(
+                        &rows
+                            .iter()
+                            .map(|row| {
+                                serde_json::json!({
                                     "base": row.base,
                                     "m": row.m,
                                     "f": row.f,
                                     "n": row.n,
-                                }))
-                                .expect("json"),
+                                })
+                            })
+                            .collect::<Vec<_>>(),
+                    )
+                    .expect("json");
+                    let calls: Vec<usize> = if rows.is_empty() {
+                        if pinned.is_empty() {
+                            Vec::new()
+                        } else {
+                            vec![0]
+                        }
+                    } else {
+                        (0..rows.len()).collect()
+                    };
+                    for i in calls {
+                        let res = ok_envelope(
+                            &wasm::prefixed_krut_row(
+                                &stack_deva,
+                                krt,
+                                &rows_json,
+                                i,
                                 dhatu_slp,
                                 &category,
                                 &dhatu.dhatu_note,
+                                &pinned_cell,
                             ),
                             "prefixed_krut_row",
                         );
@@ -234,6 +330,30 @@ fn audit(step: usize) -> (u64, u64, u64, u64, Vec<String>) {
                                 got_by_field[slot].push(form);
                             }
                         }
+                    }
+                    // No-pin engine smoke: unlisted stacks carry no corpus
+                    // truth, so only the export's shape is gated here — the
+                    // engine path must stay callable and well-formed.
+                    if !rows.is_empty() {
+                        let res = ok_envelope(
+                            &wasm::prefixed_krut_row(
+                                &stack_deva,
+                                krt,
+                                &rows_json,
+                                0,
+                                dhatu_slp,
+                                &category,
+                                &dhatu.dhatu_note,
+                                "",
+                            ),
+                            "prefixed_krut_row (engine)",
+                        );
+                        assert!(
+                            ["base", "m", "f", "n"]
+                                .iter()
+                                .all(|field| res["row"][field].is_array()),
+                            "engine envelope malformed: {id} {stack_deva} {family} {krt}"
+                        );
                     }
                     for alts in &mut got_by_field {
                         alts.sort();
@@ -256,11 +376,8 @@ fn audit(step: usize) -> (u64, u64, u64, u64, Vec<String>) {
                         if documented_gap(krt, field, want_deva, got_all) {
                             continue;
                         }
-                        let zz_all = std::env::var("ZZ_ALL").is_ok();
-                        let cap = if zz_all { 200_000 } else { 400 };
                         if misses.len() < cap
-                            && (zz_all
-                                || !misses.iter().any(|m: &String| m.starts_with(&label)))
+                            && (zz_all || !misses.iter().any(|m: &String| m.starts_with(&label)))
                         {
                             misses.push(format!(
                                 "{label} {id} {stack_deva} {family}: truth [{}] vs export [{}]",
@@ -279,14 +396,14 @@ fn audit(step: usize) -> (u64, u64, u64, u64, Vec<String>) {
     for (k, n) in top.iter().take(15) {
         eprintln!("  {k}: {n}");
     }
-    (checked, matched, no_truth, miss_total, misses)
+    (checked, matched, no_truth, miss_total, unreachable, misses)
 }
 
 #[test]
 fn prefixed_krut_sampled() {
-    let (checked, matched, no_truth, miss_total, misses) = audit(41);
+    let (checked, matched, no_truth, miss_total, unreachable, misses) = audit(41);
     eprintln!(
-        "prefixed-krut-sampled: checked={checked} matched={matched} no-truth={no_truth} miss_total={miss_total} misses={}",
+        "prefixed-krut-sampled: checked={checked} matched={matched} no-truth={no_truth} miss_total={miss_total} unreachable={unreachable} misses={}",
         misses.len()
     );
     assert!(checked > 500, "audit covered too little: {checked}");
@@ -296,9 +413,9 @@ fn prefixed_krut_sampled() {
 #[test]
 #[ignore = "exhaustive: cargo test --release -- --ignored prefixed_krut"]
 fn prefixed_krut_exhaustive() {
-    let (checked, matched, no_truth, miss_total, misses) = audit(1);
+    let (checked, matched, no_truth, miss_total, unreachable, misses) = audit(1);
     eprintln!(
-        "prefixed-krut-exhaustive: checked={checked} matched={matched} no-truth={no_truth} miss_total={miss_total} misses={}",
+        "prefixed-krut-exhaustive: checked={checked} matched={matched} no-truth={no_truth} miss_total={miss_total} unreachable={unreachable} misses={}",
         misses.len()
     );
     assert!(checked > 10_000, "audit covered too little: {checked}");

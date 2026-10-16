@@ -29,9 +29,13 @@ runtime-generated (see bridge below). Legacy `ting_kartari.json` /
 
 Build-only ground truth (never shipped): skt-morph-data
 (`SKT_MORPH_DATA`, default `/home/edhiraj/Documents/projs/pypanini/skt-morph-data`)
-pins the blob `ting_prefixed` backfill and the derive/backfill audits to the
-same corpus the site's engine version produced. Absent corpus → backfill
-skipped with a warning; portal live-derives instead.
+pins the blob `ting_prefixed`/`krut_prefixed` backfill and the
+derive/backfill audits to the same corpus the site's engine version
+produced: corpus cells merge into vidyuṭ's slot grid slot-by-slot, and
+where a corpus slot carries more stem variants than the engine derives
+(√ṛ's san, 09.0032: three against two) the grid boundaries are scaled so
+every corpus variant lands in the site's own person-cell. Absent corpus →
+backfill skipped with a warning; portal live-derives instead.
 
 Code dependency: `vidyut-prakriya` is vendored at `vendor/vidyut`
 (ambuda-org/vidyut@c0fa416, 2024-12-29 — the revision that built the site's
@@ -78,9 +82,14 @@ Engine invariant: SLP1-only, byte-exact (`e != E`, `n != N`).
 
 Bridge notes (`#3`): base search runs on the Devanagari tables directly
 (`search` scans ting slots/`;`-`,`-variants and krut cells/`/`-alternants
-for one family). Prefixed forms have no upstream file — they are
-`translit → generate_prefixed → SLP1`, verified against the `upasarga_forms`
-oracle semantics in the engine. `engine::data::DhatuFile` (`skt-morph-data`
+for one family). Prefixed kṛt forms are served from the pinned corpus cell
+for listed stacks (`backfill_prefixed_krut` → `blob.krut_prefixed`); the
+live exports take that same cell and return it verbatim
+(`derive_prefixed_krut(… pinned_cell)`, `prefixed_krut_row(… rows_json,
+row_index, pinned_cell)` partitions it losslessly across the upstream
+rows by string matching). Unlisted stacks fall back to
+`translit → prefix_krut → SLP1` (engine); the corpus has no truth for them.
+`engine::data::DhatuFile` (`skt-morph-data`
 corpus model, SLP1, per-dhatu JSON) is *not* the dhatu-page model and is only
 used by the vendored generation/search core, not the CLI.
 
@@ -198,14 +207,16 @@ python3 -m http.server 8080
 
 ```bash
 ./check.sh          # the one gate (below), ~2 min
-./check.sh --full   # + exhaustive audits (~3 min more): 22.9M reverse-search +
-                    # 717k kṛdanta click-through checks, 0 unexplained misses
+./check.sh --full   # + exhaustive audits (release, ~5 min): 22.9M reverse-search +
+                    # 717k kṛdanta click-through + 1.70M tiṅ/kṛt backfill +
+                    # 1.35M pinned prefixed-kṛt + 428k pinned derive-kṛt row
+                    # checks, 0 unexplained misses
 
 # gate order: fmt → clippy (pedantic deny) → cargo test → [--full] exhaustive
 # → wasm-pack build ×3 (browser, node, served dist/pkg — pkg can't drift) →
 # dist shell refresh → node --test web/tests/ → e2e-dist.check.cjs (15 portal
 # flows on served artifacts) → smoke.cjs (every wasm export the app calls) →
-# browser self-test (headless Chromium via chromedriver, 25 DOM checks)
+# browser self-test (headless Chromium via chromedriver, 400+ DOM checks)
 cargo fmt --check
 cargo clippy --all-targets -- -D warnings
 cargo test

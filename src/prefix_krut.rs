@@ -122,6 +122,98 @@ pub(crate) fn suppress_unvoiced_twins(forms: &[String]) -> Vec<String> {
         .collect()
 }
 
+/// One corpus-pinned kṛt row: `[base, m, f, n]` Devanagari strings exactly as
+/// the blob's `krut_prefixed` cells carry them (each field a `/`-joined
+/// alternant list, possibly empty).
+pub type PinnedRow = [String; 4];
+
+/// Parse a blob-format pinned cell (`base,m,f,n;base,…`). Rows that do not
+/// split into exactly four comma-separated fields are skipped — the same
+/// convention as the portal's reader of `blob.krut_prefixed`.
+#[must_use]
+pub fn parse_pinned_cell(cell: &str) -> Vec<PinnedRow> {
+    let mut out = Vec::new();
+    for raw in cell.split(';') {
+        let parts: Vec<&str> = raw.split(',').collect();
+        if parts.len() != 4 {
+            continue;
+        }
+        out.push([
+            parts[0].to_string(),
+            parts[1].to_string(),
+            parts[2].to_string(),
+            parts[3].to_string(),
+        ]);
+    }
+    out
+}
+
+/// Partition pinned rows across the upstream (store) rows so that every
+/// pinned row lands in exactly one row's slice — the union of the slices is
+/// the cell, losslessly. A pinned row is owned by the first upstream row
+/// whose base could have produced it (some pinned base alternant contains
+/// the upstream base as an SLP1 substring: prefixing only prepends the
+/// upasarga, and natva may retouch the boundary), else by the row with the
+/// fewest assignments so far (ties → lowest index).
+///
+/// Pure string matching, no engine calls: the per-row portal path stays as
+/// fast as the rest of the kṛt path.
+#[must_use]
+pub fn partition_pinned(
+    pinned: &[PinnedRow],
+    upstream: &[(String, String, String, String)],
+) -> Vec<Vec<PinnedRow>> {
+    let mut slices: Vec<Vec<PinnedRow>> = vec![Vec::new(); upstream.len()];
+    if upstream.is_empty() {
+        return slices;
+    }
+    let up_bases: Vec<Vec<String>> = upstream
+        .iter()
+        .map(|r| {
+            r.0.split('/')
+                .filter(|a| !a.trim().is_empty())
+                .filter_map(crate::translit::deva_to_slp1)
+                .collect()
+        })
+        .collect();
+    let mut taken = vec![false; upstream.len()];
+    let mut unmatched: Vec<&PinnedRow> = Vec::new();
+    for row in pinned {
+        let alts: Vec<String> = row[0]
+            .split('/')
+            .filter(|a| !a.trim().is_empty())
+            .filter_map(crate::translit::deva_to_slp1)
+            .collect();
+        let mut owner = None;
+        for (i, bases) in up_bases.iter().enumerate() {
+            if taken[i] || bases.is_empty() {
+                continue;
+            }
+            if bases
+                .iter()
+                .any(|b| alts.iter().any(|a| a.contains(b.as_str())))
+            {
+                owner = Some(i);
+                break;
+            }
+        }
+        match owner {
+            Some(i) => {
+                taken[i] = true;
+                slices[i].push(row.clone());
+            }
+            None => unmatched.push(row),
+        }
+    }
+    for row in unmatched {
+        let i = (0..upstream.len())
+            .min_by_key(|&i| (slices[i].len(), i))
+            .unwrap_or(0);
+        slices[i].push(row.clone());
+    }
+    slices
+}
+
 /// Prathamā-ekavacana of a prefixed stem, or the stem itself when it does
 /// not decline (verbal citations, indeclinables — never drop forms).
 fn decline_nominal(
@@ -244,4 +336,65 @@ pub fn prefix_krut_row(
         *forms = kept;
     }
     per_field
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn row(base: &str, m: &str, f: &str, n: &str) -> PinnedRow {
+        [
+            base.to_string(),
+            m.to_string(),
+            f.to_string(),
+            n.to_string(),
+        ]
+    }
+
+    #[test]
+    fn parses_pinned_cells_and_skips_malformed_rows() {
+        let cell = "संभवत्,संभवन्,संभवन्ती,संभवत्;सम्भवत्,सम्भवन्,सम्भवन्ती,सम्भवत्;bad,row";
+        let rows = parse_pinned_cell(cell);
+        assert_eq!(rows.len(), 2);
+        assert_eq!(rows[0][0], "संभवत्");
+        assert_eq!(rows[1][3], "सम्भवत्");
+        assert!(parse_pinned_cell("").is_empty());
+    }
+
+    #[test]
+    fn partition_is_lossless_and_match_driven() {
+        let pinned = vec![
+            row("संभवत्", "संभवन्", "संभवन्ती", "संभवत्"),
+            row("सम्भवत्", "सम्भवन्", "सम्भवन्ती", "सम्भवत्"),
+        ];
+        let upstream = vec![
+            (
+                "भवत्".to_string(),
+                "भवन्".to_string(),
+                "भवन्ती".to_string(),
+                "भवत्".to_string(),
+            ),
+            (
+                "भवितृ".to_string(),
+                String::new(),
+                String::new(),
+                String::new(),
+            ),
+        ];
+        let slices = partition_pinned(&pinned, &upstream);
+        // Union is lossless across the slices …
+        let total: usize = slices.iter().map(Vec::len).sum();
+        assert_eq!(total, pinned.len(), "every pinned row lands somewhere");
+        // … and the base-matching row owns the first pinned row; the second
+        // (whose base also matches, but that row is taken) spills to the
+        // fewest-assigned row.
+        assert_eq!(slices[0][0][0], "संभवत्");
+        assert_eq!(slices[1][0][0], "सम्भवत्");
+    }
+
+    #[test]
+    fn partition_without_upstream_rows_is_empty() {
+        let pinned = vec![row("x", "", "", "")];
+        assert!(partition_pinned(&pinned, &[]).is_empty());
+    }
 }

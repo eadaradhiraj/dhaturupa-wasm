@@ -200,8 +200,9 @@ pub fn backfill_prefixed_krut(
     }
 }
 /// Merge corpus SLP1 forms with engine slot grouping into a Devanagari
-/// blob cell. Three cases (see call site): counts agree (exact), engine
-/// superset (filter to corpus-attested), otherwise engine cells.
+/// blob cell. Four cases (see call site): counts agree (exact), engine
+/// superset (filter to corpus-attested), corpus carries extra stem variants
+/// (scale the engine's cell boundaries), otherwise engine cells.
 fn merge_slots(
     slots: Option<Vec<Vec<String>>>,
     truth: &[String],
@@ -254,6 +255,41 @@ fn merge_slots(
         stats.from_corpus += 1;
         return out.join(";");
     }
+    // Same slot structure with more stem variants per construction: pypanini
+    // lists every variant where vidyuṭ emits fewer (09.0032 √ṛ san:
+    // arirīṣiṣ-/aririṣiṣ-/erṣiṣi- against vidyuṭ's two), laid out slot-major
+    // with the variants of one slot consecutive. Scale the engine's cell
+    // boundaries: cell i takes `slots[i].len() * truth.len() / flat_count`
+    // consecutive corpus forms. Exact only when that division holds for
+    // every cell — this reproduces the site's own grouping (compare the same
+    // dhātu's cells in `data/ting_san_*.json`, which carry all variants of a
+    // person-slot in one cell).
+    if truth.len() > flat_count && flat_count > 0 {
+        let mut shares = Vec::with_capacity(slots.len());
+        let mut scaled = true;
+        for slot in &slots {
+            let size = slot.len() * truth.len();
+            if !size.is_multiple_of(flat_count) {
+                scaled = false;
+                break;
+            }
+            shares.push(size / flat_count);
+        }
+        if scaled {
+            let mut at = 0_usize;
+            let mut out = Vec::with_capacity(slots.len());
+            for share in shares {
+                let cells: Vec<String> = truth[at..at + share]
+                    .iter()
+                    .map(|f| crate::translit::slp1_to_deva(f).unwrap_or_else(|| f.clone()))
+                    .collect();
+                at += share;
+                out.push(cells.join(","));
+            }
+            stats.from_corpus += 1;
+            return out.join(";");
+        }
+    }
     // Otherwise: full engine cells (counted fallback — every surface kept,
     // none invented; the audit reports the residual).
     stats.engine_fallback += 1;
@@ -294,11 +330,13 @@ pub fn backfill_prefixed_ting(
                     stats.missing += 1;
                 } else {
                     // Merge corpus values with engine slot grouping, in SLP1
-                    // (no transliteration roundtrips). Three cases:
+                    // (no transliteration roundtrips). Four cases:
                     // - counts agree → corpus values in engine slots (exact);
                     // - engine ⊃ corpus → keep engine slots filtered to
                     //   corpus-attested forms (drops engine-only variants
                     //   like short augment `A` beside `AN`);
+                    // - corpus ⊃ engine in whole-ratio steps → scale the
+                    //   engine's slot boundaries (extra stem variants);
                     // - otherwise → full engine cells (counted fallback).
                     let slots: Option<Vec<Vec<String>>> = derived_slp1.get(lakara).cloned();
                     cell = merge_slots(slots, forms, stats);
@@ -319,5 +357,74 @@ pub fn backfill_prefixed_ting(
         None
     } else {
         Some(serde_json::Value::Object(families))
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::{merge_slots, BackfillStats};
+
+    fn strings(list: &[&str]) -> Vec<String> {
+        list.iter().map(|s| (*s).to_string()).collect()
+    }
+
+    #[test]
+    fn merge_counts_agree_uses_corpus_in_engine_slots() {
+        let mut stats = BackfillStats::default();
+        let slots = vec![
+            vec!["a".to_string(), "i".to_string()],
+            vec!["u".to_string()],
+        ];
+        let cell = merge_slots(Some(slots), &strings(&["a", "i", "u"]), &mut stats);
+        assert_eq!(cell, "अ,इ;उ");
+        assert_eq!(stats.from_corpus, 1);
+        assert_eq!(stats.engine_fallback, 0);
+    }
+
+    #[test]
+    fn merge_engine_superset_filters_to_corpus_forms() {
+        let mut stats = BackfillStats::default();
+        let slots = vec![
+            vec!["a".to_string(), "A".to_string()],
+            vec!["i".to_string()],
+        ];
+        let cell = merge_slots(Some(slots), &strings(&["a", "i"]), &mut stats);
+        assert_eq!(cell, "अ;इ");
+        assert_eq!(stats.from_corpus, 1);
+    }
+
+    #[test]
+    fn merge_extra_corpus_variants_scale_slot_boundaries() {
+        let mut stats = BackfillStats::default();
+        // Two engine cells of two forms; the corpus lists three variants
+        // per cell (slot-major), as pypanini does for √ṛ's sannanta.
+        let slots = vec![
+            vec!["a".to_string(), "i".to_string()],
+            vec!["u".to_string(), "f".to_string()],
+        ];
+        let cell = merge_slots(
+            Some(slots),
+            &strings(&["a", "i", "e", "u", "f", "o"]),
+            &mut stats,
+        );
+        assert_eq!(cell, "अ,इ,ए;उ,ऋ,ओ");
+        assert_eq!(stats.from_corpus, 1);
+        assert_eq!(stats.engine_fallback, 0);
+    }
+
+    #[test]
+    fn merge_non_integral_scaling_falls_back_to_engine_cells() {
+        let mut stats = BackfillStats::default();
+        let slots = vec![
+            vec!["a".to_string()],
+            vec!["i".to_string(), "u".to_string()],
+        ];
+        let cell = merge_slots(
+            Some(slots),
+            &strings(&["a", "i", "u", "f", "e"]),
+            &mut stats,
+        );
+        assert_eq!(cell, "अ;इ,उ");
+        assert_eq!(stats.engine_fallback, 1);
     }
 }

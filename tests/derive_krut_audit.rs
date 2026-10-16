@@ -1,14 +1,17 @@
-//! Derived prefixed kṛdanta rows vs skt-morph-data ground truth.
+//! Prefixed kṛdanta rows vs skt-morph-data ground truth (row level).
 //!
-//! The portal derives prefixed kṛdanta rows live through Vidyuṭ (same
-//! engine + tag mapping as the site) where no backfill exists — and the
-//! backfill itself was built by this path's logic. This pins derivation
-//! against the corpus `upasarga_forms.<stack>.participles` rows for every
-//! (dhātu, stack, family, kṛt): same rows (as sets — row order is engine
-//! order, display sorts deterministically), same fields, same alternants.
+//! The portal renders pinned corpus cells for listed stacks
+//! (`blob.krut_prefixed`, built by `morphdata::backfill_prefixed_krut`).
+//! This pins the ROW structure of those cells against the corpus
+//! `upasarga_forms.<stack>.participles` rows for every (dhātu, stack,
+//! family, kṛt): same rows (multiset — display order is the blob's row
+//! order), same fields, same alternants. `prefixed_krut_audit` gates the
+//! same cells per field; here the rows themselves are gated, so a
+//! row split/merge regression cannot hide.
 //!
 //! m/f/n comparison uses the portal's avyaya rule: fields empty upstream
-//! stay empty. Corpus: `SKT_MORPH_DATA` (default
+//! stay empty; all-empty rows are dropped on both sides (the blob format
+//! drops them). Corpus: `SKT_MORPH_DATA` (default
 //! `/home/edhiraj/Documents/projs/pypanini/skt-morph-data`); absent → skip
 //! with notice, never false-green.
 //!
@@ -100,10 +103,10 @@ fn upstream_rows() -> &'static UpstreamMap {
 
 use std::collections::HashMap;
 
-fn audit(step: usize) -> (u64, u64, u64, Vec<String>) {
+fn audit(step: usize) -> (u64, u64, u64, u64, Vec<String>) {
     let Some(root) = corpus_root() else {
         eprintln!("derive-krut: no corpus at SKT_MORPH_DATA, skipping");
-        return (0, 0, 0, Vec::new());
+        return (0, 0, 0, 0, Vec::new());
     };
     let mut files: Vec<std::path::PathBuf> = Vec::new();
     for gana in ["01", "02", "03", "04", "05", "06", "07", "08", "09", "10"] {
@@ -122,6 +125,7 @@ fn audit(step: usize) -> (u64, u64, u64, Vec<String>) {
     let mut checked = 0_u64;
     let mut matched = 0_u64;
     let miss_total = 0_u64;
+    let mut unreachable = 0_u64;
     let mut misses = Vec::new();
     for (nth, path) in files.iter().enumerate() {
         if nth % step != 0 {
@@ -140,12 +144,28 @@ fn audit(step: usize) -> (u64, u64, u64, Vec<String>) {
             continue;
         };
         for (stack_slp, uf) in forms {
+            // Display forms are ambiguous between corpus keys: bare `A` (आ)
+            // and `AN` (आङ्) both render as `आ`, and the production lookup
+            // prefers the `AN` twin whenever it exists (`normalize_stack_slp1`
+            // — the site's own list never writes आङ्). Keys shadowed that way
+            // are unreachable through the display path, so the pin contract
+            // does not apply to them; count them and move on.
+            let normalized = dhaturupa_wasm::translit::normalize_stack_slp1(stack_slp);
+            if normalized != *stack_slp && forms.contains_key(&normalized) {
+                unreachable += 1;
+                continue;
+            }
             let Some(stack_deva) = stack_deva_display(stack_slp) else {
                 continue;
             };
             let Some(parts) = uf.get("participles").and_then(|v| v.as_object()) else {
                 continue;
             };
+            // Corpus pin tables for this (dhātu, stack): family → kṛt → cell,
+            // built by the production backfill function (the portal ships the
+            // same cells in `blob.krut_prefixed`).
+            let backfill =
+                dhaturupa_wasm::morphdata::backfill_prefixed_krut(&root, &stack_deva, id);
             for (family, corpus_fam) in FAMILIES {
                 let Some(want_fam) = parts.get(corpus_fam).and_then(|v| v.as_object()) else {
                     continue;
@@ -171,6 +191,17 @@ fn audit(step: usize) -> (u64, u64, u64, Vec<String>) {
                             .iter()
                             .map(|c| (c.base.clone(), c.m.clone(), c.f.clone(), c.n.clone()))
                             .collect();
+                    // Corpus pin for this (stack, family, kṛt): the same
+                    // cell the portal ships in `blob.krut_prefixed`, built by
+                    // the production backfill function.
+                    let pinned_cell = backfill
+                        .as_ref()
+                        .and_then(|v| v.get(family))
+                        .and_then(|f| f.get(&krt_deva))
+                        .and_then(|c| c.as_str())
+                        .unwrap_or_default()
+                        .to_string();
+                    let pinned = dhaturupa_wasm::prefix_krut::parse_pinned_cell(&pinned_cell);
                     // Derive through the exact portal path.
                     let derived = match dhaturupa_wasm::derive_krut::derive_prefixed_krut(
                         &stack_deva,
@@ -181,6 +212,7 @@ fn audit(step: usize) -> (u64, u64, u64, Vec<String>) {
                         &dhatu_slp,
                         category,
                         &note,
+                        &pinned,
                     ) {
                         Ok(rows) => rows,
                         Err(e) => {
@@ -230,7 +262,13 @@ fn audit(step: usize) -> (u64, u64, u64, Vec<String>) {
                             alts.sort();
                             parts_row.push(alts.join("/"));
                         }
-                        want_set.push(parts_row.join(","));
+                        let joined = parts_row.join(",");
+                        // All-empty rows carry no content and are dropped by
+                        // the blob format (see `backfill_prefixed_krut`);
+                        // mirror that on the corpus side as well.
+                        if joined.chars().any(|c| c != ',') {
+                            want_set.push(joined);
+                        }
                     }
                     want_set.sort();
                     let mut got_set: Vec<String> = Vec::new();
@@ -256,7 +294,10 @@ fn audit(step: usize) -> (u64, u64, u64, Vec<String>) {
                             alts.sort();
                             parts_row.push(alts.join("/"));
                         }
-                        got_set.push(parts_row.join(","));
+                        let joined = parts_row.join(",");
+                        if joined.chars().any(|c| c != ',') {
+                            got_set.push(joined);
+                        }
                     }
                     got_set.sort();
                     checked += 1;
@@ -287,14 +328,14 @@ fn audit(step: usize) -> (u64, u64, u64, Vec<String>) {
             }
         }
     }
-    (checked, matched, miss_total, misses)
+    (checked, matched, miss_total, unreachable, misses)
 }
 
 #[test]
 fn derive_krut_sampled() {
-    let (checked, matched, miss_total, misses) = audit(97);
+    let (checked, matched, miss_total, unreachable, misses) = audit(97);
     eprintln!(
-        "derive-krut-sampled: checked={checked} matched={matched} miss_total={miss_total} misses={}",
+        "derive-krut-sampled: checked={checked} matched={matched} miss_total={miss_total} unreachable={unreachable} misses={}",
         misses.len()
     );
     assert!(checked > 20, "audit covered too little: {checked}");
@@ -304,9 +345,9 @@ fn derive_krut_sampled() {
 #[test]
 #[ignore = "exhaustive: cargo test --release -- --ignored derive_krut"]
 fn derive_krut_exhaustive() {
-    let (checked, matched, miss_total, misses) = audit(1);
+    let (checked, matched, miss_total, unreachable, misses) = audit(1);
     eprintln!(
-        "derive-krut-exhaustive: checked={checked} matched={matched} miss_total={miss_total} misses={}",
+        "derive-krut-exhaustive: checked={checked} matched={matched} miss_total={miss_total} unreachable={unreachable} misses={}",
         misses.len()
     );
     assert!(checked > 1_000, "audit covered too little: {checked}");

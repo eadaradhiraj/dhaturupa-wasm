@@ -3,6 +3,7 @@ name = "dhaturupa-wasm"
 version = "0.1.0"
 edition = "2021"
 description = "Rust clone of ashtadhyayi.com/dhatu list + info/upasarga (no prakriya/commentary/kosha)"
+repository = "https://github.com/eadaradhiraj/dhaturupa-wasm"
 
 [[bin]]
 name = "dhaturupa-wasm"

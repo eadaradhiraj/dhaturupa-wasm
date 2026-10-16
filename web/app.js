@@ -372,7 +372,8 @@ function renderCellPrefixedKrut(stack, krutTables, family) {
       const res = ok(derive_prefixed_krut(
         stack, baseindex, family, krt,
         JSON.stringify(rows.map((r) => ({ base: r.base, m: r.m, f: r.f, n: r.n }))),
-        blob.slp1, category, blob.note || ''), 'derive-krut');
+        blob.slp1, category, blob.note || '',
+        (pre && pre[krt]) || ''), 'derive-krut');
       if (res.rows && res.rows.length > 0) derived = res.rows;
     } catch (e) {
       status(String(e));
@@ -394,10 +395,11 @@ function renderCellPrefixedKrut(stack, krutTables, family) {
       }));
       return;
     }
-    const renderRow = (krt, r) => {
+    const rowsJson = JSON.stringify(rows.map((r) => ({ base: r.base, m: r.m, f: r.f, n: r.n })));
+    const renderRow = (krt, r, i) => {
       const res = ok(prefixed_krut_row(
-        stack, krt, JSON.stringify({ base: r.base, m: r.m, f: r.f, n: r.n }),
-        blob.slp1, category, blob.note || ''), 'prefixed-krut');
+        stack, krt, rowsJson, i,
+        blob.slp1, category, blob.note || '', (pre && pre[krt]) || ''), 'prefixed-krut');
       const cell = (v) => (v && v.length ? v.join('/') : '—');
       return {
         base: cell(res.row.base),
@@ -406,7 +408,7 @@ function renderCellPrefixedKrut(stack, krutTables, family) {
         n: cell(res.row.n),
       };
     };
-    pKrut[krt] = rows.map((r) => renderRow(krt, r));
+    pKrut[krt] = rows.map((r, i) => renderRow(krt, r, i));
   });
   el('detail-krut').innerHTML =
     Object.keys(pKrut).length === 0

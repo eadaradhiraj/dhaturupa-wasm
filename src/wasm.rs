@@ -499,7 +499,11 @@ fn normalize_stack_display(stack: &str) -> String {
 /// per distinct stem. `upstream_json` carries the dhātu's upstream rows
 /// (`[{base, m, f, n}]` Devanagari strings) for the pre-feminized
 /// supplement + vidyuṭ-missing fallback; `slp1`/`category`/`note` feed its
-/// `GenCtx`. Same normalization as [`derive_prefixed_ting`].
+/// `GenCtx`. `pinned_cell` carries the corpus-pinned cell for this
+/// (stack, family, kṛt) — the portal's `blob.krut_prefixed` piece, built by
+/// [`crate::morphdata::backfill_prefixed_krut`] — and is served verbatim in
+/// row order when non-empty (the site's data is the corpus; re-deriving
+/// could only drift). Same normalization as [`derive_prefixed_ting`].
 #[allow(clippy::too_many_arguments)]
 #[wasm_bindgen]
 pub fn derive_prefixed_krut(
@@ -511,23 +515,30 @@ pub fn derive_prefixed_krut(
     slp1: &str,
     category: &str,
     note: &str,
+    pinned_cell: &str,
 ) -> String {
     let stack_norm = normalize_stack_display(stack);
-    let Ok(upstream_rows) = serde_json::from_str::<Vec<serde_json::Value>>(upstream_json) else {
-        return err_envelope("upstream JSON must be an array of {base, m, f, n}");
+    let pinned = crate::prefix_krut::parse_pinned_cell(pinned_cell);
+    let upstream: Vec<(String, String, String, String)> = if pinned.is_empty() {
+        let Ok(upstream_rows) = serde_json::from_str::<Vec<serde_json::Value>>(upstream_json)
+        else {
+            return err_envelope("upstream JSON must be an array of {base, m, f, n}");
+        };
+        upstream_rows
+            .iter()
+            .map(|r| {
+                let cell = |field: &str| {
+                    r.get(field)
+                        .and_then(|v| v.as_str())
+                        .unwrap_or_default()
+                        .to_string()
+                };
+                (cell("base"), cell("m"), cell("f"), cell("n"))
+            })
+            .collect()
+    } else {
+        Vec::new()
     };
-    let upstream: Vec<(String, String, String, String)> = upstream_rows
-        .iter()
-        .map(|r| {
-            let cell = |field: &str| {
-                r.get(field)
-                    .and_then(|v| v.as_str())
-                    .unwrap_or_default()
-                    .to_string()
-            };
-            (cell("base"), cell("m"), cell("f"), cell("n"))
-        })
-        .collect();
     match crate::derive_krut::derive_prefixed_krut(
         &stack_norm,
         baseindex,
@@ -537,27 +548,37 @@ pub fn derive_prefixed_krut(
         slp1,
         category,
         note,
+        &pinned,
     ) {
         Ok(rows) => ok_envelope(serde_json::json!({"rows": rows})),
         Err(message) => err_envelope(&message),
     }
 }
 
-/// Kṛt-aware batch prefixing for one kṛt ROW: `row_json` is
-/// `{base, m, f, n}` Devanagari cell strings; returns `{base, m, f, n}`
-/// prefixed (each `/`-joined). Implements the unlisted-stack path: ल्यप्
-/// baked-stack strip, prathamā-ekavacana declension, stem recovery,
-/// twin-suppression (see `prefix_krut`). Listed stacks render backfilled
-/// corpus cells instead — this export is validated against the same corpus
-/// by `tests/prefixed_krut_audit.rs`.
+/// Kṛt-aware batch prefixing for one kṛt ROW: `rows_json` is the whole
+/// upstream cell (`[{base, m, f, n}]` Devanagari strings, `/`-joined
+/// alternants) and `row_index` selects the row this call renders. Returns
+/// `{base, m, f, n}` alternatives for that row.
+///
+/// `pinned_cell` carries the corpus cell for this (stack, family, kṛt) when
+/// the caller has it (portal blob piece, audit): it is partitioned across
+/// the upstream rows ([`crate::prefix_krut::partition_pinned`], pure string
+/// matching — no engine calls) and this row's slice is returned, so the
+/// union of the per-row calls is the cell, losslessly. Without a pin the
+/// engine path runs (ल्यप् baked-stack strip, prathamā-ekavacana
+/// declension, twin-suppression — see `prefix_krut`) and is validated by
+/// `tests/prefixed_krut_audit.rs`.
+#[allow(clippy::too_many_arguments)]
 #[wasm_bindgen]
 pub fn prefixed_krut_row(
     stack: &str,
     krt: &str,
-    row_json: &str,
+    rows_json: &str,
+    row_index: usize,
     slp1_dhatu: &str,
     engine_category: &str,
     dhatu_note: &str,
+    pinned_cell: &str,
 ) -> String {
     let stack_slp1 = if contains_deva(stack) {
         match crate::translit::deva_stack_to_slp1(stack) {
@@ -567,8 +588,65 @@ pub fn prefixed_krut_row(
     } else {
         stack.to_string()
     };
-    let Ok(row) = serde_json::from_str::<serde_json::Value>(row_json) else {
-        return err_envelope("row JSON must be {base, m, f, n}");
+    let Ok(rows_value) = serde_json::from_str::<serde_json::Value>(rows_json) else {
+        return err_envelope("rows JSON must be an array of {base, m, f, n}");
+    };
+    let upstream: Vec<(String, String, String, String)> = rows_value
+        .as_array()
+        .map(|rows| {
+            rows.iter()
+                .map(|r| {
+                    let cell = |field: &str| {
+                        r.get(field)
+                            .and_then(|v| v.as_str())
+                            .unwrap_or_default()
+                            .to_string()
+                    };
+                    (cell("base"), cell("m"), cell("f"), cell("n"))
+                })
+                .collect()
+        })
+        .unwrap_or_default();
+    let pinned = crate::prefix_krut::parse_pinned_cell(pinned_cell);
+    if !pinned.is_empty() {
+        let slices = crate::prefix_krut::partition_pinned(&pinned, &upstream);
+        let assigned: Vec<&crate::prefix_krut::PinnedRow> = if slices.is_empty() {
+            // No upstream rows to partition across: the whole cell goes out
+            // through row 0 (so nothing is lost).
+            if row_index == 0 {
+                pinned.iter().collect()
+            } else {
+                Vec::new()
+            }
+        } else {
+            slices
+                .get(row_index)
+                .map(|slice| slice.iter().collect())
+                .unwrap_or_default()
+        };
+        let mut out = serde_json::Map::new();
+        for (slot, field) in ["base", "m", "f", "n"].iter().enumerate() {
+            // Verbatim (duplicates kept): the audit's pin contract is a
+            // multiset union over rows.
+            let forms: Vec<String> = assigned
+                .iter()
+                .flat_map(|row| row[slot].split('/').filter(|a| !a.is_empty()))
+                .map(str::to_string)
+                .collect();
+            out.insert((*field).to_string(), serde_json::Value::from(forms));
+        }
+        return ok_envelope(serde_json::json!({"row": out}));
+    }
+    let Some(row) = upstream.get(row_index) else {
+        return err_envelope("row index out of range");
+    };
+    let field_of = |row: &(String, String, String, String), field: &str| -> String {
+        match field {
+            "base" => row.0.clone(),
+            "m" => row.1.clone(),
+            "f" => row.2.clone(),
+            _ => row.3.clone(),
+        }
     };
     let ctx = crate::genctx::ctx_for(slp1_dhatu, engine_category, dhatu_note);
     let Some(engine_family) = crate::forms::normalize_krut_engine_family(engine_category) else {
@@ -577,16 +655,11 @@ pub fn prefixed_krut_row(
     let cells: Vec<(String, Vec<String>)> = ["base", "m", "f", "n"]
         .iter()
         .map(|field| {
-            let alts: Vec<String> = row
-                .get(field)
-                .and_then(|v| v.as_str())
-                .map(|s| {
-                    s.split('/')
-                        .filter(|a| !a.is_empty())
-                        .map(str::to_string)
-                        .collect()
-                })
-                .unwrap_or_default();
+            let alts: Vec<String> = field_of(row, field)
+                .split('/')
+                .filter(|a| !a.is_empty())
+                .map(str::to_string)
+                .collect();
             ((*field).to_string(), alts)
         })
         .collect();

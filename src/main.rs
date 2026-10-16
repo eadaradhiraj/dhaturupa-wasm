@@ -315,7 +315,8 @@ fn cmd_krttable(args: &[String]) {
         let mut shown = false;
         let slp1 = args.iter().any(|arg| arg == "--slp1");
         for value in &values {
-            if let Some(t) = dhaturupa_wasm::engine::subanta::krt_table(family, &krt, field, value) {
+            if let Some(t) = dhaturupa_wasm::engine::subanta::krt_table(family, &krt, field, value)
+            {
                 print_paradigm(&t, slp1);
                 shown = true;
             }

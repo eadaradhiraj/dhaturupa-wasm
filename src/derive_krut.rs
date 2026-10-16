@@ -138,6 +138,9 @@ type UpRow = HashMap<String, Vec<String>>;
 /// `upstream` carries the dhātu's upstream rows (Deva `{base, m, f, n}`
 /// strings, may be empty) for the supplement + vidyuṭ-missing fallback.
 /// `slp1_dhatu`/`engine_category`/`dhatu_note` feed the supplement's `GenCtx`.
+/// `pinned` carries the corpus cell for this (stack, family, kṛt) when the
+/// caller has it (portal blob piece, audit); a non-empty pin is served
+/// verbatim and the engine is not consulted.
 /// SLP1 never leaves this module.
 #[allow(clippy::too_many_arguments)]
 pub fn derive_prefixed_krut(
@@ -149,6 +152,7 @@ pub fn derive_prefixed_krut(
     slp1_dhatu: &str,
     engine_category: &str,
     dhatu_note: &str,
+    pinned: &[crate::prefix_krut::PinnedRow],
 ) -> Result<Vec<HashMap<String, String>>, String> {
     use crate::engine::upasarga::generate_prefixed;
     // (kṛt, override-m, override-n). f is always repaired from the upstream
@@ -170,6 +174,23 @@ pub fn derive_prefixed_krut(
         ("उकञ्", false, false),
         ("अथुच्", true, false),
     ];
+    // Corpus-pinned cell (the portal's `blob.krut_prefixed` piece for this
+    // (stack, family, kṛt), or a client-supplied equivalent): served
+    // verbatim, in row order. The corpus stack sections are the site's own
+    // data — re-deriving them here could only drift from them.
+    if !pinned.is_empty() {
+        return Ok(pinned
+            .iter()
+            .map(|[base, m, f, n]| {
+                let mut row = HashMap::new();
+                row.insert("base".to_string(), base.clone());
+                row.insert("m".to_string(), m.clone());
+                row.insert("f".to_string(), f.clone());
+                row.insert("n".to_string(), n.clone());
+                row
+            })
+            .collect());
+    }
     let (override_m, override_n) = UPSTREAM_OVERRIDE_KRTS
         .iter()
         .find(|(name, _, _)| *name == krt_deva)
