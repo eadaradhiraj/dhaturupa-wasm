@@ -1,0 +1,49 @@
+[package]
+name = "dhaturupa-wasm"
+version = "0.1.0"
+edition = "2021"
+description = "Rust clone of ashtadhyayi.com/dhatu list + info/upasarga (no prakriya/commentary/kosha)"
+
+[[bin]]
+name = "dhaturupa-wasm"
+path = "src/main.rs"
+
+[lib]
+name = "dhaturupa_wasm"
+path = "src/lib.rs"
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+rayon = "1"
+wasm-bindgen = "0.2"
+# Pinned to the revision that built the site's vidyut_prakriya_bg_5.wasm
+# (2024-12-29; corpus-exact: derive audit 1,085,520/1,085,520 vs
+# skt-morph-data). Do NOT bump to crates.io without re-running the
+# derive audit — newer/older engines differ on optional variants.
+vidyut-prakriya = { path = "vendor/vidyut/vidyut-prakriya" }
+
+[workspace]
+
+[lints.clippy]
+all = { level = "deny", priority = -1 }
+pedantic = { level = "deny", priority = -1 }
+missing_errors_doc = "allow"
+missing_panics_doc = "allow"
+must_use_candidate = "allow"
+module_name_repetitions = "allow"
+too_many_lines = "allow"
+
+# Deny rustc warnings for our own code via the manifest (not via CLI `-D`,
+# which would leak into the vendored vidyut snapshot and fail the gate on
+# frozen code).
+[lints.rust]
+warnings = { level = "deny", priority = -1 }
+
+# Vendored ambuda-org/vidyut @ c0fa416 (2024-12-29, the revision that built
+# the site's vidyut_prakriya_bg_5.wasm) with the unused `sha256` dependency
+# removed — it pulls tokio, which cannot compile for wasm. Verified: zero
+# `sha256::` uses in the vendored sources; derivation is untouched.
+[patch."https://github.com/ambuda-org/vidyut"]
+vidyut-prakriya = { path = "vendor/vidyut/vidyut-prakriya" }

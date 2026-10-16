@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" href="data:,">
+<title>Dhātupāṭha — fast dhatu lookup</title>
+<style>
+body { font-family: system-ui, sans-serif; max-width: 60em; margin: 1em auto; padding: 0 1em; }
+nav button { margin-right: .5em; }
+table { border-collapse: collapse; margin: .5em 0; }
+th, td { border: 1px solid #999; padding: .15em .5em; text-align: left; }
+th { background: #f0f0f0; }
+.deva { font-size: 1.1em; }
+.muted { color: #555; }
+section.lakara, section.krt { margin-bottom: 1em; }
+</style>
+</head>
+<body>
+<h1>Dhātupāṭha lookup</h1>
+<nav>
+<button id="nav-list">Dhatu list</button>
+<button id="nav-search">Form search</button>
+<span id="status" class="muted" role="status"></span>
+<span id="build" class="muted"></span>
+</nav>
+
+<section id="view-list">
+<h2>Select dhātu</h2>
+<div>
+<input id="list-q" placeholder="exact dhātu (Devanāgarī or HK)" size="24">
+<select id="list-gana"><option value="">all gaṇas</option></select>
+<select id="list-pada"><option value="">all padas</option>
+<option value="P">parasmaipadī</option><option value="A">ātmanepadī</option>
+<option value="U">ubhayapadī</option></select>
+<button id="list-go">Filter</button>
+</div>
+<p id="list-count" class="muted"></p>
+<p id="list-hint"></p>
+<div id="list-links"></div>
+<button id="list-more">Load more</button>
+</section>
+
+<section id="view-detail" hidden>
+<h2 id="detail-title"></h2>
+<div id="detail-meta"></div>
+<h3>Tables</h3>
+<div>
+<label>Family <select id="detail-family"></select></label>
+<label>Prayoga <select id="detail-prayoga">
+<option value="kartari">kartarī · परस्मैपदम्</option><option value="karmani">karmaṇī · आत्मनेपदम्</option>
+</select></label>
+<label>Prefixed view <select id="detail-stack"><option value="">—</option></select></label>
+</div>
+<div id="detail-ting"></div>
+<div id="detail-krut"></div>
+<h3>Search inside this dhatu</h3>
+<div>
+<input id="detail-q" placeholder="Devanagari or Harvard-Kyoto" size="30">
+<button id="detail-go">Search</button>
+</div>
+<div id="detail-hits"></div>
+<h3>Declension (subanta)</h3>
+<div id="detail-subanta"></div>
+</section>
+
+<section id="view-search" hidden>
+<h2>Form search</h2>
+<div>
+<input id="search-q" placeholder="Devanagari or Harvard-Kyoto form" size="34">
+<button id="search-go">Search</button>
+</div>
+<p id="search-note" class="muted"></p>
+<div id="search-hits"></div>
+</section>
+
+<script type="module" src="app.js"></script>
+</body>
+</html>

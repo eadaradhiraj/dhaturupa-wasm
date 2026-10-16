@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<title>dhatu WASM demo (offline-capable scaffold)</title>
+<h1>dhatu WASM demo</h1>
+<p>Search box takes Devanagari or Harvard-Kyoto. All forms display in
+Devanagari. Morphology runs in SLP1 inside the WASM module.</p>
+<input id="q" value="bhavati" size="30">
+<button id="go">Search readings</button>
+<pre id="out"></pre>
+<button id="sub">Decline राम (m)</button>
+<pre id="out2"></pre>
+<script type="module">
+import init, { query_candidates, subanta_table } from '../pkg/dhaturupa_wasm.js';
+await init();
+document.getElementById('go').onclick = () => {
+  document.getElementById('out').textContent =
+    query_candidates(document.getElementById('q').value);
+};
+document.getElementById('sub').onclick = () => {
+  const payload = JSON.parse(subanta_table('राम', 'm'));
+  const first = payload.tables[0].cells.slice(0, 3)
+    .map(c => `${c.vibhakti}.${c.vacana}: ${c.forms.join(',')}`).join('\n');
+  document.getElementById('out2').textContent = first;
+};
+</script>
+</html>

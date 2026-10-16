@@ -1,0 +1,6 @@
+/target/
+data/
+/pkg/
+/pkg-node/
+/dist/
+*.bak

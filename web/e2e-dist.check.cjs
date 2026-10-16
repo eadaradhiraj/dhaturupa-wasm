@@ -1,0 +1,91 @@
+// Full portal-flow verification against a built dist (run: node /tmp/opencode/e2e.js).
+const w = require('/home/edhiraj/Documents/projs/dhaturupa-wasm/pkg-node/dhaturupa_wasm.js');
+const fs = require('fs');
+const path = require('path');
+// Default: the repo's own dist (override: `node e2e-dist.check.cjs /path/to/dist`).
+const D = (process.argv[2] || `${path.join(__dirname, '..', 'dist')}/`).replace(/\/?$/, '/');
+const ok = (t, what) => {
+  const p = JSON.parse(t);
+  if (!p.ok) throw new Error(`${what}: ${p.error}`);
+  return p;
+};
+let pass = 0;
+const check = (name, cond) => {
+  if (!cond) throw new Error(`FAIL: ${name}`);
+  pass++;
+  console.log(`ok ${pass}: ${name}`);
+};
+
+// 1. list source
+const list = JSON.parse(fs.readFileSync(`${D}data/dhatu_data.json`, 'utf8'));
+check('list has 2259 entries', list.data.length === 2259);
+
+// 2. blob shape
+const blob = JSON.parse(fs.readFileSync(`${D}data/blobs/03.0010.json`, 'utf8'));
+check('blob has meta+slp1+stacks+ting+krut',
+  blob.meta && blob.slp1 && blob.stacks.length > 0 && blob.ting.shuddha && blob.krut.shuddha);
+
+// 3. ting/krut tables (family-file JSON; the portal renders blob slices
+// directly in JS, these exports serve fallback/dev paths)
+const famDir = '/home/edhiraj/Documents/projs/dhaturupa-wasm/data/';
+const famKartari = fs.readFileSync(`${famDir}ting_shuddha_kartari.json`, 'utf8');
+const famKrut = fs.readFileSync(`${famDir}krut_shuddha.json`, 'utf8');
+check('ting plat present', !!ok(w.ting_table(famKartari, '03.0010'), 'ting').tables.plat);
+check('krut shatr present', !!ok(w.krut_table_json(famKrut, '03.0010'), 'krut').tables['शतृ']);
+const kartari = JSON.stringify(blob.ting.shuddha.kartari);
+const karmani = JSON.stringify(blob.ting.shuddha.karmani || {});
+const krut = JSON.stringify(blob.krut.shuddha);
+
+// 4. krt click-through (the fixed contract)
+const sub = ok(w.krt_subanta('shuddha', 'शतृ', 'f', 'भवन्ती'), 'click');
+check('click returns tables[]', Array.isArray(sub.tables) && sub.tables.length === 1);
+const slash = ok(w.krt_subanta('shuddha', 'शतृ', 'n', 'ददत्/ददद्'), 'slash click');
+check('slash click works', slash.tables.length === 1);
+
+// 5. prefixed table views (ting + krt, with dhatu ctx)
+const catT = ok(w.engine_category('shuddha', 'ting'), 'cat').category;
+const pt = ok(w.prefixed_table_ctx('प्र', JSON.stringify(['भवति']), 'BU', catT, ''), 'pting');
+check('prefixed ting', pt.tables[0][0] === 'प्रभवति');
+const catK = ok(w.engine_category('shuddha', 'krut'), 'cat').category;
+const pk = ok(w.prefixed_table_ctx('प्र', JSON.stringify(['भवः']), 'BU', catK, ''), 'pkrut');
+check('prefixed krt', pk.tables[0][0] === 'प्रभवः');
+
+// 6. global search: base + subanta + unlisted-stack split
+const loadShard = (kind, form) => {
+  const n = JSON.parse(w.index_shard(form, 256)).shard;
+  const key = kind[0] + n;
+  w.index_load_key(key, fs.readFileSync(
+    `${D}data/shards/${kind}-${String(n).padStart(2, '0')}.index.json`, 'utf8'));
+  return key;
+};
+const q1 = ok(w.index_query_family(loadShard('shard', 'भवति'), 'bhavati'), 'q1');
+check('bhavati hits cover 01.0001+10.0382', q1.total >= 2);
+const q2 = ok(w.index_query_family(loadShard('sub', 'ददतः'), 'dadataH'), 'q2');
+check('HK dadataH subanta hits', q2.total >= 1 && q2.hits[0].kind === 'subanta');
+// unlisted stack via split+verify
+const names = [...new Set(list.data.flatMap((e) => e.upasargas.map((u) => u.name)))];
+ok(w.split_init(JSON.stringify(names)), 'split-init');
+const splits = ok(w.split_query('प्रददत्', 256), 'split').splits;
+check('pradadat splits to pra+dadat',
+  splits.some((s) => s.stack === 'प्र' && s.base === 'ददत्'));
+let found = 0;
+for (const s of splits.slice(0, 5)) {
+  loadShard('shard', s.base);
+  const v = ok(w.verify_split('प्रददत्', s.stack, s.base), 'verify');
+  found += v.total;
+}
+check('pradadat verifies end to end', found >= 1);
+
+// 7. per-dhatu detail searches from blob slices
+const stacks = JSON.stringify(blob.stacks);
+const dhatu = JSON.stringify({ family: 'shuddha', baseindex: '03.0010', slp1: blob.slp1, note: '' });
+const dp = ok(w.search_prefixed_dhatu(kartari, karmani, krut, dhatu, stacks, 'प्रभवति'), 'dp');
+check('detail prefixed search', dp.total >= 0);
+const ds = ok(w.search_subanta_dhatu(krut, 'shuddha', '03.0010', 'ददती'), 'ds');
+check('detail subanta search', ds.total >= 1);
+
+// 8. readings have no SLP1
+const readings = ok(w.query_candidates('gacchantau'), 'readings').readings;
+check('single HK reading', readings.length === 1 && readings[0].scheme === 'Harvard-Kyoto');
+
+console.log(`\nALL ${pass} PORTAL-FLOW CHECKS PASSED`);
