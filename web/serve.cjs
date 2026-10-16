@@ -7,6 +7,7 @@
 const http = require('http');
 const fs = require('fs');
 const path = require('path');
+const zlib = require('zlib');
 
 const dir = path.resolve(process.argv[2] || 'dist');
 const port = Number(process.argv[3] || 8124);
@@ -34,10 +35,27 @@ http
         res.writeHead(404, { 'Content-Type': 'text/html' }).end('not found');
         return;
       }
-      res.writeHead(200, {
+      const headers = {
         'Content-Type': MIME[path.extname(file)] || 'application/octet-stream',
         'Cache-Control': 'no-store',
-      });
+      };
+      // On-the-fly gzip for large compressible payloads (blobs ~1 MB JSON
+      // → ~300 KB). Browsers auto-decompress; the SW caches the gzipped
+      // response. Below the threshold, CPU isn't worth it.
+      const acceptsGzip = (req.headers['accept-encoding'] || '').includes('gzip');
+      if (acceptsGzip && data.length > 100000) {
+        zlib.gzip(data, (gzErr, compressed) => {
+          if (gzErr) {
+            res.writeHead(200, headers);
+            res.end(data);
+            return;
+          }
+          res.writeHead(200, { ...headers, 'Content-Encoding': 'gzip' });
+          res.end(compressed);
+        });
+        return;
+      }
+      res.writeHead(200, headers);
       res.end(data);
     });
   })

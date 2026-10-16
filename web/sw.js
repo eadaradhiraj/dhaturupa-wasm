@@ -1,7 +1,8 @@
-// Offline-capable service worker with no versioning: network-first for
-// everything, cache fallback when offline. Repeat visits are always fresh
-// when online and keep working with no network. Never bump anything here;
-// data files are immutable per dataset build and the shell is tiny.
+// Offline-capable service worker with no versioning: stale-while-revalidate
+// for same-origin GETs — serve the cache copy immediately (instant repeat
+// views), revalidate in the background so the next visit is fresh. Offline
+// falls back to the cache. Never bump anything here; data files are
+// immutable per dataset build and the shell is tiny.
 const CACHE = 'dhatu';
 
 self.addEventListener('install', (event) => {
@@ -26,14 +27,17 @@ self.addEventListener('fetch', (event) => {
   const url = new URL(event.request.url);
   if (url.origin !== self.location.origin) return;
   event.respondWith(
-    fetch(event.request)
-      .then((response) => {
-        if (response.ok) {
-          const copy = response.clone();
-          caches.open(CACHE).then((cache) => cache.put(event.request, copy));
-        }
-        return response;
-      })
-      .catch(() => caches.match(event.request)),
+    caches.match(event.request).then((cached) => {
+      const networkFetch = fetch(event.request)
+        .then((response) => {
+          if (response.ok) {
+            const copy = response.clone();
+            caches.open(CACHE).then((cache) => cache.put(event.request, copy));
+          }
+          return response;
+        })
+        .catch(() => null);
+      return cached || networkFetch;
+    }),
   );
 });
