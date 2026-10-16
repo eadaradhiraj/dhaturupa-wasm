@@ -222,6 +222,40 @@ try {
     }
   }
 
+  // ---- prayoga dropdown labels + parasmaipada-dhātu आत्मनेपदम् rendering.
+  // The dropdown must name only the prayoga (कर्तरि/कर्मणी), never a pada:
+  // a parasmaipada dhātu's kartari table can legitimately carry आत्मनेपदम्
+  // forms (वि+जि → विजयते per विपराभ्यां जे 1.3.19), so a "परस्मैपदम्"
+  // suffix would mislabel the content. The render must show the corpus's
+  // actual pada sections.
+  const dd = document.getElementById('detail-prayoga');
+  ok('dropdown labels are prayoga-only', [...dd.options].map((o) => o.textContent).join('|') === 'कर्तरि|कर्मणी',
+    [...dd.options].map((o) => o.textContent).join('|'));
+  // वि+जि: kartari laṭ is आत्मनेपदम् only.
+  location.hash = 'dhatu/01.1096';
+  await waitFor(() => text($('detail-title')).includes('01.1096'), { timeout: 10000 });
+  const stVij = document.getElementById('detail-stack');
+  stVij.value = 'वि';
+  stVij.dispatchEvent(new Event('change', { bubbles: true }));
+  await sleep(600);
+  const vijHeads = [...document.querySelectorAll('#detail-ting h3')].map((h) => h.textContent.trim());
+  ok('वि+जि: kartari laṭ is आत्मनेपदम्', vijHeads.includes('लट् · आत्मनेपदम्'), vijHeads.join(','));
+  ok('वि+जि: no परस्मैपदम् laṭ section', !vijHeads.includes('लट् · परस्मैपदम्'));
+  const vijLat = [...document.querySelectorAll('#detail-ting section.lakara')]
+    .find((s) => s.querySelector('h3').textContent.includes('लट्'));
+  ok('वि+जि: laṭ shows विजयते', /विजयते/.test(vijLat.textContent), vijLat.textContent.slice(0, 40));
+  // सम्+गम्: ubhayapada — both padas present.
+  location.hash = 'dhatu/01.1137';
+  await waitFor(() => text($('detail-title')).includes('01.1137'), { timeout: 10000 });
+  const stGam = document.getElementById('detail-stack');
+  stGam.value = 'सम्';
+  stGam.dispatchEvent(new Event('change', { bubbles: true }));
+  await sleep(600);
+  const gamHeads = [...document.querySelectorAll('#detail-ting h3')].map((h) => h.textContent.trim());
+  ok('सम्+गम्: both padas present',
+    gamHeads.includes('लट् · परस्मैपदम्') && gamHeads.includes('लट् · आत्मनेपदम्'),
+    gamHeads.join(','));
+
   // ---- no console errors anywhere above
   ok('no console errors during the run', errors.length === 0, errors.slice(0, 3).join(' | '));
 
