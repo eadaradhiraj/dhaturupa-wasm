@@ -442,28 +442,21 @@ function onKrtClick(event) {
   const link = event.target.closest('a[data-krt]');
   if (!link) return;
   event.preventDefault();
-  const { family, krt, field, value, row } = link.dataset;
-  const gender = link.dataset.gender || 'm';
-  const tries = value.includes('/') ? value.split('/') : [value];
-  const kind = gender;
-  let shown = 0;
-  const tables = [];
-  for (const alt of tries) {
-    try {
-      const table = ok(krt_subanta(family, krt, kind, alt), 'declension');
-      tables.push(...table.tables);
-      shown += table.tables.length;
-    } catch {
-      // try the next alternant
-    }
+  // render.js already applied the site click convention: `value` is the row
+  // base (m/n) or the f form itself (आ/ई endings). `baseindex` is the dhātu
+  // row id that selects the site's reference paradigm inside krt_subanta.
+  const { family, krt, field, value } = link.dataset;
+  const kind = link.dataset.gender || 'm';
+  let tables = [];
+  try {
+    tables = ok(krt_subanta(family, krt, kind, value, baseindex), 'declension').tables;
+  } catch {
+    // fall through to the error panel
   }
-  if (shown === 0) {
-    const msg = field === 'base'
-      ? 'This is an indeclinable (avyaya) — no declension.'
-      : `Neither ${value} reading declines (${kind}).`;
+  if (tables.length === 0) {
     el('detail-subanta').innerHTML =
       `<p class="deva">${escapeHtml(value)} [${escapeHtml(field)}]</p>` +
-      `<p class="muted">${msg}</p>`;
+      `<p class="muted">${escapeHtml(value)} does not decline (${escapeHtml(kind)}).</p>`;
   } else {
     el('detail-subanta').innerHTML =
       `<h4 class="deva">${escapeHtml(value)} [${escapeHtml(field)}]</h4>` +

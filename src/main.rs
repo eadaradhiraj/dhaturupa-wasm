@@ -306,6 +306,14 @@ fn cmd_krttable(args: &[String]) {
             std::process::exit(2);
         };
         let krt = to_slp1(krt_arg, "krt");
+        // Optional `--baseindex 03.0010` (dhātu id): selects the site's
+        // gaṇa-dependent reference paradigms (अभ्यस्त शतृ etc.).
+        let baseindex = args
+            .iter()
+            .position(|arg| arg == "--baseindex")
+            .and_then(|i| args.get(i + 1))
+            .cloned()
+            .unwrap_or_default();
         // `/`-alternant cells are per-alternant tables: try each until one works.
         let values: Vec<String> = if value_arg.contains('/') {
             value_arg.split('/').map(|a| to_slp1(a, "value")).collect()
@@ -315,7 +323,8 @@ fn cmd_krttable(args: &[String]) {
         let mut shown = false;
         let slp1 = args.iter().any(|arg| arg == "--slp1");
         for value in &values {
-            if let Some(t) = dhaturupa_wasm::engine::subanta::krt_table(family, &krt, field, value)
+            if let Some(t) =
+                dhaturupa_wasm::engine::subanta::krt_table(family, &krt, field, value, &baseindex)
             {
                 print_paradigm(&t, slp1);
                 shown = true;
@@ -325,7 +334,7 @@ fn cmd_krttable(args: &[String]) {
             println!("not possible");
         }
     } else {
-        eprintln!("usage: dhaturupa-wasm krttable <family> <krt> <m|f|n> <value> [--slp1]  (e.g. krttable krut Satf f BavantI)");
+        eprintln!("usage: dhaturupa-wasm krttable <family> <krt> <m|f|n> <value> [--baseindex ID] [--slp1]  (e.g. krttable krut Satf f BavantI)");
         std::process::exit(2);
     }
 }

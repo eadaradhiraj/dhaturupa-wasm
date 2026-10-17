@@ -21,7 +21,7 @@ fn subanta_invalid_is_empty() {
 
 #[test]
 fn krt_click_through_bavanti() {
-    let t = krt_table("krut", "Satf", "f", "BavantI").expect("BavantI f table");
+    let t = krt_table("krut", "Satf", "f", "BavantI", "").expect("BavantI f table");
     assert!(t.contains("BavantIByAm"));
 }
 
@@ -29,10 +29,10 @@ fn krt_click_through_bavanti() {
 fn krt_visarga_citations_decline() {
     // `ktin` feminine `-iH` citation: visarga is citation spelling, the
     // declension stem is bare (`mutti`).
-    let t = krt_table("krut", "ktin", "f", "muttiH").expect("muttiH f table");
-    assert!(t.contains("muttyOH"));
+    let t = krt_table("krut", "ktin", "f", "muttiH", "").expect("muttiH f table");
+    assert!(t.contains("muttyoH"));
     // `Nvul` masculine `-aH` citation still rides the a-stem.
-    let u = krt_table("krut", "Rvul", "m", "BAvakaH").expect("BAvakaH m table");
+    let u = krt_table("krut", "Rvul", "m", "BAvakaH", "").expect("BAvakaH m table");
     assert!(u.contains("BAvakam"));
 }
 

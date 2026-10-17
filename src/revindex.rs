@@ -1032,9 +1032,10 @@ pub fn subanta_pairs(
         );
         return out;
     };
-    // Only `kvasu`/`tfc` branches read the krt name; dashed names
-    // (`स्य-शतृ`) transliterate to `None` and safely fall back.
-    let krt_slp = deva_to_slp1(krt_deva).unwrap_or_default();
+    // Dashed names (`स्य-शतृ`) keep their separator so the site's exact
+    // reference paradigms resolve; the value rides the site click
+    // conventions (m/n base, f f-form).
+    let krt_slp = crate::prefix_krut::deva_to_slp1_keep_sep(krt_deva).unwrap_or_default();
     for alternant in split_alternants(value_deva) {
         let Some(value_slp) = deva_to_slp1(alternant) else {
             Stats::note(
@@ -1044,7 +1045,8 @@ pub fn subanta_pairs(
             );
             continue;
         };
-        let Some(paradigm) = krt_table(engine_family, &krt_slp, field, &value_slp) else {
+        let Some(paradigm) = krt_table(engine_family, &krt_slp, field, &value_slp, baseindex)
+        else {
             Stats::note(
                 &mut stats.skip_table,
                 &mut stats.skip_samples,
@@ -1397,13 +1399,14 @@ pub fn audit_all(data: &AuditData, opts: &AuditOptions) -> AuditReport {
                             &mut report.stats,
                         );
                         // Independent re-derivation: every paradigm cell must resolve.
-                        let krt_slp = deva_to_slp1(krt).unwrap_or_default();
+                        let krt_slp =
+                            crate::prefix_krut::deva_to_slp1_keep_sep(krt).unwrap_or_default();
                         for alternant in split_alternants(value) {
                             let Some(value_slp) = deva_to_slp1(alternant) else {
                                 continue;
                             };
                             let Some(paradigm) =
-                                krt_table(engine_family, &krt_slp, field, &value_slp)
+                                krt_table(engine_family, &krt_slp, field, &value_slp, id)
                             else {
                                 continue;
                             };

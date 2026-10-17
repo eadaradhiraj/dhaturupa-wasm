@@ -104,13 +104,13 @@ fn subanta_table_deva() {
 
 #[test]
 fn krt_subanta_deva() {
-    let payload = ok(&wasm::krt_subanta("shuddha", "शतृ", "f", "भवन्ती"));
+    let payload = ok(&wasm::krt_subanta("shuddha", "शतृ", "f", "भवन्ती", ""));
     // Portal contract: array under `tables`, like `subanta_table`.
     assert_eq!(payload["tables"][0]["stem"], serde_json::json!("भवन्ती"));
     let text = serde_json::to_string(&payload).expect("serializes");
     assert!(text.contains("भवन्तीभ्याम्"));
-    assert!(!err(&wasm::krt_subanta("nope", "शतृ", "f", "भवन्ती")).is_empty());
-    assert!(!err(&wasm::krt_subanta("shuddha", "शतृ", "x", "भवन्ती")).is_empty());
+    assert!(!err(&wasm::krt_subanta("nope", "शतृ", "f", "भवन्ती", "")).is_empty());
+    assert!(!err(&wasm::krt_subanta("shuddha", "शतृ", "x", "भवन्ती", "")).is_empty());
 }
 
 #[test]
@@ -165,7 +165,7 @@ fn engine_category_and_ctx_table() {
 fn krt_subanta_slash_alternants() {
     // Clicking a `/`-joined cell (e.g. शतृ n ददत्/ददद्) declines the first
     // workable alternant instead of erroring (portal onKrtClick path).
-    let payload = ok(&wasm::krt_subanta("shuddha", "शतृ", "n", "ददत्/ददद्"));
+    let payload = ok(&wasm::krt_subanta("shuddha", "शतृ", "n", "ददत्/ददद्", ""));
     let text = serde_json::to_string(&payload).expect("serializes");
     assert!(text.contains("ददती"));
 }

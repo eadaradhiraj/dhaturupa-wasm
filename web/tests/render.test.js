@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
-  escapeHtml, slotLabel, renderTingTables, renderKrutTables,
+  escapeHtml, slotLabel, renderTingTables, renderKrutTables, krtLinkTarget,
   renderParadigm, renderChandrika, renderHits, renderMeta,
 } from '../render.js';
 
@@ -29,22 +29,49 @@ test('renderTingTables sorts lakaras and splits variants', () => {
   assert.ok(html.indexOf('परस्मैपदम्') < html.indexOf('आत्मनेपदम्'), html);
 });
 
-test('renderKrutTables links full cells, splits slashes', () => {
+test('renderKrutTables applies the site click convention', () => {
   const html = renderKrutTables(
-    { 'शतृ': [{ base: 'ददत्', m: 'ददत्/ददद्', f: 'ददती', n: '' }] }, 'shuddha');
-  // Full cell is the link; `/`-cells split into per-alternant links.
-  assert.match(html, /data-value="ददत्"/);
-  assert.match(html, /data-value="ददद्"/);
+    { 'शतृ': [{ base: 'ददत्', m: 'ददन्/ददद्', f: 'ददती', n: '' }] }, 'shuddha');
+  // m/n links decline the row base, not the clicked cell: both m alternants
+  // display themselves but pass ददत्; f passes the form itself (ी ending).
+  assert.equal((html.match(/data-value="ददत्"/g) || []).length, 2);
+  assert.doesNotMatch(html, /data-value="ददद्"/);
+  assert.match(html, />ददद्<\/a>/);
   assert.match(html, /data-value="ददती"/);
+  assert.match(html, /data-gender="m"/);
   assert.match(html, /<td>—<\/td>/);
 });
 
-test('renderParadigm lists cells', () => {
+test('krtLinkTarget mirrors the site f rule', () => {
+  assert.equal(krtLinkTarget('m', 'ददन्', 'ददत्'), 'ददत्');
+  assert.equal(krtLinkTarget('n', 'ददत्', 'ददत्'), 'ददत्');
+  assert.equal(krtLinkTarget('f', 'ददती', 'ददत्'), 'ददती');
+  assert.equal(krtLinkTarget('f', 'अञ्चा', 'अञ्च्'), 'अञ्चा');
+  assert.equal(krtLinkTarget('f', 'भूति', 'भूति'), 'भूति'); // इ last: base
+  assert.equal(krtLinkTarget('m', 'ददन्', '—'), 'ददन्'); // unusable base: cell
+  assert.equal(krtLinkTarget('f', 'भूति', '—'), 'भूति');
+});
+
+test('renderParadigm renders the site bare 8x3 grid with हे', () => {
+  const row = (vibhakti, forms) =>
+    ['ekavacanam', 'dvivacanam', 'bahuvacanam']
+      .map((vacana, i) => ({ vibhakti, vacana, forms: [forms[i]] }));
   const html = renderParadigm({ cells: [
-    { vibhakti: 'prathamA', vacana: 'ekavacanam', forms: ['रामः'] },
+    ...row('prathamA', ['रामः', 'रामौ', 'रामाः']),
+    ...row('sambodhana', ['राम', 'रामौ', 'रामाः']),
   ] });
-  assert.match(html, /रामः/);
-  assert.match(html, /prathamA · ekavacanam/);
+  // Bare grid: no labels, one row per vibhakti, three cells per row.
+  assert.equal((html.match(/<tr>/g) || []).length, 2);
+  assert.doesNotMatch(html, /<th|prathamA|ekavacanam|sambodhana/);
+  assert.match(html, /<td>रामः<\/td>/);
+  assert.match(html, /<td>हे राम<\/td>/);
+  assert.match(html, /<td>हे रामौ<\/td>/);
+  assert.match(html, /<td>हे रामाः<\/td>/);
+  // Alternants stay comma-joined inside one cell.
+  const multi = renderParadigm({ cells: [
+    { vibhakti: 'prathamA', vacana: 'ekavacanam', forms: ['रामः', 'रामो वा'] },
+  ] });
+  assert.match(multi, /रामः , रामो वा/);
 });
 
 test('renderChandrika highlights examples', () => {

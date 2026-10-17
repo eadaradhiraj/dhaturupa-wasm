@@ -309,7 +309,7 @@ fn translit_covers_corpus() {
 #[test]
 fn subanta_spot_bhavanti() {
     // Guard pin: the classic click-through stays resolvable end to end.
-    let table = krt_table("krut", "Satf", "f", "BavantI").expect("BavantI table builds");
+    let table = krt_table("krut", "Satf", "f", "BavantI", "").expect("BavantI table builds");
     assert!(table.contains("BavantIByAm"));
     let key = slp1_to_deva("BavantIByAm").expect("transliterates");
     assert_eq!(key, "भवन्तीभ्याम्");

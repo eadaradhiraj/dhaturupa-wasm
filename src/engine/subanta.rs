@@ -48,6 +48,31 @@ impl fmt::Display for Linga {
     }
 }
 
+/// Style of the masculine `t`-stem (`gacCan` / `dadat`).
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub enum AtMStyle {
+    /// नुम् strong stem in nominative/accusative (`gacCan`); शतृ default.
+    Num,
+    /// अभ्यस्त (reduplicated): weak throughout; nom/voc. sg. `dadat`/`dadad`
+    /// (no नुम् — P. 7.1.78 *नाभ्यस्ताच्छतुः*).
+    Abhyasta,
+}
+
+/// Style of the neuter `t`-stem (शतृ neuter and वत्-stems).
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub enum AtNStyle {
+    /// Strong stem in dual and plural (`BavantI`, `Bavanti`) — @pacat1.
+    Num,
+    /// Weak dual (`viyatI`), strong plural (`viyanti`) — @viyat1/@jagat1
+    /// (also every वत्-stem: `FalavatI`, `Falavanti` — @phalavat2).
+    WeakDual,
+    /// Both stems in dual (`tudantI`/`tudatI`), strong plural — @tudat1.
+    BothDual,
+    /// अभ्यस्त: weak dual (`dadatI`), both stems in plural
+    /// (`dadanti`/`dadati`) — @dadat2.
+    Abhyasta,
+}
+
 /// Nominal class selecting the paradigm recipe.
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub enum Class {
@@ -63,8 +88,11 @@ pub enum Class {
     IN,
     /// `I`-stem feminine (`nadI`, `BavantI`, `awavI`).
     IIF,
-    /// `u`-stem masculine/feminine (`guru`/`Denu`).
+    /// `u`-stem masculine/feminine (`guru`).
     UMF,
+    /// `u`-stem feminine with ङित् endings (`Denu`): `DenvA`, `Denave`/
+    /// `DenvE` (the ashtadhyayi.com उ-f paradigm).
+    UF,
     /// `u`-stem neuter (`maDu`).
     UN,
     /// `U`-stem feminine (`vaDU`).
@@ -72,24 +100,48 @@ pub enum Class {
     /// `f`-stem masculine (`kartf`); feminine approximated (`NOM/VOC.SG` =
     /// stem, rest masculine — true feminine agents use `-trI`/I-stems).
     RFM,
+    /// `f`-stem neuter (`dAtf`): `dAtfRI`, `dAtfRA`/`dAtRA`, `dAtfRaH`/
+    /// `dAtuH` (the ashtadhyayi.com @dhAtR2 paradigm).
+    RFN,
+    /// ङित् `i`-stem feminine (`gati`): `gatyA`, `gataye`/`gatyE`,
+    /// `gateH`/`gatyAH` (the ashtadhyayi.com @gati1 paradigm).
+    GatiF,
     /// `t`-stem masculine (`Bavat` weak; `Bavan` strong nom).
-    AtM,
-    /// `t`-stem neuter (`Bavat`/`Bavad`).
-    AtN,
+    AtM(AtMStyle),
+    /// `t`-stem neuter (`Bavat`/`Bavad`, `viyat`/`tudat` styles).
+    AtN(AtNStyle),
     /// `an`-stem masculine (`rAjan`).
     AnM,
     /// `in`-stem masculine (`balin`).
     InM,
+    /// `in`-stem neuter (`kzamin`): `kzami`, `kzamiRI`, `kzami` vocative
+    /// (the ashtadhyayi.com @kSamin2 paradigm).
+    InN,
     /// `as`-stem neuter (`manas`).
     AsN,
     /// `as`-stem masculine (`vedHas`).
     AsM,
     /// `vas`-stem masculine (`vidvas`, kvasu).
     VasM,
+    /// `vas`-stem neuter (क्वसु): weak `dadyuz`/`babUz` with यण् and a
+    /// `-vat` nominative (`dadivat`); the ashtadhyayi.com @vidvas2 paradigm.
+    VasN,
     /// `vant`-stem masculine (`BUtavat`, ktavatu; nom. sg. `-vAn`,
     /// unlike at-stems). Selected by kṛt, not by ending, so at-stems
     /// ending in `vat` (e.g. `sunvat`) stay `AtM`.
     VantM,
+    /// `j`-stem masculine/feminine (नजिङ्): pausa `svapnag`/`svapnak`,
+    /// `svapnagByAm`, `svapnakzu`.
+    Jvs,
+    /// `j`-stem neuter (नजिङ्): `svapnajI`, `svapnaYji` (the @svapnaj2
+    /// paradigm).
+    JvsN,
+    /// `van`-stem masculine (ङ्वनिप्, like `rAjan` with न्-drop):
+    /// `yajvA`, `yajvAnO`, `yajvasu` (the @yajvan1 paradigm).
+    VanM,
+    /// `man`-stem neuter (ङ्वनिप्): `sadma`, `sadmanI`, `sadmAni`,
+    /// `sadmasu` (the @sadman1 paradigm).
+    ManN,
     /// Closed pronoun/numeral word (declines by its own table).
     Word(&'static str),
 }
@@ -106,17 +158,30 @@ impl Class {
             Self::IN => "i-n".to_string(),
             Self::IIF => "I-f".to_string(),
             Self::UMF => "u-m/f".to_string(),
+            Self::UF => "u-f".to_string(),
             Self::UN => "u-n".to_string(),
             Self::UUF => "U-f".to_string(),
             Self::RFM => "f-m/f".to_string(),
-            Self::AtM => "at-m".to_string(),
-            Self::AtN => "at-n".to_string(),
+            Self::RFN => "f-n".to_string(),
+            Self::GatiF => "i-f".to_string(),
+            Self::AtM(AtMStyle::Num) => "at-m".to_string(),
+            Self::AtM(AtMStyle::Abhyasta) => "at-m-abhyasta".to_string(),
+            Self::AtN(AtNStyle::Num) => "at-n".to_string(),
+            Self::AtN(AtNStyle::WeakDual) => "at-n-viyat".to_string(),
+            Self::AtN(AtNStyle::BothDual) => "at-n-tudat".to_string(),
+            Self::AtN(AtNStyle::Abhyasta) => "at-n-abhyasta".to_string(),
             Self::AnM => "an-m".to_string(),
             Self::InM => "in-m".to_string(),
+            Self::InN => "in-n".to_string(),
             Self::AsN => "as-n".to_string(),
             Self::AsM => "as-m".to_string(),
             Self::VasM => "vas-m".to_string(),
+            Self::VasN => "vas-n".to_string(),
             Self::VantM => "vant-m".to_string(),
+            Self::Jvs => "j-m/f".to_string(),
+            Self::JvsN => "j-n".to_string(),
+            Self::VanM => "van-m".to_string(),
+            Self::ManN => "man-n".to_string(),
             Self::Word(w) => (*w).to_string(),
         }
     }
@@ -188,32 +253,37 @@ pub fn decline(stem: &str, linga: Linga, class: &Class) -> Result<Paradigm, &'st
                 return Err(NOT_POSSIBLE);
             }
             let p = &stem[..stem.len() - 1];
-            table(&[
+            let mut cells = table(&[
                 (f(p, "aH"), f(p, "O"), f(p, "AH")),
                 (f(p, "am"), f(p, "O"), f(p, "An")),
                 (f(p, "ena"), f(p, "AByAm"), f(p, "EH")),
                 (f(p, "Aya"), f(p, "AByAm"), f(p, "eByaH")),
                 (f(p, "At"), f(p, "AByAm"), f(p, "eByaH")),
-                (f(p, "asya"), f(p, "ayOH"), f(p, "AnAm")),
-                (f(p, "e"), f(p, "ayOH"), f(p, "ezu")),
+                (f(p, "asya"), f(p, "ayoH"), f(p, "AnAm")),
+                (f(p, "e"), f(p, "ayoH"), f(p, "ezu")),
                 (stem.to_string(), f(p, "O"), f(p, "AH")),
-            ])
+            ]);
+            // Panchami eka: the site shows the vṛddhi `-Ad` before `-At`.
+            put(&mut cells, 4, 0, vec![f(p, "Ad"), f(p, "At")]);
+            cells
         }
         Class::AN => {
             if linga != Linga::N || !stem.ends_with('a') {
                 return Err(NOT_POSSIBLE);
             }
             let p = &stem[..stem.len() - 1];
-            table(&[
+            let mut cells = table(&[
                 (f(p, "am"), f(p, "e"), f(p, "Ani")),
                 (f(p, "am"), f(p, "e"), f(p, "Ani")),
                 (f(p, "ena"), f(p, "AByAm"), f(p, "EH")),
                 (f(p, "Aya"), f(p, "AByAm"), f(p, "eByaH")),
                 (f(p, "At"), f(p, "AByAm"), f(p, "eByaH")),
-                (f(p, "asya"), f(p, "ayOH"), f(p, "AnAm")),
-                (f(p, "e"), f(p, "ayOH"), f(p, "ezu")),
+                (f(p, "asya"), f(p, "ayoH"), f(p, "AnAm")),
+                (f(p, "e"), f(p, "ayoH"), f(p, "ezu")),
                 (stem.to_string(), f(p, "e"), f(p, "Ani")),
-            ])
+            ]);
+            put(&mut cells, 4, 0, vec![f(p, "Ad"), f(p, "At")]);
+            cells
         }
         Class::AAF => {
             if linga != Linga::F || !stem.ends_with('A') {
@@ -226,8 +296,8 @@ pub fn decline(stem: &str, linga: Linga, class: &Class) -> Result<Paradigm, &'st
                 (f(p, "ayA"), f(p, "AByAm"), f(p, "ABiH")),
                 (f(p, "AyE"), f(p, "AByAm"), f(p, "AByaH")),
                 (f(p, "AyAH"), f(p, "AByAm"), f(p, "AByaH")),
-                (f(p, "AyAH"), f(p, "ayOH"), f(p, "AnAm")),
-                (f(p, "AyAm"), f(p, "ayOH"), f(p, "Asu")),
+                (f(p, "AyAH"), f(p, "ayoH"), f(p, "AnAm")),
+                (f(p, "AyAm"), f(p, "ayoH"), f(p, "Asu")),
                 (f(p, "e"), f(p, "e"), f(p, "AH")),
             ])
         }
@@ -242,26 +312,33 @@ pub fn decline(stem: &str, linga: Linga, class: &Class) -> Result<Paradigm, &'st
                 (f(p, "inA"), f(p, "iByAm"), f(p, "iBiH")),
                 (f(p, "aye"), f(p, "iByAm"), f(p, "iByaH")),
                 (f(p, "eH"), f(p, "iByAm"), f(p, "iByaH")),
-                (f(p, "eH"), f(p, "yOH"), f(p, "InAm")),
-                (f(p, "O"), f(p, "yOH"), f(p, "izu")),
+                (f(p, "eH"), f(p, "yoH"), f(p, "InAm")),
+                (f(p, "O"), f(p, "yoH"), f(p, "izu")),
                 (f(p, "e"), f(p, "I"), f(p, "ayaH")),
             ])
         }
         Class::IN => {
+            // `i`-stem neuter (`vAri`; site @vAri1): नुम् augment before the
+            // `नि/नी` affixes and before vowel endings, written dental here —
+            // the word-level natva pass (इगन्त neuter: all cells) voices it
+            // where the trigger permits (`vArinI` -> `vAriRI`, `dadhinI`
+            // stays).
             if linga != Linga::N || !stem.ends_with('i') {
                 return Err(NOT_POSSIBLE);
             }
             let p = &stem[..stem.len() - 1];
-            table(&[
-                (stem.to_string(), f(p, "iRI"), f(p, "IRi")),
-                (stem.to_string(), f(p, "iRI"), f(p, "IRi")),
-                (f(p, "iRA"), f(p, "iByAm"), f(p, "iBiH")),
-                (f(p, "iRe"), f(p, "iByAm"), f(p, "iByaH")),
-                (f(p, "iRaH"), f(p, "iByAm"), f(p, "iByaH")),
-                (f(p, "iRaH"), f(p, "iRoH"), f(p, "IRAm")),
-                (f(p, "iRi"), f(p, "iRoH"), f(p, "izu")),
-                (f(p, "e"), f(p, "iRI"), f(p, "IRi")),
-            ])
+            let mut cells = table(&[
+                (stem.to_string(), f(p, "inI"), f(p, "Ini")),
+                (stem.to_string(), f(p, "inI"), f(p, "Ini")),
+                (f(p, "inA"), f(p, "iByAm"), f(p, "iBiH")),
+                (f(p, "ine"), f(p, "iByAm"), f(p, "iByaH")),
+                (f(p, "inaH"), f(p, "iByAm"), f(p, "iByaH")),
+                (f(p, "inaH"), f(p, "inoH"), f(p, "InAm")),
+                (f(p, "ini"), f(p, "inoH"), f(p, "izu")),
+                (f(p, "e"), f(p, "inI"), f(p, "Ini")),
+            ]);
+            put(&mut cells, 7, 0, vec![stem.to_string(), f(p, "e")]);
+            cells
         }
         Class::IIF => {
             if linga != Linga::F || !stem.ends_with('I') {
@@ -274,8 +351,8 @@ pub fn decline(stem: &str, linga: Linga, class: &Class) -> Result<Paradigm, &'st
                 (f(p, "yA"), f(p, "IByAm"), f(p, "IBiH")),
                 (f(p, "yE"), f(p, "IByAm"), f(p, "IByaH")),
                 (f(p, "yAH"), f(p, "IByAm"), f(p, "IByaH")),
-                (f(p, "yAH"), f(p, "yOH"), f(p, "InAm")),
-                (f(p, "yAm"), f(p, "yOH"), f(p, "Izu")),
+                (f(p, "yAH"), f(p, "yoH"), f(p, "InAm")),
+                (f(p, "yAm"), f(p, "yoH"), f(p, "Izu")),
                 (f(p, "i"), f(p, "yO"), f(p, "yaH")),
             ])
         }
@@ -290,26 +367,58 @@ pub fn decline(stem: &str, linga: Linga, class: &Class) -> Result<Paradigm, &'st
                 (f(p, "unA"), f(p, "uByAm"), f(p, "uBiH")),
                 (f(p, "ave"), f(p, "uByAm"), f(p, "uByaH")),
                 (f(p, "oH"), f(p, "uByAm"), f(p, "uByaH")),
-                (f(p, "oH"), f(p, "vOH"), f(p, "UnAm")),
-                (f(p, "O"), f(p, "vOH"), f(p, "uzu")),
+                (f(p, "oH"), f(p, "voH"), f(p, "UnAm")),
+                (f(p, "O"), f(p, "voH"), f(p, "uzu")),
                 (f(p, "o"), f(p, "U"), f(p, "avaH")),
             ])
+        }
+        Class::UF => {
+            // `u`-stem feminine ङित् (`Denu`): व्-form in instr, गुण/व्
+            // optional pairs in 4-7 eka (ashtadhyayi.com @dhenu1).
+            if linga != Linga::F || !stem.ends_with('u') {
+                return Err(NOT_POSSIBLE);
+            }
+            let p = &stem[..stem.len() - 1];
+            let mut cells = table(&[
+                (f(p, "uH"), f(p, "U"), f(p, "avaH")),
+                (f(p, "um"), f(p, "U"), f(p, "UH")),
+                (f(p, "vA"), f(p, "uByAm"), f(p, "uBiH")),
+                (f(p, "ave"), f(p, "uByAm"), f(p, "uByaH")),
+                (f(p, "oH"), f(p, "uByAm"), f(p, "uByaH")),
+                (f(p, "oH"), f(p, "voH"), f(p, "UnAm")),
+                (f(p, "O"), f(p, "voH"), f(p, "uzu")),
+                (f(p, "o"), f(p, "U"), f(p, "avaH")),
+            ]);
+            put(&mut cells, 3, 0, vec![f(p, "ave"), f(p, "vE")]);
+            put(&mut cells, 4, 0, vec![f(p, "oH"), f(p, "vAH")]);
+            put(&mut cells, 5, 0, vec![f(p, "oH"), f(p, "vAH")]);
+            put(&mut cells, 6, 0, vec![f(p, "O"), f(p, "vAm")]);
+            cells
         }
         Class::UN => {
             if linga != Linga::N || !stem.ends_with('u') {
                 return Err(NOT_POSSIBLE);
             }
             let p = &stem[..stem.len() - 1];
-            table(&[
+            let mut cells = table(&[
                 (stem.to_string(), f(p, "unI"), f(p, "Uni")),
                 (stem.to_string(), f(p, "unI"), f(p, "Uni")),
                 (f(p, "unA"), f(p, "uByAm"), f(p, "uBiH")),
                 (f(p, "une"), f(p, "uByAm"), f(p, "uByaH")),
                 (f(p, "unaH"), f(p, "uByAm"), f(p, "uByaH")),
-                (f(p, "unaH"), f(p, "unOH"), f(p, "UnAm")),
-                (f(p, "uni"), f(p, "unOH"), f(p, "uzu")),
+                (f(p, "unaH"), f(p, "unoH"), f(p, "UnAm")),
+                (f(p, "uni"), f(p, "unoH"), f(p, "uzu")),
                 (f(p, "o"), f(p, "unI"), f(p, "Uni")),
-            ])
+            ]);
+            // गुण/व् optional pairs (ashtadhyayi.com @kaTu4).
+            put(&mut cells, 3, 0, vec![f(p, "une"), f(p, "ave")]);
+            put(&mut cells, 4, 0, vec![f(p, "unaH"), f(p, "oH")]);
+            put(&mut cells, 5, 0, vec![f(p, "unaH"), f(p, "oH")]);
+            put(&mut cells, 5, 1, vec![f(p, "unoH"), f(p, "voH")]);
+            put(&mut cells, 6, 0, vec![f(p, "uni"), f(p, "O")]);
+            put(&mut cells, 6, 1, vec![f(p, "unoH"), f(p, "voH")]);
+            put(&mut cells, 7, 0, vec![stem.to_string(), f(p, "o")]);
+            cells
         }
         Class::UUF => {
             if linga != Linga::F || !stem.ends_with('U') {
@@ -322,8 +431,8 @@ pub fn decline(stem: &str, linga: Linga, class: &Class) -> Result<Paradigm, &'st
                 (f(p, "vA"), f(p, "UByAm"), f(p, "UBiH")),
                 (f(p, "vE"), f(p, "UByAm"), f(p, "UByaH")),
                 (f(p, "vAH"), f(p, "UByAm"), f(p, "UByaH")),
-                (f(p, "vAH"), f(p, "vOH"), f(p, "UnAm")),
-                (f(p, "vAm"), f(p, "vOH"), f(p, "Uzu")),
+                (f(p, "vAH"), f(p, "voH"), f(p, "UnAm")),
+                (f(p, "vAm"), f(p, "voH"), f(p, "Uzu")),
                 (f(p, "u"), f(p, "vO"), f(p, "vaH")),
             ])
         }
@@ -338,7 +447,7 @@ pub fn decline(stem: &str, linga: Linga, class: &Class) -> Result<Paradigm, &'st
                 stem.to_string()
             };
             let voc_sg = if linga == Linga::M {
-                f(p, "ar")
+                f(p, "aH")
             } else {
                 stem.to_string()
             };
@@ -347,30 +456,98 @@ pub fn decline(stem: &str, linga: Linga, class: &Class) -> Result<Paradigm, &'st
                 (f(p, "Aram"), f(p, "ArO"), f(p, "Fn")),
                 (f(p, "rA"), f(p, "fByAm"), f(p, "fBiH")),
                 (f(p, "re"), f(p, "fByAm"), f(p, "fByaH")),
-                (f(p, "ur"), f(p, "fByAm"), f(p, "fByaH")),
-                (f(p, "ur"), f(p, "roH"), f(p, "FRAm")),
+                (f(p, "uH"), f(p, "fByAm"), f(p, "fByaH")),
+                (f(p, "uH"), f(p, "roH"), f(p, "FRAm")),
                 (f(p, "ari"), f(p, "roH"), f(p, "fzu")),
                 (voc_sg, f(p, "ArO"), f(p, "AraH")),
             ])
         }
-        Class::AtM => {
-            if linga != Linga::M || !stem.ends_with('t') || stem.len() < 3 {
+        Class::RFN => {
+            // ऋ-stem neuter (`dAtf`): ण-first optional pairs (site @dhAtR2).
+            if linga != Linga::N || !stem.ends_with('f') {
                 return Err(NOT_POSSIBLE);
             }
             let p = &stem[..stem.len() - 1];
-            let q = &stem[..stem.len() - 2];
-            let strong = format!("{q}ant");
-            let d = format!("{p}d");
-            table(&[
-                (f(q, "an"), f(&strong, "O"), f(&strong, "aH")),
-                (f(&strong, "am"), f(&strong, "O"), f(stem, "aH")),
-                (f(stem, "A"), f(&d, "ByAm"), f(&d, "BiH")),
-                (f(stem, "e"), f(&d, "ByAm"), f(&d, "ByaH")),
-                (f(stem, "aH"), f(&d, "ByAm"), f(&d, "ByaH")),
-                (f(stem, "aH"), f(stem, "OH"), f(stem, "Am")),
-                (f(stem, "i"), f(stem, "OH"), f(stem, "su")),
-                (f(q, "an"), f(&strong, "O"), f(&strong, "aH")),
-            ])
+            let mut cells = table(&[
+                (stem.to_string(), f(p, "fRI"), f(p, "FRi")),
+                (stem.to_string(), f(p, "fRI"), f(p, "FRi")),
+                (f(p, "fRA"), f(stem, "ByAm"), f(stem, "BiH")),
+                (f(p, "fRe"), f(stem, "ByAm"), f(stem, "ByaH")),
+                (f(p, "fRaH"), f(stem, "ByAm"), f(stem, "ByaH")),
+                (f(p, "fRaH"), f(p, "fRoH"), f(p, "FRAm")),
+                (f(p, "fRi"), f(p, "fRoH"), f(p, "fzu")),
+                (stem.to_string(), f(p, "fRI"), f(p, "FRi")),
+            ]);
+            put(&mut cells, 2, 0, vec![f(p, "fRA"), f(p, "rA")]);
+            put(&mut cells, 3, 0, vec![f(p, "fRe"), f(p, "re")]);
+            put(&mut cells, 4, 0, vec![f(p, "fRaH"), f(p, "uH")]);
+            put(&mut cells, 5, 0, vec![f(p, "fRaH"), f(p, "uH")]);
+            put(&mut cells, 5, 1, vec![f(p, "fRoH"), f(p, "roH")]);
+            put(&mut cells, 6, 0, vec![f(p, "fRi"), f(p, "ari")]);
+            put(&mut cells, 6, 1, vec![f(p, "fRoH"), f(p, "roH")]);
+            put(&mut cells, 7, 0, vec![stem.to_string(), f(p, "aH")]);
+            cells
+        }
+        Class::GatiF => {
+            // ङित् `i`-stem feminine (क्तिन्; site @gati1).
+            if linga != Linga::F || !stem.ends_with('i') {
+                return Err(NOT_POSSIBLE);
+            }
+            let p = &stem[..stem.len() - 1];
+            let mut cells = table(&[
+                (f(p, "iH"), f(p, "I"), f(p, "ayaH")),
+                (f(p, "im"), f(p, "I"), f(p, "IH")),
+                (f(p, "yA"), f(p, "iByAm"), f(p, "iBiH")),
+                (f(p, "aye"), f(p, "iByAm"), f(p, "iByaH")),
+                (f(p, "eH"), f(p, "iByAm"), f(p, "iByaH")),
+                (f(p, "eH"), f(p, "yoH"), f(p, "InAm")),
+                (f(p, "O"), f(p, "yoH"), f(p, "izu")),
+                (f(p, "e"), f(p, "I"), f(p, "ayaH")),
+            ]);
+            put(&mut cells, 3, 0, vec![f(p, "aye"), f(p, "yE")]);
+            put(&mut cells, 4, 0, vec![f(p, "eH"), f(p, "yAH")]);
+            put(&mut cells, 5, 0, vec![f(p, "eH"), f(p, "yAH")]);
+            put(&mut cells, 6, 0, vec![f(p, "O"), f(p, "yAm")]);
+            cells
+        }
+        Class::AtM(style) => {
+            if linga != Linga::M || !(stem.ends_with('t') || stem.ends_with('d')) || stem.len() < 3
+            {
+                return Err(NOT_POSSIBLE);
+            }
+            let w = normalize_dental(stem);
+            let d = format!("{}d", &w[..w.len() - 1]);
+            let strong = format!("{}nt", &w[..w.len() - 1]);
+            let (nom, dvi, bahu, acc_sg, acc_bahu) = match style {
+                AtMStyle::Num => (
+                    // Site @gacchat1/@bhavat2 strong: `त्` -> `न्`
+                    // (`BA t` -> `BAn`, `gacCat` -> `gacCan`).
+                    format!("{}n", &w[..w.len() - 1]),
+                    f(&strong, "O"),
+                    f(&strong, "aH"),
+                    f(&strong, "am"),
+                    f(&w, "aH"),
+                ),
+                AtMStyle::Abhyasta => {
+                    (w.clone(), f(&w, "O"), f(&w, "aH"), f(&w, "am"), f(&w, "aH"))
+                }
+            };
+            let mut cells = table(&[
+                (nom.clone(), dvi.clone(), bahu.clone()),
+                (acc_sg, dvi.clone(), acc_bahu),
+                (f(&w, "A"), f(&d, "ByAm"), f(&d, "BiH")),
+                (f(&w, "e"), f(&d, "ByAm"), f(&d, "ByaH")),
+                (f(&w, "aH"), f(&d, "ByAm"), f(&d, "ByaH")),
+                (f(&w, "aH"), f(&w, "oH"), f(&w, "Am")),
+                (f(&w, "i"), f(&w, "oH"), f(&w, "su")),
+                (nom, dvi, bahu),
+            ]);
+            if *style == AtMStyle::Abhyasta {
+                // अभ्यस्त: dental-first singular `dadad`/`dadat` (no नुम्).
+                put(&mut cells, 0, 0, vec![d.clone(), w.clone()]);
+                put(&mut cells, 7, 0, vec![d, w]);
+            }
+            cells
         }
         Class::VantM => {
             // मतुप्/वतुप् masculine: like AtM, but prathamā-ekavacana
@@ -390,38 +567,44 @@ pub fn decline(stem: &str, linga: Linga, class: &Class) -> Result<Paradigm, &'st
                 (f(stem, "A"), f(&d, "ByAm"), f(&d, "BiH")),
                 (f(stem, "e"), f(&d, "ByAm"), f(&d, "ByaH")),
                 (f(stem, "aH"), f(&d, "ByAm"), f(&d, "ByaH")),
-                (f(stem, "aH"), f(stem, "OH"), f(stem, "Am")),
-                (f(stem, "i"), f(stem, "OH"), f(stem, "su")),
+                (f(stem, "aH"), f(stem, "oH"), f(stem, "Am")),
+                (f(stem, "i"), f(stem, "oH"), f(stem, "su")),
                 (format!("{q}van"), f(&strong, "O"), f(&strong, "aH")),
             ])
         }
-        Class::AtN => {
+        Class::AtN(style) => {
             if linga != Linga::N || !(stem.ends_with('t') || stem.ends_with('d')) {
                 return Err(NOT_POSSIBLE);
             }
-            let weak = normalize_dental(stem);
-            let dvar = format!("{}d", &weak[..weak.len() - 1]);
-            let d = format!("{}d", &weak[..weak.len() - 1]);
-            // Nom/acc/voc singular carry both `t`/`d` finals (`Bavat/Bavad`).
-            let nom: Vec<String> = vec![weak.clone(), dvar];
+            let w = normalize_dental(stem);
+            let d = format!("{}d", &w[..w.len() - 1]);
+            let strong = format!("{}nt", &w[..w.len() - 1]);
+            // Dual/plural stems per style (site @pacat1/@viyat1/@tudat1/@dadat2).
+            let dual = match style {
+                AtNStyle::Num => vec![f(&strong, "I")],
+                AtNStyle::WeakDual | AtNStyle::Abhyasta => vec![f(&w, "I")],
+                AtNStyle::BothDual => vec![f(&strong, "I"), f(&w, "I")],
+            };
+            let plural = match style {
+                AtNStyle::Abhyasta => vec![f(&strong, "i"), f(&w, "i")],
+                _ => vec![f(&strong, "i")],
+            };
             let mut cells = table(&[
-                (String::new(), f(&weak, "I"), f(&weak, "anti")),
-                (String::new(), f(&weak, "I"), f(&weak, "anti")),
-                (f(&weak, "A"), f(&d, "ByAm"), f(&d, "BiH")),
-                (f(&weak, "e"), f(&d, "ByAm"), f(&d, "ByaH")),
-                (f(&weak, "aH"), f(&d, "ByAm"), f(&d, "ByaH")),
-                (f(&weak, "aH"), f(&weak, "OH"), f(&weak, "Am")),
-                (f(&weak, "i"), f(&weak, "OH"), f(&weak, "su")),
-                (String::new(), f(&weak, "I"), f(&weak, "anti")),
+                (String::new(), String::new(), String::new()),
+                (String::new(), String::new(), String::new()),
+                (f(&w, "A"), f(&d, "ByAm"), f(&d, "BiH")),
+                (f(&w, "e"), f(&d, "ByAm"), f(&d, "ByaH")),
+                (f(&w, "aH"), f(&d, "ByAm"), f(&d, "ByaH")),
+                (f(&w, "aH"), f(&w, "oH"), f(&w, "Am")),
+                (f(&w, "i"), f(&w, "oH"), f(&w, "su")),
+                (String::new(), String::new(), String::new()),
             ]);
-            for cell in &mut cells {
-                if cell.vacana == EKA
-                    && (cell.vibhakti == "prathamA"
-                        || cell.vibhakti == "dvitIyA"
-                        || cell.vibhakti == "sambodhana")
-                {
-                    cell.forms.clone_from(&nom);
-                }
+            // Nom/acc/voc: dental-then-dental-stop singular (द् first), then
+            // the style's dual/plural stems.
+            for row in [0usize, 1, 7] {
+                put(&mut cells, row, 0, vec![d.clone(), w.clone()]);
+                put(&mut cells, row, 1, dual.clone());
+                put(&mut cells, row, 2, plural.clone());
             }
             cells
         }
@@ -457,10 +640,36 @@ pub fn decline(stem: &str, linga: Linga, class: &Class) -> Result<Paradigm, &'st
                 (f(&strong, "A"), f(&weak, "ByAm"), f(&weak, "BiH")),
                 (f(&strong, "e"), f(&weak, "ByAm"), f(&weak, "ByaH")),
                 (f(&strong, "aH"), f(&weak, "ByAm"), f(&weak, "ByaH")),
-                (f(&strong, "aH"), f(&strong, "OH"), f(&strong, "Am")),
-                (f(&strong, "i"), f(&strong, "OH"), f(&weak, "zu")),
+                (f(&strong, "aH"), f(&strong, "oH"), f(&strong, "Am")),
+                (f(&strong, "i"), f(&strong, "oH"), f(&weak, "zu")),
                 (stem.to_string(), f(&strong, "O"), f(&strong, "aH")),
             ])
+        }
+        Class::InN => {
+            // `in`-stem neuter (`kzamin`; site @kSamin2): nominative and
+            // vocative drop the `n` (`kzami`); the remaining slots attach to
+            // the full stem with a dental `n`, voiced by the word-level natva
+            // pass (value ends `n`: all cells) where unblocked
+            // (`BraminAm` -> `BramiRAm`, `kAminAm` stays dental).
+            if linga != Linga::N || !stem.ends_with("in") {
+                return Err(NOT_POSSIBLE);
+            }
+            let p = &stem[..stem.len() - 2];
+            let eka = format!("{p}i");
+            let dual = format!("{stem}I");
+            let plural = format!("{p}Ini");
+            let mut cells = table(&[
+                (eka.clone(), dual.clone(), plural.clone()),
+                (eka.clone(), dual.clone(), plural.clone()),
+                (f(stem, "A"), f(&eka, "ByAm"), f(&eka, "BiH")),
+                (f(stem, "e"), f(&eka, "ByAm"), f(&eka, "ByaH")),
+                (f(stem, "aH"), f(&eka, "ByAm"), f(&eka, "ByaH")),
+                (f(stem, "aH"), f(stem, "oH"), f(stem, "Am")),
+                (f(stem, "i"), f(stem, "oH"), f(&eka, "zu")),
+                (eka.clone(), dual, plural),
+            ]);
+            put(&mut cells, 7, 0, vec![stem.to_string(), eka]);
+            cells
         }
         Class::AsN => {
             if linga != Linga::N || !(stem.ends_with('s') || stem.ends_with('H')) || stem.len() < 2
@@ -476,8 +685,8 @@ pub fn decline(stem: &str, linga: Linga, class: &Class) -> Result<Paradigm, &'st
                 (f(&w, "A"), f(&o, "ByAm"), f(&o, "BiH")),
                 (f(&w, "e"), f(&o, "ByAm"), f(&o, "ByaH")),
                 (f(&w, "aH"), f(&o, "ByAm"), f(&o, "ByaH")),
-                (f(&w, "aH"), f(&w, "OH"), f(&w, "Am")),
-                (f(&w, "i"), f(&w, "OH"), f(&w, "su")),
+                (f(&w, "aH"), f(&w, "oH"), f(&w, "Am")),
+                (f(&w, "i"), f(&w, "oH"), f(&w, "su")),
                 (f(q, "aH"), f(&w, "I"), f(q, "AMsi")),
             ])
         }
@@ -495,8 +704,8 @@ pub fn decline(stem: &str, linga: Linga, class: &Class) -> Result<Paradigm, &'st
                 (f(&w, "A"), f(&o, "ByAm"), f(&o, "BiH")),
                 (f(&w, "e"), f(&o, "ByAm"), f(&o, "ByaH")),
                 (f(&w, "aH"), f(&o, "ByAm"), f(&o, "ByaH")),
-                (f(&w, "aH"), f(&w, "OH"), f(&w, "Am")),
-                (f(&w, "i"), f(&w, "OH"), f(&w, "su")),
+                (f(&w, "aH"), f(&w, "oH"), f(&w, "Am")),
+                (f(&w, "i"), f(&w, "oH"), f(&w, "su")),
                 (f(q, "AH"), f(&w, "O"), f(&w, "aH")),
             ])
         }
@@ -506,10 +715,9 @@ pub fn decline(stem: &str, linga: Linga, class: &Class) -> Result<Paradigm, &'st
             }
             let p = &stem[..stem.len() - 2];
             let vams = format!("{p}AMs");
-            // samprasarana: `vas` -> `uz` (the `v` drops: `vidvas` -> `viduz`).
-            let uz_base = &p[..p.len() - 1];
-            let uz = format!("{uz_base}uz");
+            let uz = vas_weak(p, false);
             let vad = format!("{p}ad");
+            let vat = format!("{p}at");
             let van = format!("{p}An");
             table(&[
                 (van.clone(), f(&vams, "O"), f(&vams, "aH")),
@@ -518,19 +726,129 @@ pub fn decline(stem: &str, linga: Linga, class: &Class) -> Result<Paradigm, &'st
                 (f(&uz, "e"), f(&vad, "ByAm"), f(&vad, "ByaH")),
                 (f(&uz, "aH"), f(&vad, "ByAm"), f(&vad, "ByaH")),
                 (f(&uz, "aH"), f(&uz, "oH"), f(&uz, "Am")),
-                (f(&uz, "i"), f(&uz, "oH"), f(&vad, "su")),
+                (f(&uz, "i"), f(&uz, "oH"), f(&vat, "su")),
                 (format!("{p}an"), f(&vams, "O"), f(&vams, "aH")),
             ])
+        }
+        Class::VasN => {
+            // क्वसु neuter (site @vidvas2): `-vat` nominative, यण् weak dual,
+            // `-vAMs` plural.
+            if linga != Linga::N || !stem.ends_with("as") || stem.len() < 3 {
+                return Err(NOT_POSSIBLE);
+            }
+            let core = &stem[..stem.len() - 2];
+            let vat = format!("{core}at");
+            let vad = format!("{core}ad");
+            let strong = format!("{core}AMs");
+            let uz = vas_weak(core, true);
+            let mut cells = table(&[
+                (vat.clone(), f(&uz, "I"), f(&strong, "i")),
+                (vat.clone(), f(&uz, "I"), f(&strong, "i")),
+                (f(&uz, "A"), f(&vad, "ByAm"), f(&vad, "BiH")),
+                (f(&uz, "e"), f(&vad, "ByAm"), f(&vad, "ByaH")),
+                (f(&uz, "aH"), f(&vad, "ByAm"), f(&vad, "ByaH")),
+                (f(&uz, "aH"), f(&uz, "oH"), f(&uz, "Am")),
+                (f(&uz, "i"), f(&uz, "oH"), f(&vat, "su")),
+                (vat.clone(), f(&uz, "I"), f(&strong, "i")),
+            ]);
+            for row in [0usize, 1, 7] {
+                put(&mut cells, row, 0, vec![vad.clone(), vat.clone()]);
+            }
+            cells
+        }
+        Class::Jvs => {
+            // `j`-stem m/f with पausa `g`/`k` (नजिङ्; site @svapnaj1/@ruj1).
+            if !(linga == Linga::M || linga == Linga::F) || !stem.ends_with('j') {
+                return Err(NOT_POSSIBLE);
+            }
+            let p = &stem[..stem.len() - 1];
+            let mut cells = table(&[
+                (f(p, "g"), f(stem, "O"), f(stem, "aH")),
+                (f(stem, "am"), f(stem, "O"), f(stem, "aH")),
+                (f(stem, "A"), f(p, "gByAm"), f(p, "gBiH")),
+                (f(stem, "e"), f(p, "gByAm"), f(p, "gByaH")),
+                (f(stem, "aH"), f(p, "gByAm"), f(p, "gByaH")),
+                (f(stem, "aH"), f(stem, "oH"), f(stem, "Am")),
+                (f(stem, "i"), f(stem, "oH"), f(p, "kzu")),
+                (f(p, "g"), f(stem, "O"), f(stem, "aH")),
+            ]);
+            for row in [0usize, 7] {
+                put(&mut cells, row, 0, vec![f(p, "g"), f(p, "k")]);
+            }
+            cells
+        }
+        Class::JvsN => {
+            // `j`-stem neuter (नजिङ्; site @svapnaj2): `svapnajI`, `svapnaYji`.
+            if linga != Linga::N || !stem.ends_with('j') {
+                return Err(NOT_POSSIBLE);
+            }
+            let p = &stem[..stem.len() - 1];
+            let mut cells = table(&[
+                (f(p, "g"), f(stem, "I"), f(p, "Yji")),
+                (f(p, "g"), f(stem, "I"), f(p, "Yji")),
+                (f(stem, "A"), f(p, "gByAm"), f(p, "gBiH")),
+                (f(stem, "e"), f(p, "gByAm"), f(p, "gByaH")),
+                (f(stem, "aH"), f(p, "gByAm"), f(p, "gByaH")),
+                (f(stem, "aH"), f(stem, "oH"), f(stem, "Am")),
+                (f(stem, "i"), f(stem, "oH"), f(p, "kzu")),
+                (f(p, "g"), f(stem, "I"), f(p, "Yji")),
+            ]);
+            for row in [0usize, 1, 7] {
+                put(&mut cells, row, 0, vec![f(p, "g"), f(p, "k")]);
+            }
+            cells
+        }
+        Class::VanM => {
+            // `van`-stem masculine (ङ्वनिप्; site @yajvan1).
+            if linga != Linga::M || !stem.ends_with("an") {
+                return Err(NOT_POSSIBLE);
+            }
+            let p = &stem[..stem.len() - 2];
+            let strong = format!("{p}An");
+            let short = format!("{p}a");
+            table(&[
+                (f(p, "A"), f(&strong, "O"), f(&strong, "aH")),
+                (f(&strong, "am"), f(&strong, "O"), f(stem, "aH")),
+                (f(stem, "A"), f(&short, "ByAm"), f(&short, "BiH")),
+                (f(stem, "e"), f(&short, "ByAm"), f(&short, "ByaH")),
+                (f(stem, "aH"), f(&short, "ByAm"), f(&short, "ByaH")),
+                (f(stem, "aH"), f(stem, "oH"), f(stem, "Am")),
+                (f(stem, "i"), f(stem, "oH"), f(&short, "su")),
+                (stem.to_string(), f(&strong, "O"), f(&strong, "aH")),
+            ])
+        }
+        Class::ManN => {
+            // `man`-stem neuter (ङ्वनिप्; site @sadman1): nominative drops
+            // the `n` (`sadma`), अनी-plural on the bare `an`-less stem
+            // (`sadmAni`), and instr/dat/abl dual/plural on the weak stem
+            // (`sadmaByAm`).
+            if linga != Linga::N || !stem.ends_with("an") {
+                return Err(NOT_POSSIBLE);
+            }
+            let p = &stem[..stem.len() - 1];
+            let q = &stem[..stem.len() - 2];
+            let plural = f(q, "Ani");
+            let mut cells = table(&[
+                (p.to_string(), f(p, "nI"), plural.clone()),
+                (p.to_string(), f(p, "nI"), plural.clone()),
+                (f(stem, "A"), f(p, "ByAm"), f(p, "BiH")),
+                (f(stem, "e"), f(p, "ByAm"), f(p, "ByaH")),
+                (f(stem, "aH"), f(p, "ByAm"), f(p, "ByaH")),
+                (f(stem, "aH"), f(stem, "oH"), f(stem, "Am")),
+                (f(stem, "i"), f(stem, "oH"), f(p, "su")),
+                (p.to_string(), f(p, "nI"), plural),
+            ]);
+            put(&mut cells, 7, 0, vec![stem.to_string(), p.to_string()]);
+            cells
         }
         Class::Word(w) => return word_table(stem, linga, w),
     };
     // Word-level Natva over recipe outputs (`gurunA -> guruRA`,
-    // `balinA` stays: no trigger). Hand-written pronoun/numeral tables
-    // bypass this (already correct) via the early return above.
-    // Forms spelled exactly like the citation stem stay unvoiced: lookup
-    // is by surface spelling (SPEC F5 trio `Wrampena` must remain findable
-    // as its own vocative; utterance voicing is a separate layer).
-    let cells = natva_cells(cells, stem);
+    // `balinA` stays: no trigger), gated per cell the way the site only
+    // runs the नत्व step when a न-bearing sup् pratyaya or an न्-final
+    // prātipadika is involved. Hand-written pronoun/numeral tables bypass
+    // this (already correct) via the early return above.
+    let cells = natva_cells(cells, stem, linga, class);
     Ok(Paradigm {
         stem: stem.to_string(),
         linga,
@@ -539,23 +857,61 @@ pub fn decline(stem: &str, linga: Linga, class: &Class) -> Result<Paradigm, &'st
     })
 }
 
-/// Apply [`crate::engine::sandhi::natva`] to every form in recipe-built cells
-/// (no stack prefix, so `pre_len` is zero), except forms spelled exactly
-/// like the citation stem (lookup identity).
-fn natva_cells(cells: Vec<Slot>, stem: &str) -> Vec<Slot> {
+/// Word-level Natva over recipe outputs, mirroring the site's per-cell
+/// gating. The site runs the नत्व step for a cell only when the sup्
+/// pratyaya in play contains a न (इन instr-sg, नाम् gen-pl, neuter plural
+/// आनि/नि; the नुम्-neuters' dual नी rides the n-final branch below) or
+/// when the prātipadika itself ends in न् — so:
+///
+/// * `n`-final stems (`rAjan`, `kzamin`, `sadman`): every cell.
+/// * इगन्त neuters with the नुम् augment (@kaTu4/@vAri1): every cell.
+/// * otherwise instr-sg, gen-pl and neuter plural only — the a-stem
+///   neuter dual (`granTye` = ग्रन्थ्ये) carries no न of its own, so the
+///   step must not run there (it would voice the stem's न् instead).
+/// * अदन्त/अत् stems never voice their strong नुम् (`gacCanti` stays
+///   dental; @pacat1/@viyat1/@tudat1/@dadat2).
+/// * Forms spelled exactly like the citation stem stay unvoiced: lookup is
+///   by surface spelling (SPEC F5 trio `Wrampena` must remain findable as
+///   its own vocative; utterance voicing is a separate layer).
+fn natva_cells(cells: Vec<Slot>, stem: &str, linga: Linga, class: &Class) -> Vec<Slot> {
+    // न्-final prātipadikas (`rAjan`/`kzamin`/`sadman`) and इगन्त neuters
+    // with the नुम् augment (@kaTu4/@vAri1) run the step for every cell.
+    let all = stem.ends_with('n') || matches!(class, Class::IN | Class::UN);
+    // Otherwise only cells whose sup् affix itself contains a न: इन
+    // instr-sg (a/i/u-stems) and नाम् gen-pl (a/ā/i/ī/u/ū-stems). अदन्त/अत्
+    // stems must not voice their strong नुम् (`gacCanti`, `kzuBnatA` stay
+    // dental: @pacat1/@viyat1/@tudat1/@dadat2 never run the step).
+    let instr_in = matches!(class, Class::AM | Class::AN | Class::IMF | Class::UMF);
+    let genpl_nam = matches!(
+        class,
+        Class::AM
+            | Class::AN
+            | Class::AAF
+            | Class::IIF
+            | Class::IMF
+            | Class::UMF
+            | Class::UF
+            | Class::UUF
+            | Class::GatiF
+    );
+    let neuter_n_affix = linga == Linga::N && !matches!(class, Class::AtN(_));
     cells
         .into_iter()
-        .map(|mut c| {
+        .enumerate()
+        .map(|(idx, mut c)| {
+            let (row, col) = (idx / 3, idx % 3);
+            let allow = all
+                || (col == 0 && row == 2 && instr_in)
+                || (col == 2 && row == 5 && genpl_nam)
+                || (neuter_n_affix && matches!(row, 0 | 1 | 7) && col == 2);
             c.forms = c
                 .forms
                 .into_iter()
                 .map(|s| {
-                    if s == stem {
+                    if !allow || s == stem {
                         s
                     } else {
-                        crate::engine::sandhi::natva(
-                            &s, 0, false, false, false, false, false, false, false,
-                        )
+                        site_natva(&s)
                     }
                 })
                 .collect();
@@ -564,8 +920,80 @@ fn natva_cells(cells: Vec<Slot>, stem: &str) -> Vec<Slot> {
         .collect()
 }
 
+/// Site-faithful णत्व for one surface form (SLP1).
+///
+/// The site's `रषाभ्याम्_or_अटकुप्_or_पदान्तस्य` step targets the *last*
+/// letter `न्` of the word and looks left for the nearest `र्`/`ष्`/`ऋ`/`ॠ`
+/// trigger; every letter strictly between must be in अट् + कवर्ग + पवर्ग +
+/// ह्/य्/व् + anusvāra (ल्, न्, dentals, sibilants and the rest block), and
+/// a word-final `न्` never voices (8.4.37 पदान्तस्य).
+fn site_natva(s: &str) -> String {
+    let Some(pos) = s.rfind('n') else {
+        return s.to_string();
+    };
+    if pos == s.len() - 1 {
+        return s.to_string();
+    }
+    let mut trigger = false;
+    for b in s.bytes().take(pos).rev() {
+        match b as char {
+            'f' | 'F' | 'r' | 'z' => {
+                trigger = true;
+                break;
+            }
+            'a' | 'A' | 'i' | 'I' | 'u' | 'U' | 'x' | 'X' | 'e' | 'E' | 'o' | 'O' | 'y' | 'v'
+            | 'h' | 'k' | 'K' | 'g' | 'G' | 'N' | 'p' | 'P' | 'b' | 'B' | 'm' | 'M' => {}
+            _ => break,
+        }
+    }
+    if !trigger {
+        return s.to_string();
+    }
+    let mut out = String::with_capacity(s.len());
+    out.push_str(&s[..pos]);
+    out.push('R');
+    out.push_str(&s[pos + 1..]);
+    out
+}
+
 fn f(base: &str, ending: &str) -> String {
     format!("{base}{ending}")
+}
+
+/// Overwrite one cell's forms (row = 0-7 vibhakti, col = 0-2 vacana).
+fn put(cells: &mut [Slot], row: usize, col: usize, forms: Vec<String>) {
+    if let Some(cell) = cells.get_mut(row * 3 + col) {
+        cell.forms = forms;
+    }
+}
+
+/// क्वसु/वस् weak stem (site's वसोः सम्प्रसारणम् + सन्धि).
+///
+/// The site replaces the affix `वस्` with `उअस्` (samprasāraṇa), merges
+/// `उअ` to `उ`, drops the इट् `इ` in the masculine paradigm (@sedivas1;
+/// @vidvas2 keeps it for यण्), then resolves the junction of the stem-final
+/// vowel with `उ` by internal sandhi and applies षत्व:
+/// `babU`+उ = `babUz`, `dadiv` (m) -> `daduz` / (n) -> `dadyuz`,
+/// `cakf` -> `cakruz`, `yayA`+उ = `yayoz`, `cikrI`+उ = `cikryuz`.
+fn vas_weak(core: &str, neuter: bool) -> String {
+    let q = core.strip_suffix('v').unwrap_or(core);
+    let q = match q.strip_suffix('i') {
+        Some(stripped) if !neuter => stripped,
+        _ => q,
+    };
+    let (base, uz) = match q.chars().last() {
+        Some('a' | 'A') => (&q[..q.len() - 1], "oz"),
+        Some('i' | 'I') => (&q[..q.len() - 1], "yuz"),
+        Some('u' | 'U') => (&q[..q.len() - 1], "Uz"),
+        Some('f' | 'F') => (&q[..q.len() - 1], "ruz"),
+        Some('x' | 'X') => (&q[..q.len() - 1], "luz"),
+        Some('e') => (&q[..q.len() - 1], "ayuz"),
+        Some('E') => (&q[..q.len() - 1], "Ayuz"),
+        Some('o') => (&q[..q.len() - 1], "avuz"),
+        Some('O') => (&q[..q.len() - 1], "Avuz"),
+        _ => (q, "uz"),
+    };
+    format!("{base}{uz}")
 }
 
 /// Assemble 24 cells from 8 rows of (eka, dvi, bahu).
@@ -624,8 +1052,8 @@ fn word_table(stem: &str, linga: Linga, word: &'static str) -> Result<Paradigm, 
             ["sarveRa", "sarvAByAm", "sarvEH"],
             ["sarvasmE", "sarvAByAm", "sarveByaH"],
             ["sarvasmAt", "sarvAByAm", "sarveByaH"],
-            ["sarvasya", "sarvayOH", "sarvezAm"],
-            ["sarvasmin", "sarvayOH", "sarvezu"],
+            ["sarvasya", "sarvayoH", "sarvezAm"],
+            ["sarvasmin", "sarvayoH", "sarvezu"],
             ["sarva", "sarvO", "sarve"],
         ]),
         ("sarva", Linga::N) => rows1(&[
@@ -634,8 +1062,8 @@ fn word_table(stem: &str, linga: Linga, word: &'static str) -> Result<Paradigm, 
             ["sarveRa", "sarvAByAm", "sarvEH"],
             ["sarvasmE", "sarvAByAm", "sarveByaH"],
             ["sarvasmAt", "sarvAByAm", "sarveByaH"],
-            ["sarvasya", "sarvayOH", "sarvezAm"],
-            ["sarvasmin", "sarvayOH", "sarvezu"],
+            ["sarvasya", "sarvayoH", "sarvezAm"],
+            ["sarvasmin", "sarvayoH", "sarvezu"],
             ["sarva", "sarve", "sarvARi"],
         ]),
         ("sarva", Linga::F) => rows1(&[
@@ -644,8 +1072,8 @@ fn word_table(stem: &str, linga: Linga, word: &'static str) -> Result<Paradigm, 
             ["sarvayA", "sarvAByAm", "sarvABiH"],
             ["sarvasyE", "sarvAByAm", "sarvAByaH"],
             ["sarvasyAH", "sarvAByAm", "sarvAByaH"],
-            ["sarvasyAH", "sarvayOH", "sarvAsAm"],
-            ["sarvasyAm", "sarvayOH", "sarvAsu"],
+            ["sarvasyAH", "sarvayoH", "sarvAsAm"],
+            ["sarvasyAm", "sarvayoH", "sarvAsu"],
             ["sarve", "sarve", "sarvAH"],
         ]),
         ("tad", Linga::M) => rows1(&[
@@ -654,8 +1082,8 @@ fn word_table(stem: &str, linga: Linga, word: &'static str) -> Result<Paradigm, 
             ["tena", "tAByAm", "tEH"],
             ["tasmE", "tAByAm", "teByaH"],
             ["tasmAt", "tAByAm", "teByaH"],
-            ["tasya", "tayOH", "tezAm"],
-            ["tasmin", "tayOH", "tezu"],
+            ["tasya", "tayoH", "tezAm"],
+            ["tasmin", "tayoH", "tezu"],
             ["saH", "tO", "te"],
         ]),
         ("tad", Linga::N) => {
@@ -665,8 +1093,8 @@ fn word_table(stem: &str, linga: Linga, word: &'static str) -> Result<Paradigm, 
                 ["tena", "tAByAm", "tEH"],
                 ["tasmE", "tAByAm", "teByaH"],
                 ["tasmAt", "tAByAm", "teByaH"],
-                ["tasya", "tayOH", "tezAm"],
-                ["tasmin", "tayOH", "tezu"],
+                ["tasya", "tayoH", "tezAm"],
+                ["tasmin", "tayoH", "tezu"],
                 ["tat", "te", "tAni"],
             ]);
             let mut cells = rows_to_slots(&rows);
@@ -684,8 +1112,8 @@ fn word_table(stem: &str, linga: Linga, word: &'static str) -> Result<Paradigm, 
             ["tayA", "tAByAm", "tABiH"],
             ["tasyE", "tAByAm", "tAByaH"],
             ["tasyAH", "tAByAm", "tAByaH"],
-            ["tasyAH", "tayOH", "tAsAm"],
-            ["tasyAm", "tayOH", "tAsu"],
+            ["tasyAH", "tayoH", "tAsAm"],
+            ["tasyAm", "tayoH", "tAsu"],
             ["sA", "te", "tAH"],
         ]),
         ("etad", Linga::M) => rows1(&[
@@ -694,8 +1122,8 @@ fn word_table(stem: &str, linga: Linga, word: &'static str) -> Result<Paradigm, 
             ["etena", "etAByAm", "etEH"],
             ["etasmE", "etAByAm", "eteByaH"],
             ["etasmAt", "etAByAm", "eteByaH"],
-            ["etasya", "etayOH", "etezAm"],
-            ["etasmin", "etayOH", "etezu"],
+            ["etasya", "etayoH", "etezAm"],
+            ["etasmin", "etayoH", "etezu"],
             ["ezaH", "etO", "ete"],
         ]),
         ("etad", Linga::N) => {
@@ -705,8 +1133,8 @@ fn word_table(stem: &str, linga: Linga, word: &'static str) -> Result<Paradigm, 
                 ["etena", "etAByAm", "etEH"],
                 ["etasmE", "etAByAm", "eteByaH"],
                 ["etasmAt", "etAByAm", "eteByaH"],
-                ["etasya", "etayOH", "etezAm"],
-                ["etasmin", "etayOH", "etezu"],
+                ["etasya", "etayoH", "etezAm"],
+                ["etasmin", "etayoH", "etezu"],
                 ["etat", "ete", "etAni"],
             ]);
             let mut cells = rows_to_slots(&rows);
@@ -724,8 +1152,8 @@ fn word_table(stem: &str, linga: Linga, word: &'static str) -> Result<Paradigm, 
             ["etayA", "etAByAm", "etABiH"],
             ["etasyE", "etAByAm", "etAByaH"],
             ["etasyAH", "etAByAm", "etAByaH"],
-            ["etasyAH", "etayOH", "etAsAm"],
-            ["etasyAm", "etayOH", "etAsu"],
+            ["etasyAH", "etayoH", "etAsAm"],
+            ["etasyAm", "etayoH", "etAsu"],
             ["ezA", "ete", "etAH"],
         ]),
         ("yad", Linga::M) => rows1(&[
@@ -734,8 +1162,8 @@ fn word_table(stem: &str, linga: Linga, word: &'static str) -> Result<Paradigm, 
             ["yena", "yAByAm", "yEH"],
             ["yasmE", "yAByAm", "yeByaH"],
             ["yasmAt", "yAByAm", "yeByaH"],
-            ["yasya", "yayOH", "yezAm"],
-            ["yasmin", "yayOH", "yezu"],
+            ["yasya", "yayoH", "yezAm"],
+            ["yasmin", "yayoH", "yezu"],
             ["yaH", "yO", "ye"],
         ]),
         ("yad", Linga::N) => {
@@ -745,8 +1173,8 @@ fn word_table(stem: &str, linga: Linga, word: &'static str) -> Result<Paradigm, 
                 ["yena", "yAByAm", "yEH"],
                 ["yasmE", "yAByAm", "yeByaH"],
                 ["yasmAt", "yAByAm", "yeByaH"],
-                ["yasya", "yayOH", "yezAm"],
-                ["yasmin", "yayOH", "yezu"],
+                ["yasya", "yayoH", "yezAm"],
+                ["yasmin", "yayoH", "yezu"],
                 ["yat", "ye", "yAni"],
             ]);
             let mut cells = rows_to_slots(&rows);
@@ -764,8 +1192,8 @@ fn word_table(stem: &str, linga: Linga, word: &'static str) -> Result<Paradigm, 
             ["yayA", "yAByAm", "yABiH"],
             ["yasyE", "yAByAm", "yAByaH"],
             ["yasyAH", "yAByAm", "yAByaH"],
-            ["yasyAH", "yayOH", "yAsAm"],
-            ["yasyAm", "yayOH", "yAsu"],
+            ["yasyAH", "yayoH", "yAsAm"],
+            ["yasyAm", "yayoH", "yAsu"],
             ["yA", "ye", "yAH"],
         ]),
         ("kim", Linga::M) => rows1(&[
@@ -774,8 +1202,8 @@ fn word_table(stem: &str, linga: Linga, word: &'static str) -> Result<Paradigm, 
             ["kena", "kAByAm", "kEH"],
             ["kasmE", "kAByAm", "keByaH"],
             ["kasmAt", "kAByAm", "keByaH"],
-            ["kasya", "kayOH", "kezAm"],
-            ["kasmin", "kayOH", "kezu"],
+            ["kasya", "kayoH", "kezAm"],
+            ["kasmin", "kayoH", "kezu"],
             ["kaH", "kO", "ke"],
         ]),
         ("kim", Linga::N) => rows1(&[
@@ -784,8 +1212,8 @@ fn word_table(stem: &str, linga: Linga, word: &'static str) -> Result<Paradigm, 
             ["kena", "kAByAm", "kEH"],
             ["kasmE", "kAByAm", "keByaH"],
             ["kasmAt", "kAByAm", "keByaH"],
-            ["kasya", "kayOH", "kezAm"],
-            ["kasmin", "kayOH", "kezu"],
+            ["kasya", "kayoH", "kezAm"],
+            ["kasmin", "kayoH", "kezu"],
             ["kim", "ke", "kAni"],
         ]),
         ("kim", Linga::F) => rows1(&[
@@ -794,8 +1222,8 @@ fn word_table(stem: &str, linga: Linga, word: &'static str) -> Result<Paradigm, 
             ["kayA", "kAByAm", "kABiH"],
             ["kasyE", "kAByAm", "kAByaH"],
             ["kasyAH", "kAByAm", "kAByaH"],
-            ["kasyAH", "kayOH", "kAsAm"],
-            ["kasyAm", "kayOH", "kAsu"],
+            ["kasyAH", "kayoH", "kAsAm"],
+            ["kasyAm", "kayoH", "kAsu"],
             ["kA", "ke", "kAH"],
         ]),
         ("idam", Linga::M) => rows1(&[
@@ -804,8 +1232,8 @@ fn word_table(stem: &str, linga: Linga, word: &'static str) -> Result<Paradigm, 
             ["anena", "AByAm", "eBiH"],
             ["asmE", "AByAm", "eByaH"],
             ["asmAt", "AByAm", "eByaH"],
-            ["asya", "anayOH", "ezAm"],
-            ["asmin", "anayOH", "ezu"],
+            ["asya", "anayoH", "ezAm"],
+            ["asmin", "anayoH", "ezu"],
             ["ayam", "imO", "ime"],
         ]),
         ("idam", Linga::N) => rows1(&[
@@ -814,8 +1242,8 @@ fn word_table(stem: &str, linga: Linga, word: &'static str) -> Result<Paradigm, 
             ["anena", "AByAm", "eBiH"],
             ["asmE", "AByAm", "eByaH"],
             ["asmAt", "AByAm", "eByaH"],
-            ["asya", "anayOH", "ezAm"],
-            ["asmin", "anayOH", "ezu"],
+            ["asya", "anayoH", "ezAm"],
+            ["asmin", "anayoH", "ezu"],
             ["idam", "ime", "imAni"],
         ]),
         ("idam", Linga::F) => rows1(&[
@@ -824,8 +1252,8 @@ fn word_table(stem: &str, linga: Linga, word: &'static str) -> Result<Paradigm, 
             ["anayA", "AByAm", "ABiH"],
             ["asyE", "AByAm", "AByaH"],
             ["asyAH", "AByAm", "AByaH"],
-            ["asyAH", "anayOH", "AsAm"],
-            ["asyAm", "anayOH", "Asu"],
+            ["asyAH", "anayoH", "AsAm"],
+            ["asyAm", "anayoH", "Asu"],
             ["iyam", "ime", "imAH"],
         ]),
         ("adas", Linga::M) => rows1(&[
@@ -834,8 +1262,8 @@ fn word_table(stem: &str, linga: Linga, word: &'static str) -> Result<Paradigm, 
             ["amunA", "amUByAm", "amIBiH"],
             ["amuzmE", "amUByAm", "amIByaH"],
             ["amuzmAt", "amUByAm", "amIByaH"],
-            ["amuzya", "amuyOH", "amIzAm"],
-            ["amuzmin", "amuyOH", "amIzu"],
+            ["amuzya", "amuyoH", "amIzAm"],
+            ["amuzmin", "amuyoH", "amIzu"],
             ["asO", "amU", "amI"],
         ]),
         ("adas", Linga::N) => rows1(&[
@@ -844,8 +1272,8 @@ fn word_table(stem: &str, linga: Linga, word: &'static str) -> Result<Paradigm, 
             ["amunA", "amUByAm", "amIBiH"],
             ["amuzmE", "amUByAm", "amIByaH"],
             ["amuzmAt", "amUByAm", "amIByaH"],
-            ["amuzya", "amuyOH", "amIzAm"],
-            ["amuzmin", "amuyOH", "amIzu"],
+            ["amuzya", "amuyoH", "amIzAm"],
+            ["amuzmin", "amuyoH", "amIzu"],
             ["adaH", "amU", "amUni"],
         ]),
         ("adas", Linga::F) => rows1(&[
@@ -854,8 +1282,8 @@ fn word_table(stem: &str, linga: Linga, word: &'static str) -> Result<Paradigm, 
             ["amuyA", "amUByAm", "amUBiH"],
             ["amuzyE", "amUByAm", "amUByaH"],
             ["amuzyAH", "amUByAm", "amUByaH"],
-            ["amuzyAH", "amuyOH", "amUzAm"],
-            ["amuzyAm", "amuyOH", "amUzu"],
+            ["amuzyAH", "amuyoH", "amUzAm"],
+            ["amuzyAm", "amuyoH", "amUzu"],
             ["asO", "amU", "amUH"],
         ]),
         ("yuzmad", _) => {
@@ -898,10 +1326,10 @@ fn word_table(stem: &str, linga: Linga, word: &'static str) -> Result<Paradigm, 
             return Ok(dvi_table(linga));
         }
         ("Bavat", Linga::M) => {
-            return decline("Bavat", Linga::M, &Class::AtM);
+            return decline("Bavat", Linga::M, &Class::AtM(AtMStyle::Num));
         }
         ("Bavat", Linga::N) => {
-            return decline("Bavat", Linga::N, &Class::AtN);
+            return decline("Bavat", Linga::N, &Class::AtN(AtNStyle::Num));
         }
         ("Bavat", Linga::F) => {
             return decline("BavatI", Linga::F, &Class::IIF);
@@ -1104,10 +1532,10 @@ fn yuzmad_table(_linga: Linga) -> Paradigm {
         (DVI, vec!["yuvAByAm"]),
         (BAHU, vec!["yuzmat"]),
         (EKA, vec!["tava"]),
-        (DVI, vec!["yuvayOH"]),
+        (DVI, vec!["yuvayoH"]),
         (BAHU, vec!["yuzmAkam"]),
         (EKA, vec!["tvayi"]),
-        (DVI, vec!["yuvayOH"]),
+        (DVI, vec!["yuvayoH"]),
         (BAHU, vec!["yuzmAsu"]),
         (EKA, vec!["tvam"]),
         (DVI, vec!["yuvAm"]),
@@ -1139,10 +1567,10 @@ fn asmad_table(_linga: Linga) -> Paradigm {
         (DVI, vec!["AvAByAm"]),
         (BAHU, vec!["asmat"]),
         (EKA, vec!["mama"]),
-        (DVI, vec!["AvayOH"]),
+        (DVI, vec!["AvayoH"]),
         (BAHU, vec!["asmAkam"]),
         (EKA, vec!["mayi"]),
-        (DVI, vec!["AvayOH"]),
+        (DVI, vec!["AvayoH"]),
         (BAHU, vec!["asmAsu"]),
         (EKA, vec!["aham"]),
         (DVI, vec!["AvAm"]),
@@ -1177,8 +1605,8 @@ fn dvi_table(linga: Linga) -> Paradigm {
         vec!["dvAByAm".to_string()],
         vec!["dvAByAm".to_string()],
         vec!["dvAByAm".to_string()],
-        vec!["dvayOH".to_string()],
-        vec!["dvayOH".to_string()],
+        vec!["dvayoH".to_string()],
+        vec!["dvayoH".to_string()],
         nom,
     ];
     let cells: Vec<Slot> = VIB
@@ -1265,13 +1693,22 @@ pub fn classes_for(stem: &str, linga: Linga) -> Vec<Class> {
     } else if stem.ends_with("an") {
         // Manual `-an`: an-stems (`rAjan`). Participle `-an` (`Bavan`)
         // always resolves through the krt-exact path, so manual never
-        // needs at-m here; `-in` is in-stem only.
+        // needs at-m here; `-in` is in-stem only; `-van`/`-man` use the
+        // ङ्वनिप् paradigms (`yajvan`/`sadman`).
         if linga == Linga::M {
-            if stem.ends_with("in") {
-                out.push(Class::InM);
+            if stem.ends_with("van") {
+                out.push(Class::VanM);
             } else {
                 out.push(Class::AnM);
             }
+        } else if linga == Linga::N && stem.ends_with("man") {
+            out.push(Class::ManN);
+        }
+    } else if stem.ends_with("in") {
+        match linga {
+            Linga::M => out.push(Class::InM),
+            Linga::N => out.push(Class::InN),
+            Linga::F => out.push(Class::IMF),
         }
     } else if stem.ends_with('A') {
         if linga == Linga::F {
@@ -1299,10 +1736,15 @@ pub fn classes_for(stem: &str, linga: Linga) -> Vec<Class> {
         if linga != Linga::N {
             out.push(Class::RFM);
         }
+    } else if stem.ends_with('j') {
+        match linga {
+            Linga::M | Linga::F => out.push(Class::Jvs),
+            Linga::N => out.push(Class::JvsN),
+        }
     } else if stem.ends_with('t') || stem.ends_with('d') {
         match linga {
-            Linga::M => out.push(Class::AtM),
-            Linga::N => out.push(Class::AtN),
+            Linga::M => out.push(Class::AtM(AtMStyle::Num)),
+            Linga::N => out.push(Class::AtN(AtNStyle::Num)),
             Linga::F => {}
         }
     } else if stem.ends_with('s') || stem.ends_with('H') {
@@ -1348,8 +1790,18 @@ pub fn generate_tables_checked<S: ::std::hash::BuildHasher>(
     let hform = format!("{stem}H");
     if let Some(refs) = krtmap.get(stem).or_else(|| krtmap.get(&hform)) {
         if let Some(first) = refs.iter().find(|r| r.field == linga.as_str()) {
-            // Re-derive the exact class from the krt entry.
-            if let Some((class, weak)) = krt_class(&first.family, &first.krt, &first.field, stem) {
+            // Re-derive the exact class from the krt entry: site reference
+            // paradigm first (`dhatu_id` is the site's `baseindex` for the
+            // gaṇa-dependent overrides), then the shape-based fallback.
+            let exact = krt_class_ctx(
+                &first.family,
+                &first.krt,
+                &first.field,
+                stem,
+                &first.dhatu_id,
+            )
+            .or_else(|| krt_class(&first.family, &first.krt, &first.field, stem));
+            if let Some((class, weak)) = exact {
                 if let Ok(tab) = decline(&weak, linga, &class) {
                     return vec![tab];
                 }
@@ -1362,11 +1814,317 @@ pub fn generate_tables_checked<S: ::std::hash::BuildHasher>(
     generate_tables(stem, linga)
 }
 
-/// Exact single table for a krt click-through (dhatu + krt + field known).
-/// `None` for indeclinables / unknown shapes (`not possible` in UI).
+/// Site reference paradigm for one कृत् cell — the port of
+/// ashtadhyayi.com's `kritPratyayaOrder` `refP`/`refS`/`refN` fields plus its
+/// click-time overrides (`createSubantaForms`). The site never declines the
+/// clicked cell: it declines the row's *base* through one of these hardcoded
+/// reference tables (`@deva1`, `@gacchat1`, …), so the engine mirrors that.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+enum KrtParadigm {
+    /// @deva1 — a-stem masculine (`rAma`).
+    DevaM,
+    /// @phala1 — a-stem neuter (`Pala`).
+    PhalaN,
+    /// @mAlA1 — A-stem feminine (`mAlA`).
+    MAlAF,
+    /// @devI1 — I-stem feminine (`devI`).
+    DevIF,
+    /// @gati1 — ङित् i-stem feminine (`gati`).
+    GatiF,
+    /// @sAdhu1 — u-stem masculine (`sADu`).
+    SAdhuM,
+    /// @dhenu1 — u-stem feminine (`Denu`).
+    DhenuF,
+    /// @kaTu4 — u-stem neuter (`kaTu`).
+    KaTuN,
+    /// @zazin1 — in-stem masculine (`zazin`/दोहिन्).
+    InM,
+    /// @kSamin2 — in-stem neuter (क्षमिन्).
+    InN,
+    /// @gacchat1 — शतृ m with नुम् (`gacCat`).
+    GacchatM,
+    /// @dadat1 — अभ्यस्त शतृ m (`dadat`).
+    DadatM,
+    /// @pacat1 — शतृ n strong dual/plural (`pacat`).
+    PacatN,
+    /// @viyat1 — शतृ n weak dual (`viyat`, वत्-stems).
+    ViyatN,
+    /// @tudat1 — शतृ n both dual stems (`tudat`).
+    TudatN,
+    /// @dadat2 — अभ्यस्त शतृ n (`dadat`).
+    DadatN,
+    /// @bhavat1 — vant-stem masculine (`Bavat`).
+    BhavatM,
+    /// @phalavat2 — vant-stem neuter (`Palavat`).
+    PhalavatN,
+    /// @sedivas1 — vas-stem masculine, क्वसु (`sedivas`/ददिवस्).
+    SedivasM,
+    /// @vidvas2 — vas-stem neuter, क्वसु (`vidvas`).
+    VidvasN,
+    /// @dhAtR1 — f-stem masculine (`dAtf`).
+    DhAtRM,
+    /// @dhAtR2 — f-stem neuter (`dAtf`).
+    DhAtRN,
+    /// @svapnaj1/@ruj1 — j-stem masculine/feminine (pausa g/k).
+    Jvs,
+    /// @svapnaj2 — j-stem neuter.
+    JvsN,
+    /// @yajvan1 — van-stem masculine (`yajvan`).
+    VanM,
+    /// @sadman1 — man-stem neuter (`sadman`).
+    ManN,
+}
+
+impl KrtParadigm {
+    fn class(self) -> Class {
+        match self {
+            Self::DevaM => Class::AM,
+            Self::PhalaN => Class::AN,
+            Self::MAlAF => Class::AAF,
+            Self::DevIF => Class::IIF,
+            Self::GatiF => Class::GatiF,
+            Self::SAdhuM => Class::UMF,
+            Self::DhenuF => Class::UF,
+            Self::KaTuN => Class::UN,
+            Self::InM => Class::InM,
+            Self::InN => Class::InN,
+            Self::GacchatM => Class::AtM(AtMStyle::Num),
+            Self::DadatM => Class::AtM(AtMStyle::Abhyasta),
+            Self::PacatN => Class::AtN(AtNStyle::Num),
+            Self::ViyatN | Self::PhalavatN => Class::AtN(AtNStyle::WeakDual),
+            Self::TudatN => Class::AtN(AtNStyle::BothDual),
+            Self::DadatN => Class::AtN(AtNStyle::Abhyasta),
+            Self::BhavatM => Class::VantM,
+            Self::SedivasM => Class::VasM,
+            Self::VidvasN => Class::VasN,
+            Self::DhAtRM => Class::RFM,
+            Self::DhAtRN => Class::RFN,
+            Self::Jvs => Class::Jvs,
+            Self::JvsN => Class::JvsN,
+            Self::VanM => Class::VanM,
+            Self::ManN => Class::ManN,
+        }
+    }
+
+    /// Declension stem from the clicked value. The site sends the row base
+    /// for m/n and the f form when it ends आ/ई; tests may send cell surfaces.
+    /// `None` when the value's shape cannot read as this paradigm (site
+    /// quirks like अथुच्'s u-stem cells typed as `Bavat`).
+    fn weak(self, value: &str) -> Option<String> {
+        let v = value.trim();
+        if v.is_empty() || v.contains('/') {
+            return None;
+        }
+        let bare = v.strip_suffix('H').unwrap_or(v);
+        let shaped = match self {
+            Self::DevaM => bare.ends_with('a'),
+            Self::PhalaN => v.strip_suffix('m').unwrap_or(v).ends_with('a'),
+            Self::MAlAF => v.ends_with('A'),
+            Self::DevIF => v.ends_with('I'),
+            Self::GatiF => bare.ends_with('i'),
+            Self::SAdhuM | Self::DhenuF | Self::KaTuN => bare.ends_with('u'),
+            Self::GacchatM
+            | Self::PacatN
+            | Self::ViyatN
+            | Self::TudatN
+            | Self::DadatN
+            | Self::PhalavatN => {
+                bare.ends_with('t')
+                    || bare.ends_with('d')
+                    || bare.ends_with("an")
+                    || bare.ends_with("An")
+                    || bare.ends_with("ant")
+                    || bare.ends_with("Ant")
+            }
+            Self::DadatM => bare.ends_with('t') || bare.ends_with('d'),
+            Self::BhavatM => v.ends_with("vAn") || v.ends_with("vant") || v.ends_with("vat"),
+            Self::SedivasM => v.ends_with('s') || v.ends_with("An"),
+            Self::VidvasN => v.ends_with('s') || v.ends_with("at") || v.ends_with("ad"),
+            Self::DhAtRM | Self::DhAtRN => v.ends_with('f') || v.ends_with('A'),
+            Self::Jvs | Self::JvsN => v.ends_with('j') || v.ends_with('k') || v.ends_with('g'),
+            Self::VanM => v.ends_with("an") || v.ends_with('A'),
+            Self::ManN => v.ends_with("an") || v.ends_with('a'),
+            Self::InM | Self::InN => v.ends_with("in") || v.ends_with('i') || v.ends_with('I'),
+        };
+        shaped.then(|| weak_for(&self.class(), v))
+    }
+}
+
+/// Site कृत् cell slot: the reference paradigm, or known-but-absent (the
+/// site renders no click for that linga, e.g. ल्युट् masculine).
+enum KrtRefSlot {
+    Paradigm(KrtParadigm),
+    Absent,
+}
+
+/// Override lists from the site bundle (verbatim, including its `04.001`
+/// spelling — the ids use 4-digit suffixes, so that entry never matches).
+const SATF_ABHYASTA_IDS: &[&str] = &[
+    "02.0066", "02.0067", "02.0068", "02.0069", "02.0070", "02.0071", "02.0072",
+];
+const SATF_TUDATI_IDS: &[&str] = &[
+    "02.0046", "02.0047", "02.0048", "02.0049", "02.0050", "02.0051", "02.0052", "02.0053",
+    "02.0054", "02.0055", "02.0056", "02.0057", "02.0067",
+];
+const AC_DEVI_IDS: &[&str] = &[
+    "01.0056", "01.0791", "01.1112", "01.0640", "01.1087", "01.1124", "10.0001", "01.0736",
+    "01.1085", "03.0018", "04.001", "06.0008", "10.0371", "10.0230", "10.0249",
+];
+
+/// Site reference paradigm for (family, kṛt, field), with the site's
+/// `baseindex` (dhātu id) overrides applied. `None` = कृत् not in the site
+/// table (no click at all); `Some(Absent)` = कृत् known, linga not declined.
 #[must_use]
-pub fn krt_table(family: &str, krt: &str, field: &str, value: &str) -> Option<Paradigm> {
+fn krt_ref_slot(family: &str, krt: &str, field: &str, baseindex: &str) -> Option<KrtRefSlot> {
+    use KrtParadigm as P;
+    // Site tab ids: `krut` = shuddha (the default कृदन्ते view), `yangluk_krut`
+    // = yangluk; nich/san/yang take the entry refs without overrides.
+    // (`forms::normalize_krut_engine_family` yields these ids; raw UI family
+    // names are accepted too.)
+    let is_krut = family == "krut" || family == "shuddha";
+    let yangluk = family == "yangluk_krut" || family == "yangluk";
+    let (p, s, n): (Option<P>, Option<P>, Option<P>) = match krt {
+        // अव्ययम् (indeclinable): no click slots.
+        "ktvA" | "lyap" | "tumun" | "Ramul" => (None, None, None),
+        "lyuw" | "itra" => (None, None, Some(P::PhalaN)),
+        "tfc" => (Some(P::DhAtRM), Some(P::DevIF), Some(P::DhAtRN)),
+        // अतृन्: site refs @bhavat2/@devI1/@jagat1 — @bhavat2 is the
+        // `त्`->`न्` strong (`jaran`) twin of @gacchat1.
+        "atfn" => (Some(P::GacchatM), Some(P::DevIF), Some(P::ViyatN)),
+        "ktavatu" => (Some(P::BhavatM), Some(P::DevIF), Some(P::PhalavatN)),
+        "kvasu" => (Some(P::SedivasM), Some(P::DevIF), Some(P::VidvasN)),
+        "najiN" => (Some(P::Jvs), Some(P::Jvs), Some(P::JvsN)),
+        "GinuR" => (Some(P::InM), Some(P::DevIF), Some(P::InN)),
+        "Nvanip" => (Some(P::VanM), Some(P::DevIF), Some(P::ManN)),
+        "u" | "Aluc" | "Aru" | "knu" | "kru" | "gsnu" => {
+            (Some(P::SAdhuM), Some(P::DhenuF), Some(P::KaTuN))
+        }
+        "aTuc" => (Some(P::BhavatM), None, None),
+        "GaY" | "ap" | "varac" | "nan" | "naN" => (Some(P::DevaM), None, None),
+        "ktin" => (None, Some(P::GatiF), None),
+        "Takan" | "Rvuc" | "a" | "aN" => (None, Some(P::MAlAF), None),
+        "zwran" | "zvun" => (None, Some(P::DevIF), None),
+        "Ryuw" | "zAkan" => (Some(P::DevaM), Some(P::DevIF), Some(P::PhalaN)),
+        "Satf" => {
+            let m = if (is_krut
+                && (baseindex.starts_with("03") || SATF_ABHYASTA_IDS.contains(&baseindex)))
+                || yangluk
+            {
+                P::DadatM
+            } else {
+                P::GacchatM
+            };
+            let n = if is_krut {
+                if baseindex.starts_with("01")
+                    || baseindex.starts_with("04")
+                    || baseindex.starts_with("10")
+                {
+                    P::PacatN
+                } else if baseindex.starts_with("03") || SATF_ABHYASTA_IDS.contains(&baseindex) {
+                    P::DadatN
+                } else if baseindex.starts_with("06") || SATF_TUDATI_IDS.contains(&baseindex) {
+                    P::TudatN
+                } else {
+                    P::ViyatN
+                }
+            } else {
+                P::PacatN
+            };
+            (Some(m), Some(P::DevIF), Some(n))
+        }
+        "sya-Satf" => (Some(P::GacchatM), Some(P::DevIF), Some(P::TudatN)),
+        "ac" => {
+            let f = if is_krut && AC_DEVI_IDS.contains(&baseindex) {
+                P::DevIF
+            } else {
+                P::MAlAF
+            };
+            (Some(P::DevaM), Some(f), Some(P::PhalaN))
+        }
+        // Default a/ā-stems: ण्वुल्, यत्, क्यप्, ण्यत्, तव्य, अनीयर्, क्त,
+        // शानच् (+सya/भावकर्म), उकञ्, चानश्, शानन्, ण, र, श, क्त्रि, क्मरच्,
+        // घुरच्, कुरच्, क्वरप्, क्लुकन्, क्रुकन्, वुञ्, वुन्, ल्यु.
+        "Rvul"
+        | "yat"
+        | "kyap"
+        | "Ryat"
+        | "tavya"
+        | "anIyar"
+        | "kta"
+        | "SAnac"
+        | "sya-SAnac"
+        | "BAvakarma-SAnac"
+        | "sya-BAvakarma-SAnac"
+        | "ukaY"
+        | "cAnaS"
+        | "SAnan"
+        | "Ra"
+        | "ra"
+        | "Sa"
+        | "ktri"
+        | "kmarac"
+        | "Gurac"
+        | "kurac"
+        | "kvarap"
+        | "klukan"
+        | "krukan"
+        | "vuY"
+        | "vun"
+        | "lyu" => (Some(P::DevaM), Some(P::MAlAF), Some(P::PhalaN)),
+        _ => return None,
+    };
+    Some(match field {
+        "m" => p.map_or(KrtRefSlot::Absent, KrtRefSlot::Paradigm),
+        "f" => s.map_or(KrtRefSlot::Absent, KrtRefSlot::Paradigm),
+        "n" => n.map_or(KrtRefSlot::Absent, KrtRefSlot::Paradigm),
+        _ => return None,
+    })
+}
+
+/// Reference-paradigm class + declension stem for a कृत् cell, with the
+/// site's value conventions (m/n: row base; f: f-form when it ends आ/ई).
+#[must_use]
+pub fn krt_class_ctx(
+    family: &str,
+    krt: &str,
+    field: &str,
+    value: &str,
+    baseindex: &str,
+) -> Option<(Class, String)> {
+    match krt_ref_slot(family, krt, field, baseindex)? {
+        KrtRefSlot::Paradigm(kind) => {
+            let weak = kind.weak(value)?;
+            Some((kind.class(), weak))
+        }
+        KrtRefSlot::Absent => None,
+    }
+}
+
+/// Exact single table for a krt click-through (dhatu + krt + field known):
+/// the site's reference-paradigm path first, the shape-based class as a
+/// fallback for site quirks (अथुच् u-stems typed `Bavat`, क्वरप् ई-cells
+/// typed `mAlA`). `None` for indeclinables / unknown shapes / lingas the
+/// site does not decline for this कृत् (`not possible` in UI).
+#[must_use]
+pub fn krt_table(
+    family: &str,
+    krt: &str,
+    field: &str,
+    value: &str,
+    baseindex: &str,
+) -> Option<Paradigm> {
     let linga = Linga::parse(field)?;
+    match krt_ref_slot(family, krt, field, baseindex) {
+        Some(KrtRefSlot::Paradigm(kind)) => {
+            if let Some(weak) = kind.weak(value) {
+                if let Ok(tab) = decline(&weak, linga, &kind.class()) {
+                    return Some(tab);
+                }
+            }
+        }
+        Some(KrtRefSlot::Absent) => return None,
+        None => {}
+    }
     let (class, weak) = krt_class(family, krt, field, value)?;
     decline(&weak, linga, &class).ok()
 }
@@ -1377,16 +2135,32 @@ pub fn weak_for(class: &Class, stem: &str) -> String {
     match class {
         // Masculine a-stem `-aH` citation (nom. sg.): decline the bare stem.
         Class::AM if stem.ends_with("aH") => stem[..stem.len() - 1].to_string(),
-        Class::AtM if stem.ends_with("an") || stem.ends_with("An") => {
+        Class::AtM(_) if stem.ends_with("an") || stem.ends_with("An") => {
             format!("{}at", &stem[..stem.len() - 2])
         }
-        Class::AtM if stem.ends_with("ant") || stem.ends_with("Ant") => {
+        Class::AtM(_) if stem.ends_with("ant") || stem.ends_with("Ant") => {
             format!("{}at", &stem[..stem.len() - 3])
         }
-        Class::AtM | Class::AtN if stem.ends_with('d') => normalize_dental(stem),
+        Class::AtM(_) | Class::AtN(_) if stem.ends_with('d') => normalize_dental(stem),
         Class::AN if stem.ends_with("am") => stem[..stem.len() - 1].to_string(),
         Class::VasM if stem.ends_with("An") => {
             format!("{}as", &stem[..stem.len() - 2])
+        }
+        Class::VasN if stem.ends_with("at") || stem.ends_with("ad") => {
+            format!("{}as", &stem[..stem.len() - 2])
+        }
+        Class::InM if stem.ends_with('I') => format!("{}in", &stem[..stem.len() - 1]),
+        Class::InN if stem.ends_with('i') && !stem.ends_with("in") => format!("{stem}n"),
+        Class::VanM if stem.ends_with('A') => format!("{}an", &stem[..stem.len() - 1]),
+        Class::ManN if stem.ends_with('a') && !stem.ends_with("an") => format!("{stem}n"),
+        Class::Jvs | Class::JvsN if stem.ends_with('k') || stem.ends_with('g') => {
+            format!("{}j", &stem[..stem.len() - 1])
+        }
+        Class::RFM | Class::RFN if stem.ends_with('A') => {
+            format!("{}f", &stem[..stem.len() - 1])
+        }
+        Class::VantM if stem.ends_with("vAn") || stem.ends_with("vant") => {
+            format!("{}vat", &stem[..stem.len() - 3])
         }
         _ => stem.to_string(),
     }
@@ -1452,11 +2226,14 @@ pub fn krt_class(family: &str, krt: &str, field: &str, value: &str) -> Option<(C
         ("f", Some('U')) => Class::UUF,
         ("m" | "f", Some('f')) => Class::RFM,
         ("m", _) if plain.ends_with("an") || plain.ends_with("An") || plain.ends_with("ant") => {
-            Class::AtM
+            Class::AtM(AtMStyle::Num)
         }
-        ("m", _) if plain.ends_with('t') || plain.ends_with('d') => Class::AtM,
-        ("n", _) if plain.ends_with('t') || plain.ends_with('d') => Class::AtN,
+        ("m", _) if plain.ends_with('t') || plain.ends_with('d') => Class::AtM(AtMStyle::Num),
+        ("n", _) if plain.ends_with('t') || plain.ends_with('d') => Class::AtN(AtNStyle::Num),
         ("m", _) if plain.ends_with("in") => Class::InM,
+        ("n", _) if plain.ends_with("in") => Class::InN,
+        ("m" | "f", _) if plain.ends_with('j') => Class::Jvs,
+        ("n", _) if plain.ends_with('j') => Class::JvsN,
         ("n", _) if plain.ends_with('s') => Class::AsN,
         ("m", _) if plain.ends_with('s') => Class::AsM,
         _ => return None,
@@ -1638,8 +2415,17 @@ pub fn analyze<S: ::std::hash::BuildHasher>(
             .chain(classes_for(probe, Linga::N))
         {
             let linga = match &class {
-                Class::AN | Class::IN | Class::UN | Class::AtN | Class::AsN => Linga::N,
-                Class::AAF | Class::IIF | Class::UUF => Linga::F,
+                Class::AN
+                | Class::IN
+                | Class::UN
+                | Class::AtN(_)
+                | Class::AsN
+                | Class::InN
+                | Class::RFN
+                | Class::VasN
+                | Class::JvsN
+                | Class::ManN => Linga::N,
+                Class::AAF | Class::IIF | Class::UUF | Class::UF | Class::GatiF => Linga::F,
                 Class::Word(_) => continue,
                 _ => Linga::M,
             };
@@ -1732,13 +2518,14 @@ const STRIPS: &[StripRule] = &[
     (Class::AM, "eRa", "a"),
     (Class::AM, "ena", "a"),
     (Class::AM, "Aya", "a"),
-    (Class::AM, "yOH", "a"),
+    (Class::AM, "yoH", ""),
     (Class::AM, "aH", "a"),
     (Class::AM, "AH", "a"),
     (Class::AM, "EH", "a"),
     (Class::AM, "am", "a"),
     (Class::AM, "O", "a"),
     (Class::AM, "At", "a"),
+    (Class::AM, "Ad", "a"),
     (Class::AM, "ezu", "a"),
     (Class::AM, "e", "a"),
     (Class::AN, "AByAm", "a"),
@@ -1748,8 +2535,9 @@ const STRIPS: &[StripRule] = &[
     (Class::AN, "Ani", "a"),
     (Class::AN, "ena", "a"),
     (Class::AN, "Aya", "a"),
-    (Class::AN, "yOH", "a"),
+    (Class::AN, "yoH", ""),
     (Class::AN, "At", "a"),
+    (Class::AN, "Ad", "a"),
     (Class::AN, "am", "a"),
     (Class::AN, "EH", "a"),
     (Class::AN, "ezu", "a"),
@@ -1764,8 +2552,8 @@ const STRIPS: &[StripRule] = &[
     (Class::AAF, "AyAm", "A"),
     (Class::AAF, "ayA", "A"),
     (Class::AAF, "AyE", "A"),
-    (Class::AAF, "ayOH", "A"),
-    (Class::AAF, "yOH", "A"),
+    (Class::AAF, "ayoH", "A"),
+    (Class::AAF, "yoH", "A"),
     (Class::AAF, "Am", "A"),
     (Class::AAF, "Asu", "A"),
     (Class::AAF, "AH", "A"),
@@ -1778,7 +2566,7 @@ const STRIPS: &[StripRule] = &[
     (Class::IMF, "ayaH", "i"),
     (Class::IMF, "aye", "i"),
     (Class::IMF, "inA", "i"),
-    (Class::IMF, "yOH", "i"),
+    (Class::IMF, "yoH", "i"),
     (Class::IMF, "iH", "i"),
     (Class::IMF, "im", "i"),
     (Class::IMF, "In", "i"),
@@ -1812,7 +2600,7 @@ const STRIPS: &[StripRule] = &[
     (Class::IIF, "yA", "I"),
     (Class::IIF, "yE", "I"),
     (Class::IIF, "yO", "I"),
-    (Class::IIF, "yOH", "I"),
+    (Class::IIF, "yoH", "I"),
     (Class::IIF, "yaH", "I"),
     (Class::IIF, "Im", "I"),
     (Class::IIF, "IH", "I"),
@@ -1826,7 +2614,7 @@ const STRIPS: &[StripRule] = &[
     (Class::UMF, "avaH", "u"),
     (Class::UMF, "ave", "u"),
     (Class::UMF, "unA", "u"),
-    (Class::UMF, "vOH", "u"),
+    (Class::UMF, "voH", "u"),
     (Class::UMF, "oH", "u"),
     (Class::UMF, "um", "u"),
     (Class::UMF, "Un", "u"),
@@ -1845,7 +2633,7 @@ const STRIPS: &[StripRule] = &[
     (Class::UN, "unA", "u"),
     (Class::UN, "une", "u"),
     (Class::UN, "unaH", "u"),
-    (Class::UN, "unOH", "u"),
+    (Class::UN, "unoH", "u"),
     (Class::UN, "uni", "u"),
     (Class::UN, "uzu", "u"),
     (Class::UN, "o", "u"),
@@ -1861,7 +2649,7 @@ const STRIPS: &[StripRule] = &[
     (Class::UUF, "vA", "U"),
     (Class::UUF, "vE", "U"),
     (Class::UUF, "vO", "U"),
-    (Class::UUF, "vOH", "U"),
+    (Class::UUF, "voH", "U"),
     (Class::UUF, "vaH", "U"),
     (Class::UUF, "Um", "U"),
     (Class::UUF, "UH", "U"),
@@ -1883,55 +2671,64 @@ const STRIPS: &[StripRule] = &[
     (Class::RFM, "A", "f"),
     (Class::RFM, "Fn", "f"),
     (Class::RFM, "fzu", "f"),
-    // t-stems.
-    (Class::AtM, "ByAm", "at"),
-    (Class::AtM, "BiH", "at"),
-    (Class::AtM, "dByAm", "t"),
-    (Class::AtM, "dBiH", "t"),
-    (Class::AtM, "antO", "at"),
-    (Class::AtM, "antaH", "at"),
-    (Class::AtM, "antam", "at"),
-    (Class::AtM, "an", "at"),
-    (Class::AtM, "AntO", "At"),
-    (Class::AtM, "AntaH", "At"),
-    (Class::AtM, "Antam", "At"),
-    (Class::AtM, "An", "At"),
-    (Class::AtM, "atA", "at"),
-    (Class::AtM, "ate", "at"),
-    (Class::AtM, "ataH", "at"),
-    (Class::AtM, "atOH", "at"),
-    (Class::AtM, "atAm", "at"),
-    (Class::AtM, "ati", "at"),
-    (Class::AtM, "atsu", "at"),
-    (Class::AtM, "AtA", "At"),
-    (Class::AtM, "Ate", "At"),
-    (Class::AtM, "AtaH", "At"),
-    (Class::AtM, "AtOH", "At"),
-    (Class::AtM, "AtAm", "At"),
-    (Class::AtM, "Ati", "At"),
-    (Class::AtM, "Atsu", "At"),
-    (Class::AtN, "ByAm", "at"),
-    (Class::AtN, "BiH", "at"),
-    (Class::AtN, "dByAm", "t"),
-    (Class::AtN, "dBiH", "t"),
-    (Class::AtN, "anti", ""),
-    (Class::AtN, "Anti", "At"),
-    (Class::AtN, "atI", "at"),
-    (Class::AtN, "AtI", "At"),
-    (Class::AtN, "atA", "at"),
-    (Class::AtN, "AtA", "At"),
-    (Class::AtN, "ate", "at"),
-    (Class::AtN, "Ate", "At"),
-    (Class::AtN, "ataH", "at"),
-    (Class::AtN, "AtaH", "At"),
-    (Class::AtN, "atOH", "at"),
-    (Class::AtN, "AtOH", "At"),
-    (Class::AtN, "atAm", "at"),
-    (Class::AtN, "AtAm", "At"),
-    (Class::AtN, "ati", "at"),
-    (Class::AtN, "Ati", "At"),
-    (Class::AtN, "atsu", "at"),
-    (Class::AtN, "Atsu", "At"),
+    // t-stems (शतृ m; site @gacchat1/@dadat1).
+    (Class::AtM(AtMStyle::Num), "ByAm", "at"),
+    (Class::AtM(AtMStyle::Num), "BiH", "at"),
+    (Class::AtM(AtMStyle::Num), "dByAm", "t"),
+    (Class::AtM(AtMStyle::Num), "dBiH", "t"),
+    (Class::AtM(AtMStyle::Num), "antO", "at"),
+    (Class::AtM(AtMStyle::Num), "antaH", "at"),
+    (Class::AtM(AtMStyle::Num), "antam", "at"),
+    (Class::AtM(AtMStyle::Num), "an", "at"),
+    (Class::AtM(AtMStyle::Num), "AntO", "At"),
+    (Class::AtM(AtMStyle::Num), "AntaH", "At"),
+    (Class::AtM(AtMStyle::Num), "Antam", "At"),
+    (Class::AtM(AtMStyle::Num), "An", "At"),
+    (Class::AtM(AtMStyle::Num), "atA", "at"),
+    (Class::AtM(AtMStyle::Num), "ate", "at"),
+    (Class::AtM(AtMStyle::Num), "ataH", "at"),
+    (Class::AtM(AtMStyle::Num), "atoH", "at"),
+    (Class::AtM(AtMStyle::Num), "atAm", "at"),
+    (Class::AtM(AtMStyle::Num), "ati", "at"),
+    (Class::AtM(AtMStyle::Num), "atsu", "at"),
+    (Class::AtM(AtMStyle::Num), "AtA", "At"),
+    (Class::AtM(AtMStyle::Num), "Ate", "At"),
+    (Class::AtM(AtMStyle::Num), "AtaH", "At"),
+    (Class::AtM(AtMStyle::Num), "AtoH", "At"),
+    (Class::AtM(AtMStyle::Num), "AtAm", "At"),
+    (Class::AtM(AtMStyle::Num), "Ati", "At"),
+    (Class::AtM(AtMStyle::Num), "Atsu", "At"),
+    // अभ्यस्त शतृ (@dadat1: weak throughout; `dadatO`, `dadatam`, `dadate`).
+    (Class::AtM(AtMStyle::Abhyasta), "atO", "at"),
+    (Class::AtM(AtMStyle::Abhyasta), "atam", "at"),
+    (Class::AtM(AtMStyle::Abhyasta), "ate", "at"),
+    // t-stems neuter (शतृ n; @pacat1 strong dual/plural, @viyat1 weak dual,
+    // @tudat1/@dadat2 sparse styles).
+    (Class::AtN(AtNStyle::Num), "ByAm", "at"),
+    (Class::AtN(AtNStyle::Num), "BiH", "at"),
+    (Class::AtN(AtNStyle::Num), "dByAm", "t"),
+    (Class::AtN(AtNStyle::Num), "dBiH", "t"),
+    (Class::AtN(AtNStyle::Num), "antI", "at"),
+    (Class::AtN(AtNStyle::Num), "anti", "at"),
+    (Class::AtN(AtNStyle::Num), "ante", "at"),
+    (Class::AtN(AtNStyle::Num), "Anti", "At"),
+    (Class::AtN(AtNStyle::Num), "AtI", "At"),
+    (Class::AtN(AtNStyle::Num), "atA", "at"),
+    (Class::AtN(AtNStyle::Num), "AtA", "At"),
+    (Class::AtN(AtNStyle::Num), "ate", "at"),
+    (Class::AtN(AtNStyle::Num), "Ate", "At"),
+    (Class::AtN(AtNStyle::Num), "ataH", "at"),
+    (Class::AtN(AtNStyle::Num), "AtaH", "At"),
+    (Class::AtN(AtNStyle::Num), "atoH", "at"),
+    (Class::AtN(AtNStyle::Num), "AtoH", "At"),
+    (Class::AtN(AtNStyle::Num), "atAm", "at"),
+    (Class::AtN(AtNStyle::Num), "AtAm", "At"),
+    (Class::AtN(AtNStyle::Num), "ati", "at"),
+    (Class::AtN(AtNStyle::Num), "Ati", "At"),
+    (Class::AtN(AtNStyle::Num), "atsu", "at"),
+    (Class::AtN(AtNStyle::Num), "Atsu", "At"),
+    (Class::AtN(AtNStyle::WeakDual), "atI", "at"),
+    (Class::AtN(AtNStyle::Abhyasta), "ati", "at"),
     // n-stems.
     (Class::AnM, "AnO", "an"),
     (Class::AnM, "AnaH", "an"),
@@ -1953,7 +2750,7 @@ const STRIPS: &[StripRule] = &[
     (Class::InM, "inA", "in"),
     (Class::InM, "ine", "in"),
     (Class::InM, "inaH", "in"),
-    (Class::InM, "inOH", "in"),
+    (Class::InM, "inoH", "in"),
     (Class::InM, "inAm", "in"),
     (Class::InM, "ini", "in"),
     (Class::InM, "izu", "in"),
@@ -1967,7 +2764,7 @@ const STRIPS: &[StripRule] = &[
     (Class::AsN, "asA", "as"),
     (Class::AsN, "ase", "as"),
     (Class::AsN, "asaH", "as"),
-    (Class::AsN, "asOH", "as"),
+    (Class::AsN, "asoH", "as"),
     (Class::AsN, "asAm", "as"),
     (Class::AsN, "asi", "as"),
     (Class::AsN, "assu", "as"),
@@ -1980,7 +2777,7 @@ const STRIPS: &[StripRule] = &[
     (Class::AsM, "asam", "as"),
     (Class::AsM, "asA", "as"),
     (Class::AsM, "ase", "as"),
-    (Class::AsM, "asOH", "as"),
+    (Class::AsM, "asoH", "as"),
     (Class::AsM, "asAm", "as"),
     (Class::AsM, "asi", "as"),
     (Class::AsM, "assu", "as"),
@@ -2000,9 +2797,125 @@ const STRIPS: &[StripRule] = &[
     (Class::VasM, "uzoH", "vas"),
     (Class::VasM, "uzAm", "vas"),
     (Class::VasM, "uzi", "vas"),
+    (Class::VasM, "uzA", "ivas"),
+    (Class::VasM, "uze", "ivas"),
+    (Class::VasM, "uzaH", "ivas"),
+    (Class::VasM, "uzoH", "ivas"),
+    (Class::VasM, "uzAm", "ivas"),
+    (Class::VasM, "uzi", "ivas"),
     (Class::VasM, "vadByAm", "vas"),
     (Class::VasM, "vadBiH", "vas"),
+    (Class::VasM, "vadByaH", "vas"),
     (Class::VasM, "vadsu", "vas"),
     (Class::VasM, "dByAm", "s"),
     (Class::VasM, "dsu", "s"),
+    // क्वसु neuter (@vidvas2: `-vat`/`-vad`, यण् weak, `-vAMsi`).
+    (Class::VasN, "AMsi", "as"),
+    (Class::VasN, "vat", "vas"),
+    (Class::VasN, "vad", "vas"),
+    (Class::VasN, "yuzA", "ivas"),
+    (Class::VasN, "yuze", "ivas"),
+    (Class::VasN, "yuzaH", "ivas"),
+    (Class::VasN, "yuzoH", "ivas"),
+    (Class::VasN, "yuzAm", "ivas"),
+    (Class::VasN, "yuzi", "ivas"),
+    (Class::VasN, "yuzI", "ivas"),
+    (Class::VasN, "uzA", "vas"),
+    (Class::VasN, "uze", "vas"),
+    (Class::VasN, "uzaH", "vas"),
+    (Class::VasN, "uzoH", "vas"),
+    (Class::VasN, "uzAm", "vas"),
+    (Class::VasN, "uzi", "vas"),
+    (Class::VasN, "uzI", "vas"),
+    (Class::VasN, "vadByAm", "vas"),
+    (Class::VasN, "vadBiH", "vas"),
+    (Class::VasN, "vadByaH", "vas"),
+    (Class::VasN, "vatsu", "vas"),
+    // ऋ-stem neuter (तृच् n; @dhAtR2) — shared forms also surface through
+    // the RFM rules above; these add the neuter readings.
+    (Class::RFN, "fRI", "f"),
+    (Class::RFN, "FRI", "f"),
+    (Class::RFN, "fRA", "f"),
+    (Class::RFN, "rA", "f"),
+    (Class::RFN, "fRe", "f"),
+    (Class::RFN, "re", "f"),
+    (Class::RFN, "fRaH", "f"),
+    (Class::RFN, "uH", "f"),
+    (Class::RFN, "fRoH", "f"),
+    (Class::RFN, "roH", "f"),
+    (Class::RFN, "FRAm", "f"),
+    (Class::RFN, "fRi", "f"),
+    (Class::RFN, "ari", "f"),
+    (Class::RFN, "fzu", "f"),
+    // ङित् i-stem feminine (क्तिन्; @gati1) — shared `iByAm`/`inA`/… forms
+    // are covered by the IMF rules above.
+    (Class::GatiF, "IH", "i"),
+    (Class::GatiF, "yA", "i"),
+    (Class::GatiF, "yE", "i"),
+    (Class::GatiF, "yAH", "i"),
+    (Class::GatiF, "yAm", "i"),
+    // in-stem neuter (घिनुण् n; @kSamin2).
+    (Class::InN, "iRI", "in"),
+    (Class::InN, "IRi", "in"),
+    (Class::InN, "iRA", "in"),
+    (Class::InN, "iRe", "in"),
+    (Class::InN, "iRaH", "in"),
+    (Class::InN, "iRoH", "in"),
+    (Class::InN, "IRAm", "in"),
+    (Class::InN, "iRi", "in"),
+    (Class::InN, "izu", "in"),
+    // j-stems (नजिङ्; @svapnaj1/@ruj1/@svapnaj2 — पausa `-g`/`-k`).
+    (Class::Jvs, "ak", "aj"),
+    (Class::Jvs, "ag", "aj"),
+    (Class::Jvs, "ajO", "aj"),
+    (Class::Jvs, "ajaH", "aj"),
+    (Class::Jvs, "ajam", "aj"),
+    (Class::Jvs, "ajA", "aj"),
+    (Class::Jvs, "agByAm", "aj"),
+    (Class::Jvs, "agBiH", "aj"),
+    (Class::Jvs, "aje", "aj"),
+    (Class::Jvs, "agByaH", "aj"),
+    (Class::Jvs, "ajoH", "aj"),
+    (Class::Jvs, "ajAm", "aj"),
+    (Class::Jvs, "aji", "aj"),
+    (Class::Jvs, "akzu", "aj"),
+    (Class::JvsN, "ak", "aj"),
+    (Class::JvsN, "ag", "aj"),
+    (Class::JvsN, "ajI", "aj"),
+    (Class::JvsN, "Yji", "aj"),
+    (Class::JvsN, "ajA", "aj"),
+    (Class::JvsN, "agByAm", "aj"),
+    (Class::JvsN, "agBiH", "aj"),
+    (Class::JvsN, "aje", "aj"),
+    (Class::JvsN, "agByaH", "aj"),
+    (Class::JvsN, "ajoH", "aj"),
+    (Class::JvsN, "ajAm", "aj"),
+    (Class::JvsN, "aji", "aj"),
+    (Class::JvsN, "akzu", "aj"),
+    // van-stem masculine (ङ्वनिप्; @yajvan1).
+    (Class::VanM, "A", "an"),
+    (Class::VanM, "nA", "n"),
+    (Class::VanM, "ne", "n"),
+    (Class::VanM, "naH", "n"),
+    (Class::VanM, "noH", "n"),
+    (Class::VanM, "nAm", "n"),
+    (Class::VanM, "ni", "n"),
+    (Class::VanM, "su", "n"),
+    // man-stem neuter (ङ्वनिप्; @sadman1).
+    (Class::ManN, "nI", "n"),
+    (Class::ManN, "Ani", "an"),
+    (Class::ManN, "nA", "n"),
+    (Class::ManN, "ne", "n"),
+    (Class::ManN, "naH", "n"),
+    (Class::ManN, "noH", "n"),
+    (Class::ManN, "nAm", "n"),
+    (Class::ManN, "ni", "n"),
+    (Class::ManN, "su", "n"),
+    // u-stem feminine ङित् (उ f; @dhenu1) — guna/यण् alternations.
+    (Class::UF, "vA", "u"),
+    (Class::UF, "vE", "u"),
+    (Class::UF, "vAH", "u"),
+    (Class::UF, "voH", "u"),
+    (Class::UF, "vAm", "u"),
+    (Class::UF, "vO", "u"),
 ];

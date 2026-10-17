@@ -221,8 +221,9 @@ fn decline_nominal(
     field: &str,
     stem_slp1: &str,
     engine_family: &str,
+    baseindex: &str,
 ) -> Vec<String> {
-    let Some(table) = krt_table(engine_family, krt_slp1, field, stem_slp1) else {
+    let Some(table) = krt_table(engine_family, krt_slp1, field, stem_slp1, baseindex) else {
         return vec![stem_slp1.to_string()];
     };
     let mut out: Vec<String> = table
@@ -240,7 +241,7 @@ fn decline_nominal(
 /// Devanagari → SLP1 with non-Devanagari separators kept (`स्य-शतृ` →
 /// `sya-Satf`). The declension dispatch rides the stem shape; only
 /// `kvasu`/`tfc`/`lyap` are name-sensitive, and those are plain names.
-fn deva_to_slp1_keep_sep(text: &str) -> Option<String> {
+pub(crate) fn deva_to_slp1_keep_sep(text: &str) -> Option<String> {
     let mut out = String::new();
     let mut buf = String::new();
     for ch in text.chars() {
@@ -314,7 +315,7 @@ pub fn prefix_krut_row(
                 let forms: Vec<String> = if field == "base" {
                     vec![surface]
                 } else {
-                    decline_nominal(&krt_slp1, field, &surface, engine_family)
+                    decline_nominal(&krt_slp1, field, &surface, engine_family, "")
                 };
                 for form in forms {
                     if !out.contains(&form) {

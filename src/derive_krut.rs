@@ -98,9 +98,10 @@ fn decline_nominal(
     field: &str,
     stem_slp1: &str,
     engine_family: &str,
+    baseindex: &str,
 ) -> Vec<String> {
     use crate::engine::subanta::krt_table;
-    let Some(table) = krt_table(engine_family, krt_slp1, field, stem_slp1) else {
+    let Some(table) = krt_table(engine_family, krt_slp1, field, stem_slp1, baseindex) else {
         return vec![stem_slp1.to_string()];
     };
     let mut out: Vec<String> = table
@@ -247,12 +248,12 @@ pub fn derive_prefixed_krut(
         for field in ["m", "n"] {
             row.insert(
                 field.to_string(),
-                decline_nominal(&krt_slp1, field, stem, engine_family),
+                decline_nominal(&krt_slp1, field, stem, engine_family, baseindex),
             );
         }
         let mut fem: Vec<String> = Vec::new();
         for fstem in feminized_stems(&engine.vp, stem) {
-            for form in decline_nominal(&krt_slp1, "f", &fstem, engine_family) {
+            for form in decline_nominal(&krt_slp1, "f", &fstem, engine_family, baseindex) {
                 if !fem.contains(&form) {
                     fem.push(form);
                 }

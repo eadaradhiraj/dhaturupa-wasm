@@ -138,7 +138,7 @@ fn audit(step: usize) -> Report {
                     for (field, value) in [("m", &cell.m), ("f", &cell.f), ("n", &cell.n)] {
                         for variant in value.split('/').filter(|v| !v.is_empty()) {
                             report.checked += 1;
-                            let out = wasm::krt_subanta(family, krt, field, variant);
+                            let out = wasm::krt_subanta(family, krt, field, variant, id.as_str());
                             let parsed: serde_json::Value =
                                 serde_json::from_str(&out).expect("envelope parses");
                             if parsed["ok"] != serde_json::json!(true) {
@@ -180,7 +180,13 @@ fn audit(step: usize) -> Report {
                                         continue;
                                     };
                                     report.prefixed += 1;
-                                    let out = wasm::krt_subanta(family, krt, field, &surface_deva);
+                                    let out = wasm::krt_subanta(
+                                        family,
+                                        krt,
+                                        field,
+                                        &surface_deva,
+                                        id.as_str(),
+                                    );
                                     let parsed: serde_json::Value =
                                         serde_json::from_str(&out).expect("envelope parses");
                                     if parsed["ok"] != serde_json::json!(true)

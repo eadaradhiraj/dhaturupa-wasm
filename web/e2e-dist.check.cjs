@@ -36,11 +36,15 @@ const kartari = JSON.stringify(blob.ting.shuddha.kartari);
 const karmani = JSON.stringify(blob.ting.shuddha.karmani || {});
 const krut = JSON.stringify(blob.krut.shuddha);
 
-// 4. krt click-through (the fixed contract)
-const sub = ok(w.krt_subanta('shuddha', 'शतृ', 'f', 'भवन्ती'), 'click');
+// 4. krt click-through (the fixed contract; renderer passes the site
+// convention value + the dhātu row id as the reference-paradigm key)
+const sub = ok(w.krt_subanta('shuddha', 'शतृ', 'f', 'भवन्ती', '01.0001'), 'click');
 check('click returns tables[]', Array.isArray(sub.tables) && sub.tables.length === 1);
-const slash = ok(w.krt_subanta('shuddha', 'शतृ', 'n', 'ददत्/ददद्'), 'slash click');
+const slash = ok(w.krt_subanta('shuddha', 'शतृ', 'n', 'ददत्/ददद्', '03.0010'), 'slash click');
 check('slash click works', slash.tables.length === 1);
+const mclick = ok(w.krt_subanta('shuddha', 'शतृ', 'm', 'भवत्', '01.0001'), 'base click');
+check('base click declines the site reference (भवन्)',
+  mclick.tables[0].cells[0].forms.includes('भवन्'));
 
 // 5. prefixed table views (ting + krt, with dhatu ctx)
 const catT = ok(w.engine_category('shuddha', 'ting'), 'cat').category;

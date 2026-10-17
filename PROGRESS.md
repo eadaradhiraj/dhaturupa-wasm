@@ -534,3 +534,70 @@ tiny metadata, lazy-load compact per-dhatu blobs, generate the rest in WASM.
   either taxonomy; the `स्य-*` click-through regression class stays covered
   by a new check on the base (upstream) view. Browser self-test: 431
   checks, PASS.
+
+- 2026-10-16 (same pass): **speed: stale-while-revalidate + on-the-fly gzip**.
+  Service worker changed from network-first to stale-while-revalidate (instant
+  repeat views, background revalidation). `serve.cjs` added on-the-fly gzip for
+  large compressible payloads (blobs ~1 MB JSON → ~300 KB, threshold 100 KB,
+  client must accept gzip). The browser auto-decompresses; the SW caches the
+  gzipped response. Combined with the existing pinned-kṛt corpus cells (zero
+  wasm round-trips for listed stacks), repeat views load near-instantly.
+  Browser self-test still green: 436 checks PASS.
+
+- 2026-10-17 (कृदन्ते click-through parity; user call: match ashtadhyayi.com
+  exactly, "everything" scope, panel = site-style 8×3 grid): the subanta
+  sidebar used to decline whatever cell was clicked. The site does not — its
+  `createSubantaForms` declines the ROW BASE through hardcoded reference
+  paradigms (`DhatuConstants.kritPratyayaOrder` + per-gaṇa overrides). Traced
+  from the site bundle and ported as `krt_ref_slot`
+  (`src/engine/subanta.rs`), overrides verbatim: शतृ m (krut tab &
+  03|अभ्यस्त ∪ 02.0066-72 ⇔ @dadat1, yangluk ⇔ @dadat1), शतृ n (01/04/10 ⇔
+  @pacat1, 03|अभ्यस्त ⇔ @dadat2, 06|तुदादि ∪ 02.0067 ⇔ @tudat1, else
+  @viyat1), स्य-शतृ n ⇔ @tudat1, अच् f (krut & 15-id list ⇔ @devI1, else
+  @mAlA1). New paradigm classes for the site refs: ओस् handling, अभ्यस्त
+  शतृ, pausa द् variants, n-stem plurals, क्वसु m/n (@sedivas1/@vidvas2),
+  तृच् m/n (@dhAtR1/R2), क्तिन् f (@gati1), ङ्वनिप्/घिनुण्/उ/अतृन्/यत्. The
+  engine's shape check (`KrtParadigm::weak`) rejects a ref the clicked value
+  cannot read as and falls back to the shape class.
+  Natva is now the site's own step, implemented locally (not
+  `sandhi::natva`): last न् + triggers र्/ष्/ऋ/ॠ, allowed interveners,
+  word-final exempt, applied per the `natva_cells` gate. Gate refinement
+  found by the harness: the neuter n-affix run is only the plural आनि (col
+  2) — the a-stem neuter dual ई carries no न, so the site never voices the
+  stem's न् there; ग्रण्थ्ये ✗ → ग्रन्थ्ये ✓ (also eliminated the यत् n
+  diff). Instr-sg इन (col 0) and gen-pl नाम् (col 2) runs kept.
+  Parity harness (site's bundled engine vs pkg-node, deterministic stride
+  sample: 63 kṛts, 1455 dhātu rows, 79,560 cells): **236 cell diffs, all in
+  two documented classes** — अथुच् m (12 dhātus: 01.0070 01.0268 01.0425
+  01.0957 01.0958 01.0959 01.0984 01.1001 01.1165 02.0031 05.0011 06.0151 —
+  the site types the u-stem as @bhavat2 → नन्दथू/नन्दथूनौ) and क्वरप् f (7
+  dhātus: 01.0642 01.1085 01.1096 01.1137 02.0040 03.0018 04.0091 — the site
+  declines the ī-stem as @mAlA1 → सृत्वरीओस्/सृत्वर्यः). We render the
+  CORRECT paradigms there — KNOWN_DIVERGENCES (site bugs; user call), not
+  ours. Harness header: 3 site errors, 1076 site cells with no link, 21
+  site-has-link/we-refuse — all the documented non-declinable citation
+  class (क्यप् इत्या/सुत्या, अच् ह्वा/छा, ल्यु रमण/दर्पण, वुन्
+  भाक/प्साक/दाक/वाक, नङ् याच्ञा, श इच्छा/क्रिया).
+  Pinned: `tests/krt_site_pin.rs` — 21 click-throughs captured from the
+  site's own engine (2026-10-17: शतृ m/n × gacchat/dadat/pacat/tudat/viyat,
+  स्य-शतृ n, अच् f ×2, क्वसु m/n, तृच् n, क्तिन् f, ङ्वनिप् n, घिनुण् m/n,
+  उ n, अतृन् n, यत् n, ण्वुल् m), each pin the full 24-cell signature (हे
+  stripped, forms sorted, `/`-joined, `|`-separated) through
+  `wasm::krt_subanta`; all pass.
+  Portal panel + click conventions now the site's (traced from the bundle's
+  `krit-subanta-table-template` and `getFinalForm`): `renderParadigm`
+  renders the bare 8×3 grid — no vibhakti/vacana labels — with सम्बोधन cells
+  `हे `-prefixed; `renderKrutTables` + new `krtLinkTarget` pass the row base
+  for m/n, the f form itself only when its last letter is आ/ई
+  (`WordUtils.getLettersOfWord`: matras count as independent vowels — a
+  trailing ा/ी), else the base; `onKrtClick` passes the dhātu row id as the
+  new 5th wasm arg (`baseindex`) so the site reference resolves. The
+  `krutConventionMap` display hack (it stripped upasargas off prefixed
+  cells) is gone. Render tests cover the convention table + the bare-grid/हे
+  shape; e2e grew to 16 checks (base-click ref check). `examples/` debug
+  scratch deleted; fmt clean; clippy 9 pedantic fixes in the new code
+  (nested or-patterns, krut/krt name clash, merged identical arms).
+  `./check.sh --full` green: exhaustive audits (krt_click, derive_krut,
+  derive_ting, prefixed_krut, reverse_audit_full — all pass), wasm ×3, dist
+  refresh, render 9/9, e2e 16/16, smoke, browser self-test 436 checks —
+  ALL CHECKS PASSED.

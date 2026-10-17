@@ -61,27 +61,37 @@ export function renderTingTables(tables) {
     .join('');
 }
 
-// {krt: [{base,m,f,n}]} -> HTML; declinable cells carry click metadata
-// (app.js delegates clicks to krt_subanta).
+// Kṛt link target per ashtadhyayi.com's `createSubantaForms`: m/n links
+// decline the row's base, not the clicked cell; f links pass the f form
+// itself only when its last letter (`WordUtils.getLettersOfWord` — matras
+// count as their independent vowels, so an आ/ई ending means a trailing
+// ा/ी matra) is आ or ई, otherwise the base.
+export function krtLinkTarget(gender, form, base) {
+  if (gender === 'f' && /[ाआीी]$/.test(form)) return form;
+  return base && base !== '—' ? base : form;
+}
+
+// {krt: [{base,m,f,n}]} -> HTML; every form cell carries click metadata
+// (app.js delegates clicks to krt_subanta, which resolves the site's
+// reference paradigm from the dhātu row id).
 export function renderKrutTables(tables, family) {
   const krts = Object.keys(tables).sort();
   return krts
     .map((krt) => {
       const rows = tables[krt]
         .map((cell, row) => {
-          const link = (value, field, gender) =>
+          const base = typeof cell.base === 'string' ? cell.base : '';
+          const link = (form, gender) =>
             `<a href="#" data-krt="${escapeHtml(krt)}" ` +
-            `data-row="${row}" data-field="${field}" data-gender="${gender}" ` +
-            `data-value="${escapeHtml(value)}" data-family="${escapeHtml(family)}">` +
-            `${escapeHtml(value)}</a>`;
+            `data-row="${row}" data-field="${gender}" data-gender="${gender}" ` +
+            `data-value="${escapeHtml(krtLinkTarget(gender, form, base))}" ` +
+            `data-family="${escapeHtml(family)}">${escapeHtml(form)}</a>`;
           const field = (value, gender) =>
-            value.includes('/')
-              ? value
-                  .split('/')
-                  .filter((part) => part !== '')
-                  .map((part) => link(part, part, gender))
-                  .join(' ')
-              : link(value, '', gender);
+            value
+              .split('/')
+              .filter((part) => part !== '')
+              .map((part) => link(part, gender))
+              .join(' ');
           return `<tr><td>${cell.base ? escapeHtml(cell.base) : '—'}</td>` +
             `<td>${cell.m ? field(cell.m, 'm') : '—'}</td>` +
             `<td>${cell.f ? field(cell.f, 'f') : '—'}</td>` +
@@ -95,16 +105,23 @@ export function renderKrutTables(tables, family) {
     .join('');
 }
 
-// WASM paradigm JSON -> HTML (subanta + click-through alike).
+// WASM paradigm JSON -> HTML. The site's sidebar (`krit-subanta-table-template`)
+// is a bare 8x3 grid — one row per vibhakti, one column per vacana, no
+// labels — and सम्बोधन cells get the `हे ` prefix (`getFinalForm`).
 export function renderParadigm(table) {
-  const rows = table.cells
-    .map(
-      (cell) =>
-        `<tr><th>${escapeHtml(cell.vibhakti)} · ${escapeHtml(cell.vacana)}</th>` +
-        `<td>${cell.forms.map(escapeHtml).join(' , ')}</td></tr>`,
-    )
-    .join('');
-  return `<table><tbody>${rows}</tbody></table>`;
+  const cells = table.cells || [];
+  const rows = [];
+  for (let i = 0; i < cells.length; i += 3) {
+    rows.push(`<tr>${cells
+      .slice(i, i + 3)
+      .map((cell) => {
+        const he = cell.vibhakti === 'sambodhana' ? 'हे ' : '';
+        const forms = (cell.forms || []).map((form) => escapeHtml(he + form));
+        return `<td>${forms.length ? forms.join(' , ') : '—'}</td>`;
+      })
+      .join('')}</tr>`);
+  }
+  return `<table><tbody>${rows.join('')}</tbody></table>`;
 }
 
 // Chandrika entries -> HTML; `<hl>` spans become highlights, quotes kept.

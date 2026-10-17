@@ -343,7 +343,7 @@ fn deva_to_slp1_keep_sep(text: &str) -> Option<String> {
 }
 
 #[wasm_bindgen]
-pub fn krt_subanta(family: &str, krt: &str, field: &str, value: &str) -> String {
+pub fn krt_subanta(family: &str, krt: &str, field: &str, value: &str, baseindex: &str) -> String {
     use crate::engine::subanta::{krt_table, Linga};
     let Some(engine_family) = crate::forms::normalize_krut_engine_family(family) else {
         return err_envelope("unknown krut family (try shuddha|nich|san|yang|yangluk)");
@@ -367,7 +367,7 @@ pub fn krt_subanta(family: &str, krt: &str, field: &str, value: &str) -> String 
     }
     for single in &values {
         for alternant in crate::slp1::split_alternants(single) {
-            if let Some(table) = krt_table(engine_family, &krt_slp, field, alternant) {
+            if let Some(table) = krt_table(engine_family, &krt_slp, field, alternant, baseindex) {
                 return ok_envelope(serde_json::json!({"tables": [paradigm_json(&table)]}));
             }
         }

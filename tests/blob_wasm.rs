@@ -186,10 +186,15 @@ fn blob_feeds_wasm_search() {
                 if value.is_empty() {
                     continue;
                 }
-                let table: serde_json::Value = serde_json::from_str(
-                    &dhaturupa_wasm::wasm::krt_subanta("shuddha", krt, field, value),
-                )
-                .expect("envelope parses");
+                let table: serde_json::Value =
+                    serde_json::from_str(&dhaturupa_wasm::wasm::krt_subanta(
+                        "shuddha",
+                        krt,
+                        field,
+                        value,
+                        &entry.baseindex,
+                    ))
+                    .expect("envelope parses");
                 if table["ok"] != serde_json::json!(true) {
                     continue;
                 }
