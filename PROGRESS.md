@@ -577,7 +577,13 @@ tiny metadata, lazy-load compact per-dhatu blobs, generate the rest in WASM.
   ours. Harness header: 3 site errors, 1076 site cells with no link, 21
   site-has-link/we-refuse — all the documented non-declinable citation
   class (क्यप् इत्या/सुत्या, अच् ह्वा/छा, ल्यु रमण/दर्पण, वुन्
-  भाक/प्साक/दाक/वाक, नङ् याच्ञा, श इच्छा/क्रिया).
+  भाक/प्साक/दाक/वाक, नङ् याच्ञा, श इच्छा/क्रिया). 2026-10-17 probe of
+  those 21 (site grid vs `krt_subanta`, `/tmp/opencode/probe_refuse.cjs`):
+  the site force-declines each frozen citation through the column ref and
+  mixes endings — ह्वा @deva1 → ह्वाः/ह्वौ/ह्वाभिः (a-stem + ā-stem
+  hybrid), ल्यु f रमण @mAlA1 → रमणः/रमणे/रमणा/रमणैः (m and f endings in
+  one grid). We keep the honest refusal; fixing would mean shipping
+  garbled paradigms — same call as the 236.
   Pinned: `tests/krt_site_pin.rs` — 21 click-throughs captured from the
   site's own engine (2026-10-17: शतृ m/n × gacchat/dadat/pacat/tudat/viyat,
   स्य-शतृ n, अच् f ×2, क्वसु m/n, तृच् n, क्तिन् f, ङ्वनिप् n, घिनुण् m/n,
