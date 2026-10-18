@@ -159,7 +159,7 @@ cargo run -q --release -- build-index --out dist/indexes
 cargo run -q --release -- build-index --out dist/shards --shards 256
 # 256 hash shards (4.4MB raw, ~0.5MB gzipped each), ~150s — what the portal ships
 cargo run -q --release -- build-subanta-index --out dist/shards --shards 256
-# 256 subanta shards (17.3M declined forms, ~5.6MB raw, ~1.5MB gzipped each), ~170s
+# 256 subanta shards (18.0M declined forms, ~5.6MB raw, ~1.5MB gzipped each), ~153s
 ```
 
 Measured: 69KB raw / **5.9KB gzipped average** per blob (13.2MB gzipped for

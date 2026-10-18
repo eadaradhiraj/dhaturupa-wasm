@@ -783,3 +783,16 @@ Tests: `tests/wasm_api.rs` an-stem test expanded to 19 — 24-cell grids
 for राजन्/आत्मन्/उक्षन्/कर्मन्/ग्रावन्/दुर्नामन्, loc-sg variants,
 analyze pins (उक्ष्णा, ग्राव्णः, ग्रावाणौ, दुर्नामा), and neuter pins
 (नामन्/कर्मन्/धन्वन्/धीरन्, pairs included).
+
+## 2026-10-18 (5) — heavy artifact rebuild (post-AnM engine)
+
+The AnM/natva/ManN engine changes (entry 4) alter declined forms, so the
+prebuilt `dist/` artifacts were stale. Rebuilt per the documented manual
+sequence (check.sh deliberately excludes it): `build-site` →
+`node web/build-shabda.cjs` → `build-index --shards 256` →
+`build-subanta-index --shards 256`. Subanta index grew 17.3M →
+18,028,526 postings (152.8s) — the ManN elided/unelided alternant pairs
+(नाम्नी-नामनी …) and the AnM drop-family fix (ग्रावन् → ग्राव्णः)
+add surfaces; शब्द oracle refreshed (6.5MB). README's shard-count note
+updated. `./check.sh` re-run against the fresh dist: ALL CHECKS PASSED
+(e2e 36/36, smoke, browser 455).
