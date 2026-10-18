@@ -607,3 +607,59 @@ tiny metadata, lazy-load compact per-dhatu blobs, generate the rest in WASM.
   derive_ting, prefixed_krut, reverse_audit_full — all pass), wasm ×3, dist
   refresh, render 9/9, e2e 16/16, smoke, browser self-test 436 checks —
   ALL CHECKS PASSED.
+
+## 2026-10-18 — word view: "Decline a word" (any word → readings + paradigm)
+
+User ask: a portal button leading to a feature that declines ANY given
+base word (foreign names included) and, in reverse (the "search" half),
+reports an inflected input's base word + vibhakti/vacana. Contract fixed
+by the spec F5 trio: input `Wrampena` must read ONLY as itself, "Wrampena
+as sambodhana is the base word" (an instrumental reading of `Wrampa`
+would have to be voiced → `WrampeRa`); input `WrampeRa` must read BOTH
+"base word is WrampeRa (vocative)" and "Wrampa is the base word,
+WrampeRa its instrumental singular".
+
+The engine already had exactly these semantics — `analyze()`
+(`src/engine/subanta.rs:2339`): suffix strips + natva-inverse `R`→`n`
+variants + self-stem hypotheses (its own comment cites `Wrampena`) +
+regeneration containment — but nothing exposed them to the portal.
+Probed first (native scratch test): `Wrampena` → 2 readings (m/n
+sambodhana self-stem only); `WrampeRa` → 4 (Wrampa m/n tftIyA.ekavacana
++ WrampeRa m/n sambodhana); `Wrampa`'s own table voices instr-sg to
+`WrampeRa` (natva fires, matching `rAma`→`rAmeRa`). Also probed the
+vendored vidyuṭ `derive_subanta` on foreign-name shapes (`jAn` → जा…,
+`pITar` → पीटः…): no cleaner reference than our own engine, so no engine
+behavior was changed; vowel-final Sanskritized names (`bila`, `jona`,
+`merI`, `amErikA`) already decline.
+
+New wasm export `subanta_analyze(word)`: Devanagari | Harvard-Kyoto
+(portal rule) | raw-SLP1 fallback when HK cannot spell the string (so
+the spec trio as typed works; SLP1 still never crosses into the DOM).
+Returns `{ok, word, analyses: [{stem(deva), linga, class, vibhakti,
+vacana}], tables: [paradigm…]}` — readings via `analyze()`, declension
+via `generate_tables` over m/f/n (the word as a fresh stem).
+`paradigm_json` class labels (and the new analyses) now map
+`Class::Word` — whose raw labels are SLP1 dictionary words like `tad` —
+to "known word".
+
+Portal: new nav button "Decline a word" (hash `#word`), view `view-word`.
+`renderWordReadings` renders English slot names (सम्बोधन kept as
+"vocative (sambodhana)" per the ask) with a per-row `table` toggle that
+loads that base word's own declension via `subanta_table`;
+`renderWordTables` heads bare 8×3 grids per gender; empty states point
+foreign names at the Sanskritized vowel-final spelling (e.g. जॉन for
+John).
+
+Tests: `tests/wasm_api.rs` pins the trio (Wrampena readings exact;
+WrampeRa Wrampa-instr + self readings; m/n a-stem generation; no SLP1
+in the JSON; Deva ≡ HK) — 17 tests; render tests +2 (9 → 11); e2e 16 →
+20 (trio + HK `jona` through dist+pkg-node); browser self-test +9 (nav
+opens, trio readings, table toggle, no SLP1) — 436 → 445. Gate history:
+the first `./check.sh --full` failed ONLY at the browser self-test —
+`web/selftest.html` is a hand-maintained copy of the app shell and
+lacked the new nav button/view, so app.js threw at load
+(`el('word-go').onclick` on a null) and every flow after boot failed.
+Added the missing shell parts plus a "keep in sync with app.html"
+comment there; re-ran `./check.sh`: ALL CHECKS PASSED (exhaustive audits
+from the --full run had already passed — no engine change after);
+render 11/11, e2e 20/20, smoke, browser self-test 445 checks.

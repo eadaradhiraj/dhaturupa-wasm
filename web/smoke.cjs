@@ -15,6 +15,11 @@ console.log('engine_category(shuddha,krut) ->', ok(w.engine_category('shuddha', 
 console.log('prefixed_table_ctx(प्र,ददत्) ->',
   ok(w.prefixed_table_ctx('प्र', JSON.stringify(['ददत्']), 'da\\a',
     ok(w.engine_category('shuddha', 'krut')).category, '')).tables[0].join(','));
+console.log('subanta_analyze(WrampeRa) ->',
+  ok(w.subanta_analyze('WrampeRa')).analyses
+    .map((a) => `${a.stem} ${a.vibhakti}.${a.vacana}`).join(' | '));
+console.log('subanta_table(जोन,m)      ->',
+  ok(w.subanta_table('जोन', 'm')).tables.length + ' table(s)');
 console.log('split_init stacks        ->', ok(w.split_init(JSON.stringify(names))).stacks);
 const sq = ok(w.split_query('प्रददत्', 256));
 console.log('split_query(प्रददत्)    ->', sq.splits.map((s) => s.stack + '+' + s.base).slice(0, 3).join(' | '));

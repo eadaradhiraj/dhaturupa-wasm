@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import {
   escapeHtml, slotLabel, renderTingTables, renderKrutTables, krtLinkTarget,
   renderParadigm, renderChandrika, renderHits, renderMeta,
+  renderWordReadings, renderWordTables,
 } from '../render.js';
 
 test('escapeHtml neutralizes markup', () => {
@@ -114,4 +115,38 @@ test('renderMeta labels in English', () => {
   assert.match(html, /<dt>Gaṇa<\/dt><dd>1 \(bhvādi\)<\/dd>/);
   assert.match(html, /parasmaipadī/);
   assert.doesNotMatch(html, /Hindi/);
+});
+
+test('renderWordReadings states the relation and carries table toggles', () => {
+  const html = renderWordReadings([
+    { stem: 'ठ्रम्प', linga: 'm', class: 'a-m', vibhakti: 'tftIyA', vacana: 'ekavacanam' },
+    { stem: 'ठ्रम्पेण', linga: 'n', class: 'a-n', vibhakti: 'sambodhana', vacana: 'ekavacanam' },
+    { stem: '<x>', linga: 'f', class: 'I-f', vibhakti: 'citation', vacana: '' },
+  ]);
+  assert.match(html, /instrumental singular/);
+  assert.match(html, /of <span class="deva">ठ्रम्प<\/span>/);
+  assert.match(html, /\(masculine · a-m\)/);
+  assert.match(html, /vocative \(sambodhana\) singular/);
+  assert.match(html, /citation form/);
+  assert.match(html, /\(feminine · I-f\)/);
+  assert.match(html, /&lt;x&gt;/);
+  assert.match(html, /data-stem="ठ्रम्प" data-linga="m"/);
+  assert.match(renderWordReadings([]), /No readings/);
+});
+
+test('renderWordTables heads sections and renders bare grids', () => {
+  const table = {
+    stem: 'ठ्रम्प', linga: 'm', class: 'a-m',
+    cells: [
+      { vibhakti: 'prathamA', vacana: 'ekavacanam', forms: ['ठ्रम्पः'] },
+      { vibhakti: 'dvitIyA', vacana: 'ekavacanam', forms: ['ठ्रम्पम्'] },
+      { vibhakti: 'sambodhana', vacana: 'ekavacanam', forms: ['ठ्रम्प'] },
+    ],
+  };
+  const html = renderWordTables([table]);
+  assert.match(html, /masculine \(a-m\)/);
+  assert.match(html, /ठ्रम्पः/);
+  assert.match(html, /हे ठ्रम्प/);
+  assert.match(html, /<table><tbody>/);
+  assert.match(renderWordTables([]), /No declension/);
 });

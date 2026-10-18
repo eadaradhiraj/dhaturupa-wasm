@@ -2,6 +2,10 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
+<!-- Hand-maintained copy of the app shell (web/app.html) plus the verdict
+     `pre` and selftest scripts. Keep nav buttons and view sections in sync
+     with app.html: app.js wires handlers by id at load, so a missing id
+     throws and the whole self-test fails at boot (the gate catches it). -->
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <link rel="icon" href="data:,">
 <title>Dhātupāṭha — browser self-test</title>
@@ -14,6 +18,11 @@ th { background: #f0f0f0; }
 .deva { font-size: 1.1em; }
 .muted { color: #555; }
 section.lakara, section.krt { margin-bottom: 1em; }
+.word-readings { padding-left: 1.4em; }
+.word-readings li { margin: .25em 0; }
+.word-readings .reading-slot { font-weight: 600; }
+.reading-table { margin: .3em 0 .8em; }
+section.word-table { margin-bottom: 1em; }
 pre { white-space: pre-wrap; background: #f6f6f6; padding: .5em; }
 </style>
 </head>
@@ -22,6 +31,7 @@ pre { white-space: pre-wrap; background: #f6f6f6; padding: .5em; }
 <nav>
 <button id="nav-list">Dhatu list</button>
 <button id="nav-search">Form search</button>
+<button id="nav-word">Decline a word</button>
 <span id="status" class="muted" role="status"></span>
 <span id="build" class="muted"></span>
 </nav>
@@ -73,6 +83,22 @@ pre { white-space: pre-wrap; background: #f6f6f6; padding: .5em; }
 </div>
 <p id="search-note" class="muted"></p>
 <div id="search-hits"></div>
+</section>
+
+<section id="view-word" hidden>
+<h2>Decline a word</h2>
+<p class="muted">Any word — Sanskrit or not (foreign names welcome).
+Readings name the base word and its case; the tables decline the word
+itself, so a completely new name gets a full paradigm.</p>
+<div>
+<input id="word-q" placeholder="Devanagari or Harvard-Kyoto word" size="34">
+<button id="word-go">Analyze &amp; decline</button>
+</div>
+<p id="word-note" class="muted"></p>
+<h3>Readings</h3>
+<div id="word-readings"></div>
+<h3>Declension</h3>
+<div id="word-tables"></div>
 </section>
 
 <pre id="selftest-out">SELFTEST: RUNNING</pre>

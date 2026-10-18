@@ -270,6 +270,16 @@ pub fn krut_table_json(krut_json: &str, baseindex: &str) -> String {
     ok_envelope(serde_json::json!({"baseindex": norm, "tables": tables}))
 }
 
+/// Class label for display. `Class::Word` labels are the raw SLP1 dictionary
+/// word (`tad`, `yuzmad`, …) — the portal must never show SLP1, and the
+/// Devanagari stem already names the word, so listed words get a neutral tag.
+fn class_label(class: &crate::engine::subanta::Class) -> String {
+    match class {
+        crate::engine::subanta::Class::Word(_) => "known word".to_string(),
+        other => other.label(),
+    }
+}
+
 fn paradigm_json(table: &crate::engine::subanta::Paradigm) -> serde_json::Value {
     let cells: Vec<serde_json::Value> = table
         .cells
@@ -294,7 +304,7 @@ fn paradigm_json(table: &crate::engine::subanta::Paradigm) -> serde_json::Value 
     serde_json::json!({
         "stem": slp1_to_deva(&table.stem).unwrap_or_else(|| table.stem.clone()),
         "linga": table.linga.as_str(),
-        "class": table.class.label(),
+        "class": class_label(&table.class),
         "cells": cells,
     })
 }
@@ -314,6 +324,63 @@ pub fn subanta_table(stem: &str, linga: &str) -> String {
     }
     let rendered: Vec<serde_json::Value> = tables.iter().map(paradigm_json).collect();
     ok_envelope(serde_json::json!({"tables": rendered}))
+}
+
+/// Word-view input → SLP1. Portal rule for ASCII is Harvard-Kyoto; when HK
+/// cannot decode the string (the spec's SLP1 trio `Wrampena`/`WrampeRa` is
+/// not valid HK), raw SLP1 is accepted as a fallback. The string only
+/// selects a reading — SLP1 still never reaches the DOM.
+fn word_input_to_slp1(text: &str) -> Option<String> {
+    if contains_deva(text) {
+        return deva_to_slp1(text).filter(|s| crate::slp1::is_slp1_form(s));
+    }
+    if let Some(slp1) = hk_to_slp1(text) {
+        return Some(slp1);
+    }
+    crate::slp1::is_slp1_form(text).then(|| text.to_string())
+}
+
+/// Word view: any word → readings (base word + slot) and declension
+/// candidates (the word re-declined as a fresh stem, all three genders).
+///
+/// `Wrampena` resolves only to itself as a vocative (an instrumental
+/// reading would need natva → `WrampeRa`); `WrampeRa` resolves both to
+/// `Wrampa`'s instrumental singular and to itself.
+#[wasm_bindgen]
+pub fn subanta_analyze(word: &str) -> String {
+    let Some(slp1) = word_input_to_slp1(word) else {
+        return err_envelope("word is not Devanagari, Harvard-Kyoto, or SLP1");
+    };
+    let analyses: Vec<serde_json::Value> = crate::engine::subanta::analyze(&slp1, &HashMap::new())
+        .into_iter()
+        .map(|a| {
+            let (vibhakti, vacana) = match a.slot.split_once('.') {
+                Some((v, c)) => (v.to_string(), c.to_string()),
+                None => (a.slot.clone(), String::new()),
+            };
+            serde_json::json!({
+                "stem": slp1_to_deva(&a.stem).unwrap_or_else(|| a.stem.clone()),
+                "linga": a.linga.as_str(),
+                "class": class_label(&a.class),
+                "vibhakti": vibhakti,
+                "vacana": vacana,
+            })
+        })
+        .collect();
+    let mut tables = Vec::new();
+    for linga in [
+        crate::engine::subanta::Linga::M,
+        crate::engine::subanta::Linga::F,
+        crate::engine::subanta::Linga::N,
+    ] {
+        tables.extend(crate::engine::subanta::generate_tables(&slp1, linga));
+    }
+    let rendered: Vec<serde_json::Value> = tables.iter().map(paradigm_json).collect();
+    ok_envelope(serde_json::json!({
+        "word": slp1_to_deva(&slp1).unwrap_or_else(|| slp1.clone()),
+        "analyses": analyses,
+        "tables": rendered,
+    }))
 }
 
 /// Krdanta click-through: declension of one krt cell value (Devanagari or

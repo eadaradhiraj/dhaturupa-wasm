@@ -341,6 +341,44 @@ try {
   } // end truth sweep (skipped gracefully when no served sample)
   }
 
+  // ---- word view: nav button, readings (spec trio), generation tables
+  $('nav-word').click();
+  await waitFor(() => !$('view-word').hidden);
+  ok('word: nav button opens the view', !$('view-word').hidden);
+  const wordRun = async (q) => {
+    $('word-q').value = q;
+    $('word-go').click();
+    await waitFor(() => {
+      if (/\d+ reading/.test(text($('word-note')))) return true;
+      const st = text($('status'));
+      return st !== '' && st !== 'analyzing…';
+    }, { timeout: 10000 });
+    return {
+      note: text($('word-note')),
+      readings: text($('word-readings')),
+      tables: $('word-tables').querySelectorAll('section.word-table').length,
+    };
+  };
+  // `WrampeRa` is both ठ्रम्प's instrumental singular and itself; `Wrampena`
+  // is only itself (an instrumental reading would need natva).
+  const wr = await wordRun('WrampeRa');
+  ok('word: WrampeRa note counts readings', /\d+ readings?/.test(wr.note), wr.note);
+  ok('word: WrampeRa = instrumental of ठ्रम्प',
+    /instrumental singular/.test(wr.readings) && wr.readings.includes('ठ्रम्प'), wr.readings.slice(0, 90));
+  ok('word: WrampeRa = itself as base word', wr.readings.includes('ठ्रम्पेण'));
+  ok('word: WrampeRa generation tables render', wr.tables >= 1, String(wr.tables));
+  ok('word: no SLP1 in the view', !/Wramp/.test(wr.note + wr.readings));
+  const readBtn = $('word-readings').querySelector('button.reading-table-btn');
+  ok('word: reading rows carry table toggles', Boolean(readBtn));
+  if (readBtn) {
+    readBtn.click();
+    const loaded = await waitFor(() =>
+      Boolean($('word-readings').querySelector('div.reading-table table')));
+    ok('word: reading table loads on demand', loaded);
+  }
+  const wn = await wordRun('Wrampena');
+  ok('word: Wrampena reads only as itself', !/instrumental/.test(wn.readings), wn.readings.slice(0, 90));
+
   // ---- no console errors anywhere above
   ok('no console errors during the run', errors.length === 0, errors.slice(0, 3).join(' | '));
     })(),

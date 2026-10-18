@@ -7,10 +7,11 @@ import init, {
   index_load_key, index_query_family, index_drop_family, index_shard,
   split_init, split_query, verify_split,
   search_prefixed_dhatu, search_subanta_dhatu,
+  subanta_analyze, subanta_table,
 } from '../pkg/dhaturupa_wasm.js';
 import {
   escapeHtml, renderTingTables, renderKrutTables, renderParadigm,
-  renderHits, renderMeta,
+  renderHits, renderMeta, renderWordReadings, renderWordTables,
 } from './render.js';
 
 const GANAS = { 1: 'bhvādi', 2: 'adādi', 3: 'juhotyādi', 4: 'divādi', 5: 'svādi', 6: 'tudādi', 7: 'rudhādi', 8: 'tanādi', 9: 'kryādi', 10: 'curādi' };
@@ -50,7 +51,7 @@ function status(msg) {
 }
 
 function show(view) {
-  ['view-list', 'view-detail', 'view-search'].forEach((v) => {
+  ['view-list', 'view-detail', 'view-search', 'view-word'].forEach((v) => {
     el(v).hidden = v !== view;
   });
 }
@@ -110,6 +111,8 @@ function route() {
     openDhatu(id, stack || '');
   } else if (hash === 'search') {
     show('view-search');
+  } else if (hash === 'word') {
+    show('view-word');
   } else {
     show('view-list');
   }
@@ -597,11 +600,67 @@ function dhatuCards() {
   return map;
 }
 
+// Word view: analyze any word (readings = base word + case) and decline it
+// as a fresh stem (all three genders), so foreign names get paradigms too.
+async function runWordForm() {
+  show('view-word');
+  const q = el('word-q').value.trim();
+  if (!q) return;
+  // Clear synchronously, before the first await (same stale-DOM discipline
+  // as the form search): a previous verdict must never be read as this
+  // run's.
+  status('analyzing…');
+  el('word-note').textContent = '';
+  el('word-readings').innerHTML = '';
+  el('word-tables').innerHTML = '';
+  try {
+    const res = ok(subanta_analyze(q), 'word');
+    const n = res.analyses.length;
+    el('word-note').textContent =
+      `${res.word} — ${n} reading${n === 1 ? '' : 's'}, ` +
+      `${res.tables.length} declension table${res.tables.length === 1 ? '' : 's'}`;
+    el('word-readings').innerHTML = renderWordReadings(res.analyses);
+    el('word-tables').innerHTML = renderWordTables(res.tables);
+    status('done');
+  } catch (e) {
+    el('word-readings').innerHTML = '<p class="muted">—</p>';
+    status(String(e));
+  }
+}
+
+// Reading rows load that base word's own declension on demand.
+async function onReadingTableClick(event) {
+  const btn = event.target.closest('button.reading-table-btn');
+  if (!btn) return;
+  const li = btn.closest('li');
+  const open = li.nextElementSibling;
+  if (open && open.classList.contains('reading-table')) {
+    open.remove();
+    btn.textContent = 'table';
+    return;
+  }
+  try {
+    const res = ok(subanta_table(btn.dataset.stem, btn.dataset.linga), 'table');
+    const div = document.createElement('div');
+    div.className = 'reading-table';
+    div.innerHTML = res.tables.map(renderParadigm).join('');
+    li.after(div);
+    btn.textContent = 'hide';
+  } catch (e) {
+    status(String(e));
+  }
+}
+
+el('word-go').onclick = runWordForm;
+el('word-q').addEventListener('keypress', (e) => { if (e.key === 'Enter') runWordForm(); });
+el('word-readings').onclick = onReadingTableClick;
+
 el('search-go').onclick = runFormSearch;
 el('search-q').addEventListener('keypress', (e) => { if (e.key === 'Enter') runFormSearch(); });
 
 el('nav-list').onclick = () => { location.hash = ''; };
 el('nav-search').onclick = () => { location.hash = 'search'; };
+el('nav-word').onclick = () => { location.hash = 'word'; };
 
 // Exposed for the browser self-test (web/selftest.js) to await boot.
 window.__appReady = main();

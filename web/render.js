@@ -124,6 +124,54 @@ export function renderParadigm(table) {
   return `<table><tbody>${rows.join('')}</tbody></table>`;
 }
 
+// Word-view (subanta reading) labels: engine slot codes -> English.
+// सम्बोधन keeps its Sanskrit name: the vocative is the reading users ask
+// about ("Wrampena as sambodhana is the base word").
+const VIBHAKTIS = {
+  prathamA: 'nominative', dvitIyA: 'accusative', tftIyA: 'instrumental',
+  caturTI: 'dative', paJcamI: 'ablative', zazWI: 'genitive',
+  saptamI: 'locative', sambodhana: 'vocative (sambodhana)',
+  citation: 'citation form',
+};
+const VACANAS = { ekavacanam: 'singular', dvivacanam: 'dual', bahuvacanam: 'plural' };
+const LINGAS = { m: 'masculine', f: 'feminine', n: 'neuter' };
+
+// [{stem, linga, class, vibhakti, vacana}] -> reading list HTML. Each row
+// states the relation ("instrumental singular of ठ्रम्प") and carries a
+// toggle that loads that stem's own declension (app.js: reading-table-btn).
+export function renderWordReadings(analyses) {
+  if (!analyses || analyses.length === 0) {
+    return '<p class="muted">No readings — check the spelling. Foreign ' +
+      'names work in their Sanskritized spelling, usually ending in a vowel ' +
+      '(e.g. जॉन for John).</p>';
+  }
+  const rows = analyses.map((a) => {
+    const slot = [VIBHAKTIS[a.vibhakti] || a.vibhakti, VACANAS[a.vacana] || a.vacana]
+      .filter(Boolean)
+      .join(' ');
+    const linga = LINGAS[a.linga] || a.linga;
+    return `<li><span class="reading-slot">${escapeHtml(slot)}</span> of ` +
+      `<span class="deva">${escapeHtml(a.stem)}</span> ` +
+      `<span class="muted">(${escapeHtml(linga)} · ${escapeHtml(a.class)})</span> ` +
+      `<button class="reading-table-btn" data-stem="${escapeHtml(a.stem)}" ` +
+      `data-linga="${escapeHtml(a.linga)}">table</button></li>`;
+  });
+  return `<ul class="word-readings">${rows.join('')}</ul>`;
+}
+
+// [{stem, linga, class, cells}] -> headed declension sections (bare 8x3).
+export function renderWordTables(tables) {
+  if (!tables || tables.length === 0) {
+    return '<p class="muted">No declension: this shape matches no Sanskrit ' +
+      'paradigm (consonant-final spellings are refused). Try the ' +
+      'Sanskritized spelling ending in a vowel (e.g. जॉन for John).</p>';
+  }
+  return tables.map((t) =>
+    `<section class="word-table"><h4><span class="deva">${escapeHtml(t.stem)}</span>` +
+    ` — ${escapeHtml(LINGAS[t.linga] || t.linga)} (${escapeHtml(t.class)})</h4>` +
+    renderParadigm(t) + '</section>').join('');
+}
+
 // Chandrika entries -> HTML; `<hl>` spans become highlights, quotes kept.
 export function renderChandrika(entries) {
   if (!entries || entries.length === 0) {

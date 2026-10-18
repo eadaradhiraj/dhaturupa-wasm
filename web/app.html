@@ -14,6 +14,11 @@ th { background: #f0f0f0; }
 .deva { font-size: 1.1em; }
 .muted { color: #555; }
 section.lakara, section.krt { margin-bottom: 1em; }
+.word-readings { padding-left: 1.4em; }
+.word-readings li { margin: .25em 0; }
+.word-readings .reading-slot { font-weight: 600; }
+.reading-table { margin: .3em 0 .8em; }
+section.word-table { margin-bottom: 1em; }
 </style>
 </head>
 <body>
@@ -21,6 +26,7 @@ section.lakara, section.krt { margin-bottom: 1em; }
 <nav>
 <button id="nav-list">Dhatu list</button>
 <button id="nav-search">Form search</button>
+<button id="nav-word">Decline a word</button>
 <span id="status" class="muted" role="status"></span>
 <span id="build" class="muted"></span>
 </nav>
@@ -72,6 +78,22 @@ section.lakara, section.krt { margin-bottom: 1em; }
 </div>
 <p id="search-note" class="muted"></p>
 <div id="search-hits"></div>
+</section>
+
+<section id="view-word" hidden>
+<h2>Decline a word</h2>
+<p class="muted">Any word — Sanskrit or not (foreign names welcome).
+Readings name the base word and its case; the tables decline the word
+itself, so a completely new name gets a full paradigm.</p>
+<div>
+<input id="word-q" placeholder="Devanagari or Harvard-Kyoto word" size="34">
+<button id="word-go">Analyze &amp; decline</button>
+</div>
+<p id="word-note" class="muted"></p>
+<h3>Readings</h3>
+<div id="word-readings"></div>
+<h3>Declension</h3>
+<div id="word-tables"></div>
 </section>
 
 <script type="module" src="app.js"></script>

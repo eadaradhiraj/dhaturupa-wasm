@@ -92,4 +92,20 @@ check('detail subanta search', ds.total >= 1);
 const readings = ok(w.query_candidates('gacchantau'), 'readings').readings;
 check('single HK reading', readings.length === 1 && readings[0].scheme === 'Harvard-Kyoto');
 
+// 9. word view: readings + declension for arbitrary words, SLP1-free.
+// The spec trio: `WrampeRa` is both `Wrampa`'s instrumental singular and
+// itself; `Wrampena` is only itself (instrumental would need natva).
+const wr = ok(w.subanta_analyze('WrampeRa'), 'word');
+check('WrampeRa reads as Wrampa instrumental + itself',
+  wr.analyses.some((a) => a.stem === 'ठ्रम्प' && a.vibhakti === 'tftIyA') &&
+  wr.analyses.some((a) => a.stem === 'ठ्रम्पेण' && a.vibhakti === 'sambodhana') &&
+  wr.tables.some((t) => t.linga === 'm' && t.class === 'a-m'));
+check('word JSON never leaks SLP1', !JSON.stringify(wr).includes('Wramp'));
+const wn = ok(w.subanta_analyze('Wrampena'), 'word2');
+check('Wrampena reads only as itself',
+  wn.analyses.length === 2 && wn.analyses.every((a) => a.stem === 'ठ्रम्पेन'));
+const wd = ok(w.subanta_analyze('jona'), 'word3');
+check('HK foreign name declines (John)',
+  wd.analyses.some((a) => a.stem === 'जोन') && wd.tables.some((t) => t.class === 'a-m'));
+
 console.log(`\nALL ${pass} PORTAL-FLOW CHECKS PASSED`);

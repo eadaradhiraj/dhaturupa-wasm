@@ -103,6 +103,52 @@ fn subanta_table_deva() {
 }
 
 #[test]
+fn subanta_analyze_f5_trio_and_foreign_words() {
+    // Spec trio semantics: `Wrampena` reads only as itself (an instrumental
+    // reading of `Wrampa` would need natva → `WrampeRa`); `WrampeRa` reads
+    // both as `Wrampa`'s instrumental singular and as itself.
+    let payload = ok(&wasm::subanta_analyze("Wrampena"));
+    assert_eq!(payload["word"], serde_json::json!("ठ्रम्पेन"));
+    let analyses = payload["analyses"].as_array().expect("array");
+    assert_eq!(analyses.len(), 2, "m + n self-stem readings: {analyses:?}");
+    assert!(analyses.iter().all(|a| {
+        a["stem"] == "ठ्रम्पेन" && a["vibhakti"] == "sambodhana" && a["vacana"] == "ekavacanam"
+    }));
+
+    let payload = ok(&wasm::subanta_analyze("WrampeRa"));
+    assert_eq!(payload["word"], serde_json::json!("ठ्रम्पेण"));
+    let analyses = payload["analyses"].as_array().expect("array");
+    assert!(analyses.iter().any(|a| {
+        a["stem"] == "ठ्रम्प" && a["vibhakti"] == "tftIyA" && a["vacana"] == "ekavacanam"
+    }));
+    assert!(analyses
+        .iter()
+        .any(|a| a["stem"] == "ठ्रम्पेण" && a["vibhakti"] == "sambodhana"));
+    // Generation: the word declines as a fresh stem (m + n a-stems).
+    let tables = payload["tables"].as_array().expect("array");
+    assert!(tables
+        .iter()
+        .any(|t| t["linga"] == "m" && t["class"] == "a-m"));
+    assert!(tables
+        .iter()
+        .any(|t| t["linga"] == "n" && t["class"] == "a-n"));
+    let text = serde_json::to_string(&payload).expect("serializes");
+    assert!(!text.contains("Wramp"), "SLP1 never surfaces: {text}");
+
+    // Portal input: Devanagari and HK land on the same word; the raw-SLP1
+    // fallback covers shapes HK cannot spell (the trio above).
+    assert_eq!(
+        ok(&wasm::subanta_analyze("राम")).to_string(),
+        ok(&wasm::subanta_analyze("rAma")).to_string()
+    );
+    assert_eq!(
+        ok(&wasm::subanta_analyze("हरि")).to_string(),
+        ok(&wasm::subanta_analyze("hari")).to_string()
+    );
+    assert!(!err(&wasm::subanta_analyze("no way!")).is_empty());
+}
+
+#[test]
 fn krt_subanta_deva() {
     let payload = ok(&wasm::krt_subanta("shuddha", "शतृ", "f", "भवन्ती", ""));
     // Portal contract: array under `tables`, like `subanta_table`.
