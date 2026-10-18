@@ -134,6 +134,35 @@ test('renderWordReadings states the relation and carries table toggles', () => {
   assert.match(renderWordReadings([]), /No readings/);
 });
 
+test('renderWordReadings attaches corpus kṛt links to matching readings only', () => {
+  const analyses = [
+    { stem: 'गच्छत्', linga: 'm', class: 'at-m', vibhakti: 'prathamA', vacana: 'ekavacanam' },
+    { stem: 'गच्छन्', linga: 'm', class: 'an-m', vibhakti: 'sambodhana', vacana: 'ekavacanam' },
+  ];
+  const refs = [
+    { baseindex: '01.1137', krt: 'शतृ', field: 'm', vibhakti: 'prathamA', vacana: 'ekavacanam' },
+    // same slot, another dhātu: a second link on the same row
+    { baseindex: '01.0001', krt: 'शतृ', field: 'm', vibhakti: 'prathamA', vacana: 'ekavacanam' },
+    // different slot/gender: no link anywhere
+    { baseindex: '03.0010', krt: 'क्त', field: 'n', vibhakti: 'tftIyA', vacana: 'ekavacanam' },
+    // same dhātu+kṛt via another family: collapsed to one link
+    { baseindex: '01.1137', krt: 'शतृ', field: 'm', vibhakti: 'prathamA', vacana: 'ekavacanam', family: 'nich' },
+  ];
+  const meta = { '01.1137': { dhatu: 'गम्' }, '01.0001': { dhatu: 'भू' } };
+  const html = renderWordReadings(analyses, refs, meta);
+  assert.match(html, /href="#dhatu\/01\.1137"/);
+  assert.match(html, /शतृ of <span class="deva">गम्<\/span>/);
+  assert.match(html, /शतृ of <span class="deva">भू<\/span>/);
+  assert.doesNotMatch(html, /क्त of/);
+  assert.equal((html.match(/href="#dhatu\/01\.1137"/g) || []).length, 1);
+  // only the prathamA row links — the sambodhana reading has no ref
+  const rows = html.split('<li>');
+  assert.match(rows[1], /reading-ref/);
+  assert.doesNotMatch(rows[2], /reading-ref/);
+  // no meta (list not loaded): the baseindex is the fallback label
+  assert.match(renderWordReadings(analyses, refs, {}), /of <span class="deva">01\.1137<\/span>/);
+});
+
 test('renderWordTables heads sections and renders bare grids', () => {
   const table = {
     stem: 'ठ्रम्प', linga: 'm', class: 'a-m',

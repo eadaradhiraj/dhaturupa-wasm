@@ -139,22 +139,52 @@ const LINGAS = { m: 'masculine', f: 'feminine', n: 'neuter' };
 // [{stem, linga, class, vibhakti, vacana}] -> reading list HTML. Each row
 // states the relation ("instrumental singular of ठ्रम्प") and carries a
 // toggle that loads that stem's own declension (app.js: reading-table-btn).
-export function renderWordReadings(analyses) {
+// `krtRefs` are corpus subanta postings ({baseindex, krt, field, vibhakti,
+// vacana}) whose slot matches a reading: that reading then links to the
+// dhātu whose kṛt paradigm produces this form. `meta` maps baseindex ->
+// {dhatu, artha} for the link labels (app.js: dhatuCards).
+export function renderWordReadings(analyses, krtRefs = [], meta = {}) {
   if (!analyses || analyses.length === 0) {
     return '<p class="muted">No readings — check the spelling. Foreign ' +
       'names work in their Sanskritized spelling, usually ending in a vowel ' +
       '(e.g. जॉन for John).</p>';
   }
+  // Gender + slot must match exactly: the input form is the same string, so
+  // a posting is evidence for this reading iff field/vibhakti/vacana agree
+  // (corpus duplicates across families collapse to one link per dhātu).
+  const refsFor = (a) => {
+    const seen = new Set();
+    const out = [];
+    for (const p of krtRefs || []) {
+      if (p.field !== a.linga || p.vibhakti !== a.vibhakti || p.vacana !== a.vacana) continue;
+      const key = `${p.baseindex}|${p.krt}`;
+      if (seen.has(key)) continue;
+      seen.add(key);
+      out.push(p);
+    }
+    return out;
+  };
+  const refLink = (p) => {
+    const entry = (meta || {})[p.baseindex];
+    const name = entry ? entry.dhatu : p.baseindex;
+    return `<a class="reading-ref" href="#dhatu/${encodeURIComponent(p.baseindex)}" ` +
+      `title="occurs in the corpus as ${escapeHtml(p.krt)} of ${escapeHtml(name)}">` +
+      `${escapeHtml(p.krt)} of <span class="deva">${escapeHtml(name)}</span></a>`;
+  };
   const rows = analyses.map((a) => {
     const slot = [VIBHAKTIS[a.vibhakti] || a.vibhakti, VACANAS[a.vacana] || a.vacana]
       .filter(Boolean)
       .join(' ');
     const linga = LINGAS[a.linga] || a.linga;
+    const refs = refsFor(a);
+    const refsHtml = refs.length
+      ? ` <span class="reading-refs">— ${refs.map(refLink).join(', ')}</span>`
+      : '';
     return `<li><span class="reading-slot">${escapeHtml(slot)}</span> of ` +
       `<span class="deva">${escapeHtml(a.stem)}</span> ` +
       `<span class="muted">(${escapeHtml(linga)} · ${escapeHtml(a.class)})</span> ` +
       `<button class="reading-table-btn" data-stem="${escapeHtml(a.stem)}" ` +
-      `data-linga="${escapeHtml(a.linga)}">table</button></li>`;
+      `data-linga="${escapeHtml(a.linga)}">table</button>${refsHtml}</li>`;
   });
   return `<ul class="word-readings">${rows.join('')}</ul>`;
 }

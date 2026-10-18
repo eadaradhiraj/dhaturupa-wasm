@@ -663,3 +663,36 @@ Added the missing shell parts plus a "keep in sync with app.html"
 comment there; re-ran `./check.sh`: ALL CHECKS PASSED (exhaustive audits
 from the --full run had already passed — no engine change after);
 render 11/11, e2e 20/20, smoke, browser self-test 445 checks.
+
+## 2026-10-18 (2) — word view follow-ups: candra spellings + readings → dhātu links
+
+User review of the word view: no CLI; no consonant-final
+"Sanskritization" fallback (HK/Deva → SLP1 → table if possible, else say
+so honestly); readings list stays as-is; and yes — link readings to
+dhātus.
+
+Candra: the empty-state hint's own example जॉन errored —
+`deva_to_slp1` rejected the candra vowels (ऑ/ॉ, ऍ/ॅ) and their
+Dravidian short partners (ऎ/ॆ, ऒ/ॊ). They now fold onto the nearest
+plain vowel (जॉन → jona); no paradigm keys off the distinction, and
+slp1→deva is untouched so roundtrips are unchanged. Unit test + e2e pin.
+
+Dhātu links: `runWordForm` probes the subanta shard for the input form
+itself and attaches corpus kṛt postings (`{baseindex, krt, field,
+vibhakti, vacana}`) to the readings they match on gender+slot — so
+`gacCan` reads "… of गच्छत् — शतृ of गम्" with a `#dhatu/01.1137`
+link. `renderWordReadings(analyses, krtRefs, meta)` matches per reading,
+dedupes per dhātu (family differences collapse) and falls back to the
+baseindex label when the list meta is missing. Enrichment is
+best-effort, serialized against run races (stale shard fetches cannot
+rewrite newer readings) and never tears down a reading table the user
+already opened.
+
+Tests: translit +1; render 11 → 12; e2e 20 → 22 (candra जॉन + kṛt link
+through dist+pkg-node); browser self-test 445 → 449 (ref appears, names
+शतृ · गम्, targets 01.1137, click opens गम्). `./check.sh --full` run:
+exhaustive audits green on this revision (derive_ting 505s,
+reverse_audit_full 237s — 0 misses, krt click/prefixed audits green);
+the one failure was the first self-test run — `waitFor` returns a
+boolean and the new code called `.getAttribute` on it — fixed, 449/449,
+and the fast `./check.sh` re-run: ALL CHECKS PASSED.

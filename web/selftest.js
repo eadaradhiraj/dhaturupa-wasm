@@ -379,6 +379,28 @@ try {
   const wn = await wordRun('Wrampena');
   ok('word: Wrampena reads only as itself', !/instrumental/.test(wn.readings), wn.readings.slice(0, 90));
 
+  // ---- word view: readings link to the dhātus whose kṛt paradigms produce
+  // the form. गच्छन् occurs in the subanta index as शतृ of गम् (01.1137);
+  // the matching reading must carry that link and open that page.
+  location.hash = 'word';
+  const wg = await wordRun('gacCan');
+  ok('word: kṛt form still reads (गच्छत्)', /of गच्छत्/.test(wg.readings), wg.readings.slice(0, 90));
+  const wref = await waitFor(() => Boolean($('word-readings').querySelector('a.reading-ref')),
+    { timeout: 10000 }) ? $('word-readings').querySelector('a.reading-ref') : null;
+  ok('word: reading links its dhātu (शतृ of गम्)', Boolean(wref),
+    text($('word-readings')).slice(0, 140));
+  if (wref) {
+    ok('word: ref names शतृ · गम् and targets 01.1137',
+      wref.getAttribute('href') === '#dhatu/01.1137' &&
+      text(wref).includes('शतृ') && text(wref).includes('गम्'),
+      `${wref.getAttribute('href')} · ${text(wref)}`);
+    wref.click();
+    const openedW = await waitFor(() =>
+      !$('view-detail').hidden && text($('detail-title')).includes('01.1137'),
+      { timeout: 15000 });
+    ok('word: ref click opens the dhātu page', openedW, text($('detail-title')));
+  }
+
   // ---- no console errors anywhere above
   ok('no console errors during the run', errors.length === 0, errors.slice(0, 3).join(' | '));
     })(),

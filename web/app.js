@@ -613,6 +613,11 @@ async function runWordForm() {
   el('word-note').textContent = '';
   el('word-readings').innerHTML = '';
   el('word-tables').innerHTML = '';
+  // Serialize runs: a late shard fetch from an older run must not rewrite
+  // the newer run's readings.
+  runWordForm.id = (runWordForm.id || 0) + 1;
+  const mine = runWordForm.id;
+  const alive = () => mine === runWordForm.id;
   try {
     const res = ok(subanta_analyze(q), 'word');
     const n = res.analyses.length;
@@ -621,6 +626,26 @@ async function runWordForm() {
       `${res.tables.length} declension table${res.tables.length === 1 ? '' : 's'}`;
     el('word-readings').innerHTML = renderWordReadings(res.analyses);
     el('word-tables').innerHTML = renderWordTables(res.tables);
+    // Reading → dhātu links: probe the subanta shard for the input form
+    // itself; kṛt postings whose slot matches a reading name that reading's
+    // dhātu (गच्छन् → शतृ of गम्). Best-effort: a fetch failure leaves the
+    // plain reading list in place, and a reading table the user already
+    // opened is never torn down by the enrichment render.
+    if (n > 0) {
+      try {
+        const shard = ok(index_shard(res.word, SHARDS), 'shard').shard;
+        await loadShard('u' + shard,
+          `data/shards/sub-${String(shard).padStart(2, '0')}.index.json`);
+        if (alive() && !el('word-readings').querySelector('div.reading-table')) {
+          const hits = ok(index_query_family('u' + shard, res.word), 'query').hits;
+          const refs = hits.filter((h) => h.kind === 'subanta');
+          if (refs.length > 0) {
+            el('word-readings').innerHTML =
+              renderWordReadings(res.analyses, refs, dhatuCards());
+          }
+        }
+      } catch { /* corpus refs are best-effort */ }
+    }
     status('done');
   } catch (e) {
     el('word-readings').innerHTML = '<p class="muted">—</p>';

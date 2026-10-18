@@ -39,9 +39,12 @@ fn independent_vowel(ch: char) -> Option<&'static str> {
         'ॠ' => Some("F"),
         'ऌ' => Some("x"),
         'ॡ' => Some("X"),
-        'ए' => Some("e"),
+        // Candra/short e-o (foreign and Dravidian spellings: जॉन, पॅट). SLP1
+        // has no glyphs for them and no paradigm keys off the distinction,
+        // so they fold onto the nearest plain vowel.
+        'ए' | 'ऍ' | 'ऎ' => Some("e"),
         'ऐ' => Some("E"),
-        'ओ' => Some("o"),
+        'ओ' | 'ऑ' | 'ऒ' => Some("o"),
         'औ' => Some("O"),
         _ => None,
     }
@@ -59,9 +62,9 @@ fn matra(sign: char) -> Option<&'static str> {
         'ॄ' => Some("F"),
         'ॢ' => Some("x"),
         'ॣ' => Some("X"),
-        'े' => Some("e"),
+        'े' | 'ॅ' | 'ॆ' => Some("e"),
         'ै' => Some("E"),
-        'ो' => Some("o"),
+        'ो' | 'ॉ' | 'ॊ' => Some("o"),
         'ौ' => Some("O"),
         _ => None,
     }
@@ -393,5 +396,16 @@ mod tests {
         assert_eq!(slp1_to_deva(""), None);
         assert_eq!(slp1_to_deva("praBavati;"), None);
         assert_eq!(slp1_to_deva("Bava/ti"), None);
+    }
+
+    #[test]
+    fn candra_vowels_fold_to_plain() {
+        // Foreign-name spellings decode: candra o/e have no SLP1 glyph and no
+        // paradigm keys off the distinction, so they fold onto o/e — `जॉन`
+        // must reach the word view as a declinable jona-class stem.
+        assert_eq!(deva_to_slp1("जॉन").as_deref(), Some("jona"));
+        assert_eq!(deva_to_slp1("जॉर्ज").as_deref(), Some("jorja"));
+        assert_eq!(deva_to_slp1("पॅट").as_deref(), Some("pewa"));
+        assert_eq!(deva_to_slp1("ऑन").as_deref(), Some("ona"));
     }
 }

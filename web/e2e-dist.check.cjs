@@ -107,5 +107,15 @@ check('Wrampena reads only as itself',
 const wd = ok(w.subanta_analyze('jona'), 'word3');
 check('HK foreign name declines (John)',
   wd.analyses.some((a) => a.stem === 'जोन') && wd.tables.some((t) => t.class === 'a-m'));
+const wj = ok(w.subanta_analyze('जॉन'), 'word4');
+check('candra spelling जॉन folds to जोन',
+  wj.word === 'जोन' && wj.tables.some((t) => t.class === 'a-m'));
+// the word view links readings to their dhātu by probing this shard itself
+// (गच्छन् = शतृ of गम् 01.1137, masculine nominative/vocative)
+const wk = ok(w.subanta_analyze('gacCan'), 'word5');
+const wkHits = ok(w.index_query_family(loadShard('sub', wk.word), wk.word), 'word refs').hits;
+check('kṛt readings link to their dhātu (शतृ of गम्)',
+  wkHits.some((h) => h.kind === 'subanta' && h.krt === 'शतृ' &&
+    h.baseindex === '01.1137' && h.field === 'm'));
 
 console.log(`\nALL ${pass} PORTAL-FLOW CHECKS PASSED`);
