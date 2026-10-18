@@ -733,3 +733,53 @@ reading visible). Gate: `./check.sh` ALL CHECKS PASSED (render 12/12,
 e2e 24/24, smoke, 451 checks) + `./check.sh --full` green: exhaustive
 audits (reverse_audit_full 0 misses; derive_ting; krt click/prefixed)
 confirm no कृदन्त/kṛt grid moved.
+
+## 2026-10-18 (4) — शब्द vendoring + the derived अन्-stem (`Class::AnM`) fix
+
+User ask: decline **any** base word — foreign names included — into the
+8×3 subanta table, with ashtadhyayi.com as the parity oracle, and
+reverse-analyze inflected input to base word + vibhakti/vacana.
+
+**Vendored display path.** Raw `data/shabda_data2.json` (pinned
+`a9f9112`, 9007 entries, 24 cells, variants `-`-joined, sambodhana
+`हे `-prefixed) → `web/build-shabda.cjs` trims/validates →
+`dist/data/shabda2.json`. `render.js` `siteTables()` maps the site's own
+grid per (word, linga) with `SITE_LINGA_CODES`/`lingaLabel`; `app.js`
+`ensureShabda()` lazily fetches on the first word view and swaps the
+engine grid in place in `runWordForm`; fetch failure degrades to the
+derived path silently. `check.sh` refreshes the data + header count (36).
+
+**AnM arm.** The data-derived weak-stem rule (84 पुं-अन् stems in the
+शब्द data): **ञ्**-style when `p` ends in open च/ज (राजन्→राजा/राजानौ),
+**drop** when `p`'s final consonant is ष/ध/ट or "open" (vowel-attached:
+उक्षन्→उक्ष्णा, दुर्नामन्→दुर्नाम्ना), else **keep** (कर्मन्→कर्मणा).
+69/69 on the three regular families; 15 irregulars (numerals अष्टन्…,
+हन्→घ्न, युवन्/मघवन्/श्वन्/अर्वन्/प्रतिदिवन्, दीर्घाहन् with दीर्घाहाः
+strong) stay DB-covered. New `AnWeak`/`an_weak()` picks the style.
+
+**site_natva details** (learned cell-for-cell from the data):
+a nasal in a **ह्न conjunct** never voices — दीर्घाह्नः/तमिस्रह्नः
+stay dental though ह् is otherwise transparent (बर्हिणा, ब्रह्मणः,
+ग्राहिणः voice through it); and the **रुत्व-र्** — a nasal abutting
+the र् the stem itself spells in a र्न conjunct stays dental
+(दुर्नामन् → दुर्नामा/दुर्नामभ्याम्, दुर्नामक, पुनर्नवा), while an
+original र् voices the composed conjunct (धीरन् → धीर्णा/धीराणि).
+Implemented as a stem-conditioned flag on `site_natva`.
+
+**Routing.** `-van` masculine splits by the same rule: cluster-final
+वन् (यज्वन्/धन्वन्/पर्वन् → VanM keep) vs open वन् (ग्रावन्/पीवन् →
+AnM drop). Neuter `-an` (मनिन्) got the same split in `Class::ManN`:
+कर्मन्/धन्वन् keep, नामन्/धीरन् elide with the site's alternant pairs
+(नाम्नी-नामनी, नाम्नि-नामनि — all 15 drop मन्-neuters show them);
+N routing broadened from `-man` to all `-an` (धीरन्, धन्वन्, पर्वन्).
+
+**Audit** (`web/audit-an-stems.cjs`, hand-run, not in check.sh): derived
+vs the site's own grids for every नजन्त stem — P 286/313 full, N 80/84,
+S 0/3; the 34 misses are the accepted irregulars, हेमन् (site data
+bug: `हे` stripped from every cell), and 3 feminine -an/-in stems with
+no derived paradigm.
+
+Tests: `tests/wasm_api.rs` an-stem test expanded to 19 — 24-cell grids
+for राजन्/आत्मन्/उक्षन्/कर्मन्/ग्रावन्/दुर्नामन्, loc-sg variants,
+analyze pins (उक्ष्णा, ग्राव्णः, ग्रावाणौ, दुर्नामा), and neuter pins
+(नामन्/कर्मन्/धन्वन्/धीरन्, pairs included).

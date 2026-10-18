@@ -13,6 +13,7 @@ mkdir -p data
 curl -sL https://cdn.jsdelivr.net/gh/ashtadhyayi-com/data@a9f9112/dhatu/data.txt -o data/dhatu_data.json
 curl -sL https://cdn.jsdelivr.net/gh/ashtadhyayi-com/data@a9f9112/dhatu/vidyut/vidyut_dhatupatha_5.tsv -o data/vidyut_dhatupatha_5.tsv
 curl -sL https://cdn.jsdelivr.net/gh/ashtadhyayi-com/data@a9f9112/kosha/upasargartha_chandrika.json -o data/upasargartha_chandrika.json
+curl -sL https://cdn.jsdelivr.net/gh/ashtadhyayi-com/data@a9f9112/shabda/data2.txt -o data/shabda_data2.json
 for fam in shuddha nich san yang yangluk; do \
   curl -sL https://cdn.jsdelivr.net/gh/ashtadhyayi-com/data@a9f9112/dhatu/dhatuforms_vidyut_${fam}_kartari.txt -o data/ting_${fam}_kartari.json; \
   curl -sL https://cdn.jsdelivr.net/gh/ashtadhyayi-com/data@a9f9112/dhatu/dhatuforms_vidyut_${fam}_karmani.txt -o data/ting_${fam}_karmani.json; \
@@ -26,6 +27,14 @@ cover 2229 baseindexes, `yang/yangluk` cover 1782 (no intensives for the
 rest). Upstream ships no precomputed prefixed tables — prefixing is
 runtime-generated (see bridge below). Legacy `ting_kartari.json` /
 `krut.json` names are gone (byte-dupes of the `shuddha` files).
+
+16th file: `shabda/data2.txt` (10 MB) — the site's शब्दपाठः dump, 9,007
+entries; ashtadhyayi.com renders its `/shabda/<urlid>` pages from exactly
+this. The word view serves it trimmed via `node web/build-shabda.cjs` →
+`dist/data/shabda2.json` (2.4 MB): the site's own 24 cells per listed word
+(the word-view display oracle), while unlisted words keep the derived
+engine tables. `check.sh` refreshes the trimmed file whenever the dump is
+present.
 
 Build-only ground truth (never shipped): skt-morph-data
 (`SKT_MORPH_DATA`, default `/home/edhiraj/Documents/projs/pypanini/skt-morph-data`)
@@ -168,23 +177,27 @@ offline-first `sw.js`): dhatu list with metadata filters, per-dhatu detail
 (info, upasargas, ting/krut tables, prefixed views, krt click-through
 declension, in-dhatu search), cross-dhatu form search (Devanagari or
 Harvard-Kyoto), and a word view (Decline a word: any word in → case
-readings + base word + full declension, kṛt readings linked to their dhātu;
-ī/ū-feminine stems get both vṛttis — the lexical नदीसंज्ञा default first
-(लक्ष्मीः … लक्ष्मीणाम्, as on ashtadhyayi.com's शब्द pages) and the
-कृदन्त/उगित् grid beside it (लक्ष्मी …, as on its कृदन्त pages); foreign
-names welcome — candra spellings like जॉन fold to plain vowels). Pure
-rendering is node-tested (`web/tests/`).
+readings + base word + full declension, kṛt readings linked to their dhātu.
+For every word the शब्दपाठः lists, the displayed grid is the site's own —
+the vendored `data/shabda2.json` cells verbatim (लक्ष्मी gets लक्ष्मीः …,
+नदी the ङ्यन्त bare nominative, गति गत्या, सखि सखा …), credited as
+`ashtadhyayi.com @urlid`; unlisted words (foreign names like जॉन) keep the
+derived engine tables — the lexical नदीसंज्ञा default and the कृदन्त/उगित्
+grid both shown for a fresh ī/ū-stem; candra spellings like जॉन fold to
+plain vowels). Pure rendering is node-tested (`web/tests/`).
 
 ```bash
 cargo run -q --release -- build-site --out dist   # shell + data + blobs
+node web/build-shabda.cjs                         # word-view शब्द oracle (needs data/shabda_data2.json)
 wasm-pack build --target web --out-dir dist/pkg   # WASM bundle
 python3 -m http.server 8080 --directory dist      # open /index.html
 node --test web/tests/                            # render tests
-node web/e2e-dist.check.cjs                     # 24 portal-flow checks vs dist+pkg-node
+node web/e2e-dist.check.cjs                     # 36 portal-flow checks vs dist+pkg-node
 ```
 
 Layout under `dist/`: `index.html app.js render.js sw.js pkg/`
-plus `data/dhatu_data.json`, `data/shards/{shard,sub}-*.index.json`
+plus `data/dhatu_data.json`, `data/shabda2.json` (word-view शब्द oracle),
+`data/shards/{shard,sub}-*.index.json`
 (256 + 256 hash shards over all families: base ~4.4MB raw / ~0.5MB gzipped
 each, subanta ~5.6MB raw / ~1.5MB gzipped each — one shard of each per
 query, LRU 8 in memory, cached offline after),
@@ -220,9 +233,10 @@ python3 -m http.server 8080
 
 # gate order: fmt → clippy (pedantic deny) → cargo test → [--full] exhaustive
 # → wasm-pack build ×3 (browser, node, served dist/pkg — pkg can't drift) →
-# dist shell refresh → node --test web/tests/ → e2e-dist.check.cjs (24 portal
+# dist shell refresh (incl. the trimmed शब्द oracle) → node --test web/tests/
+# → e2e-dist.check.cjs (36 portal
 # flows on served artifacts) → smoke.cjs (every wasm export the app calls) →
-# browser self-test (headless Chromium via chromedriver, 400+ DOM checks)
+# browser self-test (headless Chromium via chromedriver, 450+ DOM checks)
 cargo fmt --check
 cargo clippy --all-targets -- -D warnings
 cargo test

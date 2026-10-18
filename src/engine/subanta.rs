@@ -662,19 +662,33 @@ pub fn decline(stem: &str, linga: Linga, class: &Class) -> Result<Paradigm, &'st
                 return Err(NOT_POSSIBLE);
             }
             let p = &stem[..stem.len() - 2];
+            // The शब्दपाठः sorts regular `-an` masculines three ways by the
+            // weak stem (राजन्→राज्ञः, आत्मन्→आत्मनः, उक्षन्→उक्ष्णः); the
+            // spelling picks the family — see `an_weak`.
+            let weak = match an_weak(p) {
+                AnWeak::Y => format!("{p}Y"),
+                AnWeak::Keep => stem.to_string(),
+                AnWeak::Drop => format!("{p}n"),
+            };
             let an = format!("{p}An");
-            let y = format!("{p}Y");
             let az = format!("{p}a");
-            table(&[
+            let mut cells = table(&[
                 (f(p, "A"), f(&an, "O"), f(&an, "aH")),
-                (f(&an, "am"), f(&an, "O"), f(&y, "aH")),
-                (f(&y, "A"), f(&az, "ByAm"), f(&az, "BiH")),
-                (f(&y, "e"), f(&az, "ByAm"), f(&az, "ByaH")),
-                (f(&y, "aH"), f(&az, "ByAm"), f(&az, "ByaH")),
-                (f(&y, "aH"), f(&y, "oH"), f(&y, "Am")),
-                (f(&y, "i"), f(&y, "oH"), f(&az, "su")),
+                (f(&an, "am"), f(&an, "O"), f(&weak, "aH")),
+                (f(&weak, "A"), f(&az, "ByAm"), f(&az, "BiH")),
+                (f(&weak, "e"), f(&az, "ByAm"), f(&az, "ByaH")),
+                (f(&weak, "aH"), f(&az, "ByAm"), f(&az, "ByaH")),
+                (f(&weak, "aH"), f(&weak, "oH"), f(&weak, "Am")),
+                (f(&weak, "i"), f(&weak, "oH"), f(&az, "su")),
                 (stem.to_string(), f(&an, "O"), f(&an, "aH")),
-            ])
+            ]);
+            // Locative singular keeps the site's second variant for the
+            // elided families (`राज्ञि-राजनि`, `उक्ष्णि-उक्षणि`); `keep`
+            // collapses (आत्मनि).
+            if weak != stem {
+                put(&mut cells, 6, 0, vec![f(&weak, "i"), f(stem, "i")]);
+            }
+            cells
         }
         Class::InM => {
             if linga != Linga::M || !stem.ends_with("in") {
@@ -867,26 +881,42 @@ pub fn decline(stem: &str, linga: Linga, class: &Class) -> Result<Paradigm, &'st
             ])
         }
         Class::ManN => {
-            // `man`-stem neuter (ङ्वनिप्; site @sadman1): nominative drops
-            // the `n` (`sadma`), अनी-plural on the bare `an`-less stem
-            // (`sadmAni`), and instr/dat/abl dual/plural on the weak stem
-            // (`sadmaByAm`).
+            // `an`-stem neuter (ङ्वनिप्/मनिन्; site @sadman1/@nAman1):
+            // nominative = stem minus `n` (`sadma`), अनी-plural on the bare
+            // `an`-less stem (`sadmAni`), instr/dat/abl dual/plural on the
+            // short stem (`sadmaByAm`). The weak stem keeps its `n` for a
+            // cluster-final `p` (कर्मन् → कर्मणा, धन्वन्) and elides for an
+            // open one (नामन् → नाम्ना), where the site lists the
+            // elided/unelided alternants side by side (`नाम्नी-नामनी`,
+            // `नाम्नि-नामनि`).
             if linga != Linga::N || !stem.ends_with("an") {
                 return Err(NOT_POSSIBLE);
             }
             let p = &stem[..stem.len() - 1];
             let q = &stem[..stem.len() - 2];
+            let weak = match an_weak(q) {
+                AnWeak::Keep => stem.to_string(),
+                _ => format!("{q}n"),
+            };
             let plural = f(q, "Ani");
+            let dual = f(p, "nI");
             let mut cells = table(&[
-                (p.to_string(), f(p, "nI"), plural.clone()),
-                (p.to_string(), f(p, "nI"), plural.clone()),
-                (f(stem, "A"), f(p, "ByAm"), f(p, "BiH")),
-                (f(stem, "e"), f(p, "ByAm"), f(p, "ByaH")),
-                (f(stem, "aH"), f(p, "ByAm"), f(p, "ByaH")),
-                (f(stem, "aH"), f(stem, "oH"), f(stem, "Am")),
-                (f(stem, "i"), f(stem, "oH"), f(p, "su")),
-                (p.to_string(), f(p, "nI"), plural),
+                (p.to_string(), dual.clone(), plural.clone()),
+                (p.to_string(), dual.clone(), plural.clone()),
+                (f(&weak, "A"), f(p, "ByAm"), f(p, "BiH")),
+                (f(&weak, "e"), f(p, "ByAm"), f(p, "ByaH")),
+                (f(&weak, "aH"), f(p, "ByAm"), f(p, "ByaH")),
+                (f(&weak, "aH"), f(&weak, "oH"), f(&weak, "Am")),
+                (f(&weak, "i"), f(&weak, "oH"), f(p, "su")),
+                (p.to_string(), dual, plural),
             ]);
+            if weak != stem {
+                let du = vec![f(&weak, "I"), f(p, "nI")];
+                put(&mut cells, 0, 1, du.clone());
+                put(&mut cells, 1, 1, du.clone());
+                put(&mut cells, 7, 1, du);
+                put(&mut cells, 6, 0, vec![f(&weak, "i"), f(stem, "i")]);
+            }
             put(&mut cells, 7, 0, vec![stem.to_string(), p.to_string()]);
             cells
         }
@@ -926,6 +956,11 @@ fn natva_cells(cells: Vec<Slot>, stem: &str, linga: Linga, class: &Class) -> Vec
     // न्-final prātipadikas (`rAjan`/`kzamin`/`sadman`) and इगन्त neuters
     // with the नुम् augment (@kaTu4/@vAri1) run the step for every cell.
     let all = stem.ends_with('n') || matches!(class, Class::IN | Class::UN);
+    // A stem that spells the `र्न` conjunct itself (`durnAman`) keeps its
+    // abutting nasal dental: the site treats that `र्` as रुत्व-र्
+    // (`दुर्` < `दुस्`). Stems spelling `र`+`न्` apart (`dhIran`) voice the
+    // composed conjunct instead (`धीर्णा`, कर्ण-like).
+    let ru_tva = stem.contains("rn");
     // Otherwise only cells whose sup् affix itself contains a न: इन
     // instr-sg (a/i/u-stems) and नाम् gen-pl (a/ā/i/ī/u/ū-stems). अदन्त/अत्
     // stems must not voice their strong नुम् (`gacCanti`, `kzuBnatA` stay
@@ -962,7 +997,7 @@ fn natva_cells(cells: Vec<Slot>, stem: &str, linga: Linga, class: &Class) -> Vec
                     if !allow || s == stem {
                         s
                     } else {
-                        site_natva(&s)
+                        site_natva(&s, ru_tva)
                     }
                 })
                 .collect();
@@ -978,17 +1013,31 @@ fn natva_cells(cells: Vec<Slot>, stem: &str, linga: Linga, class: &Class) -> Vec
 /// trigger; every letter strictly between must be in अट् + कवर्ग + पवर्ग +
 /// ह्/य्/व् + anusvāra (ल्, न्, dentals, sibilants and the rest block), and
 /// a word-final `न्` never voices (8.4.37 पदान्तस्य).
-fn site_natva(s: &str) -> String {
+///
+/// Two spelling details the site keeps: a nasal in a **ह्न conjunct** never
+/// voices — दीर्घाह्नः/तमिस्रह्नः stay dental even though ह् is otherwise
+/// transparent (बर्हिणः, ब्रह्मणः, ग्राहिणः voice through it) — and a nasal
+/// that abuts the **रुत्व-र्** of a stem spelled with `र्न` stays dental
+/// (दुर्नामा, दुर्नामभ्याम्), while an original `र्` voices the composed
+/// conjunct (धीरन् → धीर्णा; कर्ण-like). `ru_tva` carries that stem fact.
+fn site_natva(s: &str, ru_tva: bool) -> String {
     let Some(pos) = s.rfind('n') else {
         return s.to_string();
     };
     if pos == s.len() - 1 {
         return s.to_string();
     }
+    if pos > 0 && s.as_bytes()[pos - 1] == b'h' {
+        return s.to_string();
+    }
     let mut trigger = false;
-    for b in s.bytes().take(pos).rev() {
+    for (i, b) in s.bytes().take(pos).rev().enumerate() {
         match b as char {
-            'f' | 'F' | 'r' | 'z' => {
+            // रुत्व-र् (`दुर्` < `दुस्`, only when the stem itself spells the
+            // `र्न` conjunct: दुर्नामन्) never voices the nasal it abuts;
+            // an original र् does (धीरन् → धीर्णा, बर्हिन् → बर्हिणा).
+            'r' if i == 0 && ru_tva => {}
+            'f' | 'F' | 'z' | 'r' => {
                 trigger = true;
                 break;
             }
@@ -1071,6 +1120,46 @@ fn table(rows: &[(String, String, String)]) -> Vec<Slot> {
         }
     }
     out
+}
+
+/// Weak-stem family of a regular masculine `-an` stem (`p` = stem minus
+/// `an`). The शब्दपाठः splits the regular paradigms three ways and the
+/// spelling decides:
+///
+/// * `Y` (ञ्) — `p` ends in a palatal (`c`/`j`): राजन्→राज्ञः, मज्जन्,
+///   प्रियपञ्चन् (the ञ् also survives the मज्ज-cluster);
+/// * `Drop` — `p`'s last consonant is ट्/ध्/ष् (`w`/`D`/`z`) or "open"
+///   (attached to a vowel, not a virama): उक्षन्→उक्ष्णः, मूर्धन्,
+///   प्रियाष्टन्, ग्रावन्, प्रेमन्, अणिमन् (the अ elides);
+/// * `Keep` — a cluster-final `p` (आत्मन्→आत्मनः, कर्मन्, अध्वन्, अश्मन्).
+///
+/// Irregular families are not spelling-derivable and stay with their
+/// शब्दपाठः grids: the `वन्` type (अर्वन्→अर्वतः, मघवन्), special grades
+/// (युवन्→यूनः, श्वन्→शुनः, प्रतिदिवन्→प्रतिदीव्नः), the हन्→घ्न paradigm
+/// (वृत्रहन्→वृत्रघ्नः) and the numerals (अष्टन्/दशन्/…).
+#[derive(Clone, Copy, PartialEq, Eq)]
+enum AnWeak {
+    Y,
+    Keep,
+    Drop,
+}
+
+fn an_weak(p: &str) -> AnWeak {
+    let mut chars = p.chars().rev();
+    let Some(last) = chars.next() else {
+        return AnWeak::Keep;
+    };
+    match last {
+        'c' | 'j' => AnWeak::Y,
+        'w' | 'D' | 'z' => AnWeak::Drop,
+        // SLP1 consonants carry their inherent vowel, so a preceding vowel
+        // character means "open"; anything else (or a vowel-final `p`,
+        // which is malformed here) falls through to `keep`.
+        _ => match chars.next() {
+            Some(prev) if "aAiIuUfFxXeEoO".contains(prev) => AnWeak::Drop,
+            _ => AnWeak::Keep,
+        },
+    }
 }
 
 /// Normalize dental-final weak stems (`Bavad` -> `Bavat`).
@@ -1741,18 +1830,24 @@ pub fn classes_for(stem: &str, linga: Linga) -> Vec<Class> {
             Linga::N => out.push(Class::AN),
             Linga::F => {}
         }
-    } else if stem.ends_with("an") {
+    } else if let Some(p) = stem.strip_suffix("an") {
         // Manual `-an`: an-stems (`rAjan`). Participle `-an` (`Bavan`)
         // always resolves through the krt-exact path, so manual never
         // needs at-m here; `-in` is in-stem only; `-van`/`-man` use the
         // ङ्वनिप् paradigms (`yajvan`/`sadman`).
         if linga == Linga::M {
-            if stem.ends_with("van") {
+            // Cluster-final `-van` (यज्वन्/धन्वन्/पर्वन्) is the ङ्वनिप्
+            // keep family; an open `व्` (ग्रावन्/पीवन्) elides like the
+            // rest of the drop family (`an_weak`).
+            if stem.ends_with("van") && an_weak(p) != AnWeak::Drop {
                 out.push(Class::VanM);
             } else {
                 out.push(Class::AnM);
             }
-        } else if linga == Linga::N && stem.ends_with("man") {
+        } else if linga == Linga::N {
+            // Every `-an` neuter follows the मनिन् shape (`nAman`/`karman`
+            // elide or keep by the same spelling rule; `dhanvan`/`parvan`
+            // keep).
             out.push(Class::ManN);
         }
     } else if stem.ends_with("in") {
@@ -2827,8 +2922,21 @@ const STRIPS: &[StripRule] = &[
     (Class::AnM, "AnO", "an"),
     (Class::AnM, "AnaH", "an"),
     (Class::AnM, "Anam", "an"),
-    (Class::AnM, "AByAm", "an"),
-    (Class::AnM, "ABiH", "an"),
+    // The instr/dat/abl dual + plural and the locative plural attach to
+    // `p` + short `a` (राजभ्याम्, आत्मभिः, उक्षसु — the long-ā forms belong
+    // to the ā-stems).
+    (Class::AnM, "aByAm", "an"),
+    (Class::AnM, "aBiH", "an"),
+    (Class::AnM, "aByaH", "an"),
+    // Elided weak stems (उक्ष्णः): the ण्/न् is the stem's own, so the strip
+    // keeps pre and appends `an` (retroflex inputs arrive via the R→n
+    // variant pass; verification re-voices).
+    (Class::AnM, "nA", "an"),
+    (Class::AnM, "ne", "an"),
+    (Class::AnM, "naH", "an"),
+    (Class::AnM, "ni", "an"),
+    (Class::AnM, "noH", "an"),
+    (Class::AnM, "nAm", "an"),
     (Class::AnM, "YaH", "an"),
     (Class::AnM, "YA", "an"),
     (Class::AnM, "Ye", "an"),

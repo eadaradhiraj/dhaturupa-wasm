@@ -134,4 +134,63 @@ check('kṛt readings link to their dhātu (शतृ of गम्)',
   wkHits.some((h) => h.kind === 'subanta' && h.krt === 'शतृ' &&
     h.baseindex === '01.1137' && h.field === 'm'));
 
-console.log(`\nALL ${pass} PORTAL-FLOW CHECKS PASSED`);
+// 10. word-view शब्द oracle: dist/data/shabda2.json ships the site's own
+// 24-cell grids (built by web/build-shabda.cjs), and render.siteTables maps
+// them to display sections. These pin the headline parity cases cell-exactly,
+// so a data refresh that changes a grid can never slip through silently.
+// (Async: dist/render.js is an ES module.)
+(async () => {
+  const { pathToFileURL } = require('node:url');
+  const { siteTables, renderParadigm } = await import(pathToFileURL(`${D}render.js`).href);
+  const sh = JSON.parse(fs.readFileSync(`${D}data/shabda2.json`, 'utf8'));
+  check('shabda2.json carries every site entry (9007)', sh.entries.length === 9007);
+  const byWord = new Map();
+  for (const [word, linga, urlid, forms] of sh.entries) {
+    if (!byWord.has(word)) byWord.set(word, []);
+    byWord.get(word).push([linga, urlid, forms]);
+  }
+  const t = (word) => siteTables(byWord, word);
+  const cell = (word, i) => t(word)[0].cells[i].forms;
+  const lakzmI = t('लक्ष्मी');
+  check('लक्ष्मी site grid: visarga nominative … ण gen.pl',
+    lakzmI.length === 1 && cell('लक्ष्मी', 0)[0] === 'लक्ष्मीः' &&
+    cell('लक्ष्मी', 17)[0] === 'लक्ष्मीणाम्');
+  const nadI = t('नदी');
+  check('नदी site grid: ङ्यन्त bare nominative (not नदीः) … नदीनाम्',
+    nadI.length === 1 && cell('नदी', 0)[0] === 'नदी' &&
+    cell('नदी', 17)[0] === 'नदीनाम्');
+  check('नदी sambodhana keeps हे in the rendered grid',
+    /<td>हे नदि<\/td>/.test(renderParadigm(nadI[0])));
+  check('गति site grid: गत्या + गतये/गत्यै variants',
+    cell('गति', 6)[0] === 'गत्या' &&
+    cell('गति', 9).join('|') === 'गतये|गत्यै');
+  check('सखि site grid: सखा … सख्युः',
+    cell('सखि', 0)[0] === 'सखा' && cell('सखि', 12)[0] === 'सख्युः');
+  const grAmaNI = t('ग्रामणी');
+  check('ग्रामणी: identical masc/fem grids collapse into one section',
+    grAmaNI.length === 1 && grAmaNI[0].lingaLabel === 'masculine, feminine' &&
+    grAmaNI[0].class === 'ashtadhyayi.com @grAmaNI1 @grAmaNI2');
+  const eka = t('एक');
+  check('एक: masculine + neuter grids, empty vocative, ablative variants',
+    eka.length === 2 && eka[0].cells[0].forms[0] === 'एकः' &&
+    eka[1].cells[0].forms[0] === 'एकम्' &&
+    eka[0].cells[21].forms.length === 0 &&
+    eka[0].cells[12].forms.join('|') === 'एकस्माद्|एकस्मात्');
+  check('षष् site grid: षड्/षट् nominative, षण्णाम् gen.pl',
+    cell('षष्', 2).join('|') === 'षड्|षट्' && cell('षष्', 17)[0] === 'षण्णाम्');
+  check('अष्टन् site grid: अष्ट/अष्टौ nominative, अष्टानाम् gen.pl',
+    cell('अष्टन्', 2).join('|') === 'अष्ट|अष्टौ' &&
+    cell('अष्टन्', 17)[0] === 'अष्टानाम्');
+  const asmad = t('अस्मद्');
+  check('अस्मद्: सर्वनाम grid with any-gender label',
+    asmad.length === 1 && asmad[0].linga === 'A' &&
+    asmad[0].lingaLabel === 'any gender' &&
+    cell('अस्मद्', 0)[0] === 'अहम्' && cell('अस्मद्', 1)[0] === 'आवाम्');
+  check('unlisted words fall through to the derived engine tables',
+    t('ठ्रम्पेण').length === 0 && !byWord.has('जोन'));
+})().then(() => {
+  console.log(`\nALL ${pass} PORTAL-FLOW CHECKS PASSED`);
+}, (e) => {
+  console.error(e);
+  process.exit(1);
+});

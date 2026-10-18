@@ -11,7 +11,7 @@ import init, {
 } from '../pkg/dhaturupa_wasm.js';
 import {
   escapeHtml, renderTingTables, renderKrutTables, renderParadigm,
-  renderHits, renderMeta, renderWordReadings, renderWordTables,
+  renderHits, renderMeta, renderWordReadings, renderWordTables, siteTables,
 } from './render.js';
 
 const GANAS = { 1: 'bhvādi', 2: 'adādi', 3: 'juhotyādi', 4: 'divādi', 5: 'svādi', 6: 'tudādi', 7: 'rudhādi', 8: 'tanādi', 9: 'kryādi', 10: 'curādi' };
@@ -38,6 +38,37 @@ async function loadShard(key, path) {
     index_drop_family(oldest);
     shardKeys.delete(oldest);
   }
+}
+
+// Vendored शब्दपाठः oracle: the site's own grids for every word it lists
+// (dist/data/shabda2.json, built by web/build-shabda.cjs). Loaded lazily on
+// the first word-view run; a failure (file absent) leaves the derived engine
+// tables in place. Cells stay the site's Devanagari strings — SLP1 never
+// appears here.
+let shabdaIndex = null;
+let shabdaWait = null;
+let shabdaFailed = false;
+function ensureShabda() {
+  if (shabdaIndex || shabdaFailed) return Promise.resolve();
+  if (!shabdaWait) {
+    shabdaWait = (async () => {
+      try {
+        const text = await fetchText('data/shabda2.json');
+        const index = new Map();
+        for (const [word, linga, urlid, forms] of JSON.parse(text).entries) {
+          let list = index.get(word);
+          if (!list) index.set(word, (list = []));
+          list.push([linga, urlid, forms]);
+        }
+        shabdaIndex = index;
+      } catch {
+        shabdaFailed = true;
+      } finally {
+        shabdaWait = null;
+      }
+    })();
+  }
+  return shabdaWait;
 }
 
 let dhatuList = null;
@@ -621,11 +652,25 @@ async function runWordForm() {
   try {
     const res = ok(subanta_analyze(q), 'word');
     const n = res.analyses.length;
-    el('word-note').textContent =
-      `${res.word} — ${n} reading${n === 1 ? '' : 's'}, ` +
-      `${res.tables.length} declension table${res.tables.length === 1 ? '' : 's'}`;
+    const setNote = (count, site) => {
+      el('word-note').textContent =
+        `${res.word} — ${n} reading${n === 1 ? '' : 's'}, ` +
+        `${count} declension table${count === 1 ? '' : 's'}${site ? ' · ashtadhyayi.com' : ''}`;
+    };
+    setNote(res.tables.length, false);
     el('word-readings').innerHTML = renderWordReadings(res.analyses);
     el('word-tables').innerHTML = renderWordTables(res.tables);
+    // The vendored शब्दपाठः is the oracle for every word it lists: once it
+    // has loaded (lazily, first run), swap the site's own grids in place.
+    // The derived tables above stand for words the corpus does not list
+    // (foreign names, fresh stems).
+    ensureShabda().then(() => {
+      if (!alive() || !shabdaIndex) return;
+      const site = siteTables(shabdaIndex, res.word);
+      if (site.length === 0) return;
+      setNote(site.length, true);
+      el('word-tables').innerHTML = renderWordTables(site);
+    });
     // Reading → dhātu links: probe the subanta shard for the input form
     // itself; kṛt postings whose slot matches a reading name that reading's
     // dhātu (गच्छन् → शतृ of गम्). Best-effort: a fetch failure leaves the
@@ -665,10 +710,17 @@ async function onReadingTableClick(event) {
     return;
   }
   try {
-    const res = ok(subanta_table(btn.dataset.stem, btn.dataset.linga), 'table');
+    // The reading's base word renders from the site oracle when it lists the
+    // word (same rule as the tables above); otherwise the engine's own table
+    // for this stem + gender.
+    await ensureShabda();
+    const site = shabdaIndex ? siteTables(shabdaIndex, btn.dataset.stem) : [];
+    const tables = site.length
+      ? site
+      : ok(subanta_table(btn.dataset.stem, btn.dataset.linga), 'table').tables;
     const div = document.createElement('div');
     div.className = 'reading-table';
-    div.innerHTML = res.tables.map(renderParadigm).join('');
+    div.innerHTML = tables.map(renderParadigm).join('');
     li.after(div);
     btn.textContent = 'hide';
   } catch (e) {

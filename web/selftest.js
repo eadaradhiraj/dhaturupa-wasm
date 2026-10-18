@@ -379,19 +379,53 @@ try {
   const wn = await wordRun('Wrampena');
   ok('word: Wrampena reads only as itself', !/instrumental/.test(wn.readings), wn.readings.slice(0, 90));
 
-  // ---- word view: lexical नदीसंज्ञक `-I` stems. The ashtadhyayi.com शब्द
-  // @lakSmI1 default leads with the visarga (लक्ष्मीः … लक्ष्मीणाम्); the
-  // कृदन्त/उगित् `I-f` grid follows as the second candidate, and the bare
-  // stem reads as a citation ("base word").
+  // ---- word view: the vendored शब्दपाठः (dist/data/shabda2.json, the same
+  // dump ashtadhyayi.com renders its शब्द pages from) is the display oracle
+  // for every word the corpus lists: its own grids replace the derived
+  // candidates and the note credits the source. Words the corpus does not
+  // list (ठ्रम्पेण / Wrampena) keep the derived tables checked above.
+  ok('word: unlisted Wrampena stays on derived tables',
+    !wn.note.includes('ashtadhyayi.com'), wn.note);
+  const hasShabda = await fetch('data/shabda2.json')
+    .then((r) => r.ok).catch(() => false);
   const wl = await wordRun('लक्ष्मी');
-  const wlFirst = $('word-tables').querySelector('section.word-table');
-  const wlHead = wlFirst ? text(wlFirst.querySelector('h4')) : '(no table)';
-  const wlText = wlFirst ? text(wlFirst) : '';
-  ok('word: लक्ष्मी first table is the नदी grid',
-    /I-f-nadi/.test(wlHead) && wlText.includes('लक्ष्मीः'), wlHead);
   ok('word: लक्ष्मी reads as base word + नदी nominative',
-    /citation form/.test(wl.readings) && /I-f-nadi/.test(wl.readings) && wl.tables === 2,
+    /citation form/.test(wl.readings) && /I-f-nadi/.test(wl.readings),
     wl.readings.slice(0, 140));
+  if (!hasShabda) {
+    ok('word: site शब्द grids skipped (dist/data/shabda2.json not built)', true);
+  } else {
+    const wordSite = async (q) => {
+      const r = await wordRun(q);
+      const credited = await waitFor(() =>
+        text($('word-note')).includes('ashtadhyayi.com'), { timeout: 15000 });
+      const first = $('word-tables').querySelector('section.word-table');
+      return {
+        ...r, credited,
+        tables: $('word-tables').querySelectorAll('section.word-table').length,
+        head: first ? text(first.querySelector('h4')) : '',
+        firstCell: first ? text(first.querySelector('td')) : '',
+        grid: first ? text(first) : '',
+      };
+    };
+    const wls = await wordSite('लक्ष्मी');
+    ok('word: लक्ष्मी shows the site @lakSmI1 grid',
+      wls.credited && /ashtadhyayi\.com @lakSmI1/.test(wls.head) &&
+      wls.tables === 1 && wls.firstCell === 'लक्ष्मीः' && wls.grid.includes('लक्ष्मीणाम्'),
+      `${wls.head} · ${wls.firstCell}`);
+    const wns = await wordSite('नदी');
+    ok('word: नदी shows the site ङ्यन्त grid (bare nominative)',
+      wns.credited && /ashtadhyayi\.com @nadI1/.test(wns.head) &&
+      wns.firstCell === 'नदी' && wns.grid.includes('नदीनाम्'),
+      `${wns.head} · ${wns.firstCell}`);
+    const wgs = await wordSite('गति');
+    ok('word: गति shows the site grid with गत्या',
+      wgs.credited && /ashtadhyayi\.com @gati1/.test(wgs.head) &&
+      wgs.grid.includes('गत्या'), `${wgs.head} · ${wgs.firstCell}`);
+    const wss = await wordSite('सखि');
+    ok('word: सखि shows the site grid with सखा',
+      wss.credited && wss.firstCell === 'सखा', `${wss.head} · ${wss.firstCell}`);
+  }
 
   // ---- word view: readings link to the dhātus whose kṛt paradigms produce
   // the form. गच्छन् occurs in the subanta index as शतृ of गम् (01.1137);

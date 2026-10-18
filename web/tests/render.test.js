@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {
   escapeHtml, slotLabel, renderTingTables, renderKrutTables, krtLinkTarget,
   renderParadigm, renderChandrika, renderHits, renderMeta,
-  renderWordReadings, renderWordTables,
+  renderWordReadings, renderWordTables, siteTables,
 } from '../render.js';
 
 test('escapeHtml neutralizes markup', () => {
@@ -178,4 +178,55 @@ test('renderWordTables heads sections and renders bare grids', () => {
   assert.match(html, /हे ठ्रम्प/);
   assert.match(html, /<table><tbody>/);
   assert.match(renderWordTables([]), /No declension/);
+});
+
+test('siteTables maps the शब्द dump to site-exact grids', () => {
+  // 24 site cells, vibhakti-major (pr, dvi, tft, cat, pan, zaz, sap, samb);
+  // `''` marks a cell the site leaves empty, `-` joins variants.
+  const forms = [
+    'गतिः', 'गती', 'गतयः',
+    'गतिम्', 'गती', 'गतीः',
+    'गत्या', 'गतिभ्याम्', 'गतिभिः',
+    'गतये-गत्यै', '', '',
+    'गतेः-गत्याः', 'गतिभ्याम्', 'गतिभ्यः',
+    'गतेः-गत्याः', 'गत्योः', 'गतीनाम्',
+    'गतौ-गत्याम्', 'गत्योः', 'गतिषु',
+    'हे गते', 'हे गती', 'हे गतयः',
+  ].join(';');
+  const byWord = new Map([['गति', [['S', '@gati1', forms]]]]);
+  const tables = siteTables(byWord, 'गति');
+  assert.equal(tables.length, 1);
+  const t = tables[0];
+  assert.equal(t.stem, 'गति');
+  assert.equal(t.linga, 'f');
+  assert.equal(t.lingaLabel, 'feminine');
+  assert.equal(t.class, 'ashtadhyayi.com @gati1');
+  assert.equal(t.cells.length, 24);
+  assert.equal(t.cells[0].vibhakti, 'prathamA');
+  assert.equal(t.cells[2].vacana, 'bahuvacanam');
+  assert.deepEqual(t.cells[6].forms, ['गत्या']);
+  assert.deepEqual(t.cells[9].forms, ['गतये', 'गत्यै']);
+  assert.deepEqual(t.cells[10].forms, []);
+  // The site keeps `हे ` inside the vocative cell; the grid re-adds it.
+  assert.deepEqual(t.cells[21].forms, ['गते']);
+  assert.match(renderParadigm(t), /<td>हे गते<\/td>/);
+  assert.match(renderParadigm(t), /<td>गतये , गत्यै<\/td>/);
+  assert.match(renderParadigm(t), /<td>—<\/td>/);
+  assert.equal(siteTables(byWord, 'ठ्रम्पेण').length, 0);
+  assert.equal(siteTables(undefined, 'गति').length, 0);
+});
+
+test('siteTables collapses cell-identical entries, labels every लिङ्ग', () => {
+  const grid = new Array(24).fill('x').join(';');
+  const byWord = new Map([
+    ['ग्रामणी', [['P', '@grAmaNI1', grid], ['S', '@grAmaNI2', grid]]],
+    ['अस्मद्', [['A', '@asmad1', new Array(24).fill('').join(';')]]],
+  ]);
+  const tables = siteTables(byWord, 'ग्रामणी');
+  assert.equal(tables.length, 1);
+  assert.equal(tables[0].lingaLabel, 'masculine, feminine');
+  assert.equal(tables[0].class, 'ashtadhyayi.com @grAmaNI1 @grAmaNI2');
+  assert.match(renderWordTables(tables),
+    /masculine, feminine \(ashtadhyayi\.com @grAmaNI1 @grAmaNI2\)/);
+  assert.equal(siteTables(byWord, 'अस्मद्')[0].lingaLabel, 'any gender');
 });

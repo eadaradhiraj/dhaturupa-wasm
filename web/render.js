@@ -134,7 +134,8 @@ const VIBHAKTIS = {
   citation: 'citation form',
 };
 const VACANAS = { ekavacanam: 'singular', dvivacanam: 'dual', bahuvacanam: 'plural' };
-const LINGAS = { m: 'masculine', f: 'feminine', n: 'neuter' };
+// `A` is the site's लिङ्ग slot for the सर्वनाम entries (अस्मद्/युष्मद्).
+const LINGAS = { m: 'masculine', f: 'feminine', n: 'neuter', A: 'any gender' };
 
 // [{stem, linga, class, vibhakti, vacana}] -> reading list HTML. Each row
 // states the relation ("instrumental singular of ठ्रम्प") and carries a
@@ -189,7 +190,9 @@ export function renderWordReadings(analyses, krtRefs = [], meta = {}) {
   return `<ul class="word-readings">${rows.join('')}</ul>`;
 }
 
-// [{stem, linga, class, cells}] -> headed declension sections (bare 8x3).
+// [{stem, linga, lingaLabel?, class, cells}] -> headed declension sections
+// (bare 8x3). `lingaLabel` overrides the single-gender label when one site
+// entry stands for several लिङ्गs (e.g. ग्रामणी masc/fem).
 export function renderWordTables(tables) {
   if (!tables || tables.length === 0) {
     return '<p class="muted">No declension: this shape matches no Sanskrit ' +
@@ -198,8 +201,60 @@ export function renderWordTables(tables) {
   }
   return tables.map((t) =>
     `<section class="word-table"><h4><span class="deva">${escapeHtml(t.stem)}</span>` +
-    ` — ${escapeHtml(LINGAS[t.linga] || t.linga)} (${escapeHtml(t.class)})</h4>` +
+    ` — ${escapeHtml(t.lingaLabel || LINGAS[t.linga] || t.linga)} ` +
+    `(${escapeHtml(t.class)})</h4>` +
     renderParadigm(t) + '</section>').join('');
+}
+
+// Vendored शब्दपाठः oracle (dist/data/shabda2.json, built by
+// web/build-shabda.cjs) -> declension sections. `byWord` maps a Devanagari
+// word to site entries `[linga, urlid, forms]`; `forms` is the site's raw
+// 24-cell string — vibhakti-major (pr, dvi, tft, cat, pan, zaz, sap, samb),
+// variants `-`-joined, empty cells `''`. These are the site's own grids, so
+// the word view shows exactly what ashtadhyayi.com renders for a listed
+// word; anything unlisted falls back to the derived engine tables.
+// Entries whose grids are cell-identical collapse into one section: the
+// site lists them once per लिङ्ग/urlid (ग्रामणी @grAmaNI1 masc + @grAmaNI2
+// fem), and two identical grids would read as a rendering bug.
+const SITE_VIB = [
+  'prathamA', 'dvitIyA', 'tftIyA', 'caturTI', 'paJcamI', 'zazWI', 'saptamI',
+  'sambodhana',
+];
+const SITE_VAC = ['ekavacanam', 'dvivacanam', 'bahuvacanam'];
+// The dump's लिङ्ग codes (P/S/N/A) vs. the engine's table codes (m/f/n/A).
+const SITE_LINGA_CODES = { P: 'm', S: 'f', N: 'n', A: 'A' };
+export function siteTables(byWord, word) {
+  const entries = byWord && (byWord.get ? byWord.get(word) : byWord[word]);
+  if (!entries || entries.length === 0) return [];
+  const groups = new Map(); // raw forms string -> {lingas, urlids}
+  for (const [linga, urlid, forms] of entries) {
+    let group = groups.get(forms);
+    if (!group) groups.set(forms, (group = { lingas: [], urlids: [] }));
+    if (!group.lingas.includes(linga)) group.lingas.push(linga);
+    group.urlids.push(urlid);
+  }
+  return [...groups.entries()].map(([forms, group]) => ({
+    stem: word,
+    linga: SITE_LINGA_CODES[group.lingas[0]] || group.lingas[0],
+    lingaLabel: group.lingas
+      .map((l) => LINGAS[SITE_LINGA_CODES[l]] || l)
+      .join(', '),
+    class: `ashtadhyayi.com ${group.urlids.join(' ')}`,
+    cells: forms.split(';').map((raw, i) => {
+      const vibhakti = SITE_VIB[Math.floor(i / 3)];
+      const kept = raw === '' || raw === '-' ? [] : raw.split('-');
+      return {
+        vibhakti,
+        vacana: SITE_VAC[i % 3],
+        // The site keeps `हे ` inside the cell; renderParadigm re-adds it,
+        // so store the bare vocative.
+        forms: kept.map((form) => {
+          const trimmed = form.trim();
+          return vibhakti === 'sambodhana' ? trimmed.replace(/^हे /, '') : trimmed;
+        }),
+      };
+    }),
+  }));
 }
 
 // Chandrika entries -> HTML; `<hl>` spans become highlights, quotes kept.

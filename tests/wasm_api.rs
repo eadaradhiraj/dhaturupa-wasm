@@ -216,6 +216,165 @@ fn subanta_analyze_nadi_i_stem_pin() {
 }
 
 #[test]
+fn subanta_analyze_an_stem_families() {
+    // The शब्दपाठः splits regular `-an` masculines three ways by weak stem
+    // (राजन् @rAjan1 palatal ञ्, आत्मन् @Atman1 cluster-final, उक्षन्
+    // @ukSan1 elided); the derived tables must match each family
+    // cell-for-cell (grids read off the site's own cells).
+    let grid = |stem: &str| -> String {
+        let payload = ok(&wasm::subanta_table(stem, "m"));
+        let tables = payload["tables"].as_array().expect("array");
+        assert_eq!(tables[0]["class"], serde_json::json!("an-m"), "{stem}");
+        tables[0]["cells"]
+            .as_array()
+            .expect("cells")
+            .iter()
+            .map(|c| c["forms"][0].as_str().expect("form").to_string())
+            .collect::<Vec<_>>()
+            .join("|")
+    };
+    assert_eq!(
+        grid("राजन्"),
+        "राजा|राजानौ|राजानः|राजानम्|राजानौ|राज्ञः|राज्ञा|राजभ्याम्|राजभिः|राज्ञे|\
+         राजभ्याम्|राजभ्यः|राज्ञः|राजभ्याम्|राजभ्यः|राज्ञः|राज्ञोः|राज्ञाम्|राज्ञि|\
+         राज्ञोः|राजसु|राजन्|राजानौ|राजानः"
+    );
+    assert_eq!(
+        grid("आत्मन्"),
+        "आत्मा|आत्मानौ|आत्मानः|आत्मानम्|आत्मानौ|आत्मनः|आत्मना|आत्मभ्याम्|आत्मभिः|\
+         आत्मने|आत्मभ्याम्|आत्मभ्यः|आत्मनः|आत्मभ्याम्|आत्मभ्यः|आत्मनः|आत्मनोः|आत्मनाम्|\
+         आत्मनि|आत्मनोः|आत्मसु|आत्मन्|आत्मानौ|आत्मानः"
+    );
+    assert_eq!(
+        grid("उक्षन्"),
+        "उक्षा|उक्षाणौ|उक्षाणः|उक्षाणम्|उक्षाणौ|उक्ष्णः|उक्ष्णा|उक्षभ्याम्|उक्षभिः|\
+         उक्ष्णे|उक्षभ्याम्|उक्षभ्यः|उक्ष्णः|उक्षभ्याम्|उक्षभ्यः|उक्ष्णः|उक्ष्णोः|उक्ष्णाम्|\
+         उक्ष्णि|उक्ष्णोः|उक्षसु|उक्षन्|उक्षाणौ|उक्षाणः"
+    );
+    // कर्मन् exercises the nasal voicing: the cluster-final weak stem is
+    // dental, the strong stem voices after र् (कर्माणौ), and the weak
+    // endings voice (कर्मणा … कर्मणाम्).
+    assert_eq!(
+        grid("कर्मन्"),
+        "कर्मा|कर्माणौ|कर्माणः|कर्माणम्|कर्माणौ|कर्मणः|कर्मणा|कर्मभ्याम्|कर्मभिः|\
+         कर्मणे|कर्मभ्याम्|कर्मभ्यः|कर्मणः|कर्मभ्याम्|कर्मभ्यः|कर्मणः|कर्मणोः|कर्मणाम्|\
+         कर्मणि|कर्मणोः|कर्मसु|कर्मन्|कर्माणौ|कर्माणः"
+    );
+    // ग्रावन् @grAvan1 — open `व्`, so the drop family (ग्राव्णः) even
+    // though it ends in `-van`; the locative keeps both variants.
+    assert_eq!(
+        grid("ग्रावन्"),
+        "ग्रावा|ग्रावाणौ|ग्रावाणः|ग्रावाणम्|ग्रावाणौ|ग्राव्णः|ग्राव्णा|ग्रावभ्याम्|ग्रावभिः|\
+         ग्राव्णे|ग्रावभ्याम्|ग्रावभ्यः|ग्राव्णः|ग्रावभ्याम्|ग्रावभ्यः|ग्राव्णः|ग्राव्णोः|ग्राव्णाम्|\
+         ग्राव्णि|ग्राव्णोः|ग्रावसु|ग्रावन्|ग्रावाणौ|ग्रावाणः"
+    );
+    // दुर्नामन् @durnAman1 — रुत्व-र् (`दुर्` < `दुस्`) never voices the
+    // nasal it abuts: दुर्नामा/दुर्नामभ्याम् stay dental, while the च-वर्ग
+    // strong and the elided weak voice exactly like उक्षन्.
+    assert_eq!(
+        grid("दुर्नामन्"),
+        "दुर्नामा|दुर्नामानौ|दुर्नामानः|दुर्नामानम्|दुर्नामानौ|दुर्नाम्नः|दुर्नाम्ना|दुर्नामभ्याम्|\
+         दुर्नामभिः|दुर्नाम्ने|दुर्नामभ्याम्|दुर्नामभ्यः|दुर्नाम्नः|दुर्नामभ्याम्|दुर्नामभ्यः|\
+         दुर्नाम्नः|दुर्नाम्नोः|दुर्नाम्नाम्|दुर्नाम्नि|दुर्नाम्नोः|दुर्नामसु|\
+         दुर्नामन्|दुर्नामानौ|दुर्नामानः"
+    );
+    // Locative singular: both site variants for the elided families
+    // (राज्ञि-राजनि, उक्ष्णि-उक्षणि), one for `keep` (आत्मनि).
+    let loc = |stem: &str| -> serde_json::Value {
+        let payload = ok(&wasm::subanta_table(stem, "m"));
+        payload["tables"][0]["cells"][18]["forms"].clone()
+    };
+    assert_eq!(loc("राजन्"), serde_json::json!(["राज्ञि", "राजनि"]));
+    assert_eq!(loc("उक्षन्"), serde_json::json!(["उक्ष्णि", "उक्षणि"]));
+    assert_eq!(loc("आत्मन्"), serde_json::json!(["आत्मनि"]));
+    assert_eq!(loc("दुर्नामन्"), serde_json::json!(["दुर्नाम्नि", "दुर्नामनि"]));
+
+    // Neuter `-an` (मनिन्) splits by the same rule: नामन् elides and shows
+    // the site's alternant pairs, कर्मन्/धन्वन् keep.
+    let ncells = |stem: &str| -> Vec<serde_json::Value> {
+        let payload = ok(&wasm::subanta_table(stem, "n"));
+        payload["tables"][0]["cells"]
+            .as_array()
+            .expect("cells")
+            .clone()
+    };
+    let na = ncells("नामन्");
+    assert_eq!(na[0]["forms"], serde_json::json!(["नाम"]));
+    assert_eq!(na[1]["forms"], serde_json::json!(["नाम्नी", "नामनी"]));
+    assert_eq!(na[6]["forms"], serde_json::json!(["नाम्ना"]));
+    assert_eq!(na[17]["forms"], serde_json::json!(["नाम्नाम्"]));
+    assert_eq!(na[18]["forms"], serde_json::json!(["नाम्नि", "नामनि"]));
+    assert_eq!(na[22]["forms"], serde_json::json!(["नाम्नी", "नामनी"]));
+    assert_eq!(na[21]["forms"], serde_json::json!(["नामन्", "नाम"]));
+    let ka = ncells("कर्मन्");
+    assert_eq!(ka[0]["forms"], serde_json::json!(["कर्म"]));
+    assert_eq!(ka[1]["forms"], serde_json::json!(["कर्मणी"]));
+    assert_eq!(ka[6]["forms"], serde_json::json!(["कर्मणा"]));
+    assert_eq!(ka[18]["forms"], serde_json::json!(["कर्मणि"]));
+    assert_eq!(ka[20]["forms"], serde_json::json!(["कर्मसु"]));
+    let dh = ncells("धन्वन्");
+    assert_eq!(dh[0]["forms"], serde_json::json!(["धन्व"]));
+    assert_eq!(dh[6]["forms"], serde_json::json!(["धन्वना"]));
+    // धीरन् (धीर + अन्) voices like कर्ण — the composed conjunct is
+    // retroflex (`धीर्णा`), while दुर्नामन् (`दुर्` + नामन्) keeps र्न dental.
+    let di = ncells("धीरन्");
+    assert_eq!(di[0]["forms"], serde_json::json!(["धीर"]));
+    assert_eq!(di[1]["forms"], serde_json::json!(["धीर्णी", "धीरणी"]));
+    assert_eq!(di[6]["forms"], serde_json::json!(["धीर्णा"]));
+    assert_eq!(di[18]["forms"], serde_json::json!(["धीर्णि", "धीरणि"]));
+
+    // Reverse readings: every weak-family surface resolves to its stem.
+    let analyzed = |form: &str| -> Vec<(String, String, String)> {
+        let payload = ok(&wasm::subanta_analyze(form));
+        payload["analyses"]
+            .as_array()
+            .expect("array")
+            .iter()
+            .map(|a| {
+                (
+                    a["stem"].as_str().expect("stem").to_string(),
+                    a["class"].as_str().expect("class").to_string(),
+                    format!(
+                        "{}.{}",
+                        a["vibhakti"].as_str().expect("vibhakti"),
+                        a["vacana"].as_str().expect("vacana")
+                    ),
+                )
+            })
+            .collect()
+    };
+    let has = |form: &str, stem: &str, slot: &str| {
+        let got = analyzed(form);
+        assert!(
+            got.iter().any(|(s, _, v)| s == stem && v == slot),
+            "{form}: want {stem} {slot}, got {got:?}"
+        );
+    };
+    has("उक्ष्णा", "उक्षन्", "tftIyA.ekavacanam");
+    assert!(analyzed("उक्ष्णा")
+        .iter()
+        .any(|(s, c, v)| s == "उक्षन्" && c == "an-m" && v == "tftIyA.ekavacanam"));
+    has("उक्ष्णः", "उक्षन्", "zazWI.ekavacanam");
+    has("उक्ष्णाम्", "उक्षन्", "zazWI.bahuvacanam");
+    has("मूर्ध्ना", "मूर्धन्", "tftIyA.ekavacanam");
+    has("ग्राव्णः", "ग्रावन्", "zazWI.ekavacanam");
+    has("ग्रावाणौ", "ग्रावन्", "prathamA.dvivacanam");
+    has("ग्राव्णा", "ग्रावन्", "tftIyA.ekavacanam");
+    has("दुर्नामा", "दुर्नामन्", "prathamA.ekavacanam");
+    has("अणिम्नः", "अणिमन्", "zazWI.ekavacanam");
+    has("दीर्घाह्नः", "दीर्घाहन्", "zazWI.ekavacanam");
+    has("उक्षभिः", "उक्षन्", "tftIyA.bahuvacanam");
+    has("कर्मभ्याम्", "कर्मन्", "tftIyA.dvivacanam");
+    has("कर्मभिः", "कर्मन्", "tftIyA.bahuvacanam");
+    has("कर्मणः", "कर्मन्", "zazWI.ekavacanam");
+    has("आत्मनः", "आत्मन्", "zazWI.ekavacanam");
+    // No SLP1 anywhere in the payload.
+    assert!(!serde_json::to_string(&ok(&wasm::subanta_analyze("उक्ष्णा")))
+        .expect("serializes")
+        .contains("ukz"));
+}
+
+#[test]
 fn krt_subanta_deva() {
     let payload = ok(&wasm::krt_subanta("shuddha", "शतृ", "f", "भवन्ती", ""));
     // Portal contract: array under `tables`, like `subanta_table`.
