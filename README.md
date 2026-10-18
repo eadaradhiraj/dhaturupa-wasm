@@ -169,7 +169,10 @@ offline-first `sw.js`): dhatu list with metadata filters, per-dhatu detail
 declension, in-dhatu search), cross-dhatu form search (Devanagari or
 Harvard-Kyoto), and a word view (Decline a word: any word in → case
 readings + base word + full declension, kṛt readings linked to their dhātu;
-foreign names welcome — candra spellings like जॉन fold to plain vowels). Pure
+ī/ū-feminine stems get both vṛttis — the lexical नदीसंज्ञा default first
+(लक्ष्मीः … लक्ष्मीणाम्, as on ashtadhyayi.com's शब्द pages) and the
+कृदन्त/उगित् grid beside it (लक्ष्मी …, as on its कृदन्त pages); foreign
+names welcome — candra spellings like जॉन fold to plain vowels). Pure
 rendering is node-tested (`web/tests/`).
 
 ```bash
@@ -177,7 +180,7 @@ cargo run -q --release -- build-site --out dist   # shell + data + blobs
 wasm-pack build --target web --out-dir dist/pkg   # WASM bundle
 python3 -m http.server 8080 --directory dist      # open /index.html
 node --test web/tests/                            # render tests
-node web/e2e-dist.check.cjs                     # 22 portal-flow checks vs dist+pkg-node
+node web/e2e-dist.check.cjs                     # 24 portal-flow checks vs dist+pkg-node
 ```
 
 Layout under `dist/`: `index.html app.js render.js sw.js pkg/`
@@ -195,7 +198,7 @@ Devanagari/HK in, Devanagari + English `{"ok":…}` envelopes out.
 Table JSON comes from the portal's fetches; family base indexes live in a
 WASM-side cache (`index_ensure_family` once, `index_query_family` per
 keystroke); per-dhatu prefixed/subanta searches build-query-drop inside one
-call. Tested natively in `tests/wasm_api.rs` (17 tests).
+call. Tested natively in `tests/wasm_api.rs` (18 tests).
 
 ```bash
 wasm-pack build --target web --out-dir pkg   # browser bundle
@@ -217,7 +220,7 @@ python3 -m http.server 8080
 
 # gate order: fmt → clippy (pedantic deny) → cargo test → [--full] exhaustive
 # → wasm-pack build ×3 (browser, node, served dist/pkg — pkg can't drift) →
-# dist shell refresh → node --test web/tests/ → e2e-dist.check.cjs (22 portal
+# dist shell refresh → node --test web/tests/ → e2e-dist.check.cjs (24 portal
 # flows on served artifacts) → smoke.cjs (every wasm export the app calls) →
 # browser self-test (headless Chromium via chromedriver, 400+ DOM checks)
 cargo fmt --check

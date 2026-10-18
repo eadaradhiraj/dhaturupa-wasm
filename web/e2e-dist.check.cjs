@@ -110,6 +110,22 @@ check('HK foreign name declines (John)',
 const wj = ok(w.subanta_analyze('जॉन'), 'word4');
 check('candra spelling जॉन folds to जोन',
   wj.word === 'जोन' && wj.tables.some((t) => t.class === 'a-m'));
+// the lexical नदीसंज्ञक default for a bare `-I` stem: visarga in the
+// nominative and ṇatva in the genitive plural (ashtadhyayi.com शब्द
+// @lakSmI1: लक्ष्मीः … लक्ष्मीणाम्) as the first table; the कृदन्त/उगित्
+// `I-f` grid (nominative = bare stem, as pinned for शतृ f भवन्ती) follows,
+// and the bare stem itself reads as a citation.
+const wl = ok(w.subanta_analyze('लक्ष्मी'), 'word6');
+check('ī-feminine declines as नदी (लक्ष्मीः … लक्ष्मीणाम्)',
+  wl.tables.some((t) => t.class === 'I-f-nadi' && t.cells[0].forms[0] === 'लक्ष्मीः' &&
+    t.cells[17].forms[0] === 'लक्ष्मीणाम्') &&
+  wl.tables.some((t) => t.class === 'I-f' && t.cells[0].forms[0] === 'लक्ष्मी') &&
+  wl.analyses.some((a) => a.class === 'I-f-nadi' && a.vibhakti === 'citation'));
+const wlh = ok(w.subanta_analyze('लक्ष्मीः'), 'word7');
+check('लक्ष्मीः reads नदी nominative + accusative plural',
+  wlh.analyses.some((a) => a.class === 'I-f-nadi' && a.vibhakti === 'prathamA' &&
+    a.vacana === 'ekavacanam') &&
+  wlh.analyses.some((a) => a.vibhakti === 'dvitIyA' && a.vacana === 'bahuvacanam'));
 // the word view links readings to their dhātu by probing this shard itself
 // (गच्छन् = शतृ of गम् 01.1137, masculine nominative/vocative)
 const wk = ok(w.subanta_analyze('gacCan'), 'word5');

@@ -149,6 +149,73 @@ fn subanta_analyze_f5_trio_and_foreign_words() {
 }
 
 #[test]
+fn subanta_analyze_nadi_i_stem_pin() {
+    // ashtadhyayi.com शब्द `@lakSmI1` (लक्ष्मी, ईकारान्त स्त्रीलिङ्ग,
+    // नदीसंज्ञकः): a lexical `-I` stem carries the visarga in
+    // prathamA-ekavacana and — the stem has a trigger (ष्) — voices the
+    // genitive plural (लक्ष्मीणाम्). The कृदन्त/उगित् `I-f` grid
+    // (nominative = bare stem, pinned for शतृ f `भवन्ती`) stays offered as
+    // the second candidate; the bare stem itself reads as a citation.
+    let payload = ok(&wasm::subanta_analyze("लक्ष्मी"));
+    let analyses = payload["analyses"].as_array().expect("array");
+    assert!(analyses.iter().any(|a| {
+        a["stem"] == "लक्ष्मी"
+            && a["class"] == "I-f-nadi"
+            && a["vibhakti"] == "citation"
+            && a["vacana"] == ""
+    }));
+    assert!(analyses.iter().any(|a| {
+        a["stem"] == "लक्ष्मी"
+            && a["class"] == "I-f"
+            && a["vibhakti"] == "prathamA"
+            && a["vacana"] == "ekavacanam"
+    }));
+    let tables = payload["tables"].as_array().expect("array");
+    assert_eq!(tables[0]["class"], serde_json::json!("I-f-nadi"));
+    let grid: Vec<String> = tables[0]["cells"]
+        .as_array()
+        .expect("cells")
+        .iter()
+        .map(|c| c["forms"][0].as_str().expect("form").to_string())
+        .collect();
+    assert_eq!(
+        grid.join("|"),
+        "लक्ष्मीः|लक्ष्म्यौ|लक्ष्म्यः|लक्ष्मीम्|लक्ष्म्यौ|लक्ष्मीः|लक्ष्म्या|लक्ष्मीभ्याम्|लक्ष्मीभिः|लक्ष्म्यै|लक्ष्मीभ्याम्|लक्ष्मीभ्यः|लक्ष्म्याः|लक्ष्मीभ्याम्|लक्ष्मीभ्यः|लक्ष्म्याः|लक्ष्म्योः|लक्ष्मीणाम्|लक्ष्म्याम्|लक्ष्म्योः|लक्ष्मीषु|लक्ष्मि|लक्ष्म्यौ|लक्ष्म्यः"
+    );
+    assert_eq!(tables[1]["class"], serde_json::json!("I-f"));
+    assert_eq!(
+        tables[1]["cells"][0]["forms"][0],
+        serde_json::json!("लक्ष्मी")
+    );
+
+    // The inflected input carries the नदी nominative reading next to the
+    // shared accusative-plural cell (both are `लक्ष्मीः` on the site grid).
+    let payload = ok(&wasm::subanta_analyze("लक्ष्मीः"));
+    let analyses = payload["analyses"].as_array().expect("array");
+    assert!(analyses.iter().any(|a| {
+        a["stem"] == "लक्ष्मी" && a["class"] == "I-f-nadi" && a["vibhakti"] == "prathamA"
+    }));
+    assert!(analyses.iter().any(|a| {
+        a["stem"] == "लक्ष्मी" && a["vibhakti"] == "dvitIyA" && a["vacana"] == "bahuvacanam"
+    }));
+
+    // `-U` mirrors (`वधू`): visarga in the nominative, dental नाम् (no
+    // trigger in the stem).
+    let payload = ok(&wasm::subanta_analyze("वधू"));
+    let tables = payload["tables"].as_array().expect("array");
+    assert_eq!(tables[0]["class"], serde_json::json!("U-f-nadi"));
+    assert_eq!(tables[0]["cells"][0]["forms"][0], serde_json::json!("वधूः"));
+    assert_eq!(
+        tables[0]["cells"][17]["forms"][0],
+        serde_json::json!("वधूनाम्")
+    );
+    // No SLP1 anywhere.
+    assert!(!serde_json::to_string(&payload)
+        .expect("serializes")
+        .contains("vaDU"));
+}
+
+#[test]
 fn krt_subanta_deva() {
     let payload = ok(&wasm::krt_subanta("shuddha", "शतृ", "f", "भवन्ती", ""));
     // Portal contract: array under `tables`, like `subanta_table`.

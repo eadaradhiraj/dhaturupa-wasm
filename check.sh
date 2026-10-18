@@ -9,7 +9,7 @@
 #   wasm-pack build ×3 (browser, node, served dist)  → drift impossible
 #   refresh dist shell (web/*)
 #   node --test web/tests/                        (render contracts)
-#   node web/e2e-dist.check.cjs                   (22 portal-flow checks vs dist)
+#   node web/e2e-dist.check.cjs                   (24 portal-flow checks vs dist)
 #   node web/smoke.cjs                            (every wasm export the app calls)
 #   browser self-test (headless Firefox)          (DOM flows that regressed)
 #

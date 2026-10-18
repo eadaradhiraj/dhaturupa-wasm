@@ -86,8 +86,14 @@ pub enum Class {
     IMF,
     /// `i`-stem neuter (`vAri`).
     IN,
-    /// `I`-stem feminine (`nadI`, `BavantI`, `awavI`).
+    /// `I`-stem feminine कृदन्त/उगित् flavour (`BavantI`, `awavI`, and
+    /// ashtadhyayi.com's कृदन्त `@devI1` grids): prathamA-ekavacana is the
+    /// bare stem.
     IIF,
+    /// `I`-stem feminine lexical नदीसंज्ञक flavour (`nadI`, `devI`,
+    /// `lakzmI`): prathamA-ekavacana takes the visarga (`nadIH`); every
+    /// other cell equals [`Class::IIF`] (site शब्द `@lakSmI1`).
+    IIFN,
     /// `u`-stem masculine/feminine (`guru`).
     UMF,
     /// `u`-stem feminine with ङित् endings (`Denu`): `DenvA`, `Denave`/
@@ -95,8 +101,13 @@ pub enum Class {
     UF,
     /// `u`-stem neuter (`maDu`).
     UN,
-    /// `U`-stem feminine (`vaDU`).
+    /// `U`-stem feminine कृदन्त/उगित् flavour (`vaDU`): prathamA-ekavacana
+    /// is the bare stem.
     UUF,
+    /// `U`-stem feminine lexical नदीसंज्ञक flavour (a `vaDU` शब्द):
+    /// prathamA-ekavacana takes the visarga (`vaDUH`); every other cell
+    /// equals [`Class::UUF`].
+    UUFN,
     /// `f`-stem masculine (`kartf`); feminine approximated (`NOM/VOC.SG` =
     /// stem, rest masculine — true feminine agents use `-trI`/I-stems).
     RFM,
@@ -157,10 +168,12 @@ impl Class {
             Self::IMF => "i-m/f".to_string(),
             Self::IN => "i-n".to_string(),
             Self::IIF => "I-f".to_string(),
+            Self::IIFN => "I-f-nadi".to_string(),
             Self::UMF => "u-m/f".to_string(),
             Self::UF => "u-f".to_string(),
             Self::UN => "u-n".to_string(),
             Self::UUF => "U-f".to_string(),
+            Self::UUFN => "U-f-nadi".to_string(),
             Self::RFM => "f-m/f".to_string(),
             Self::RFN => "f-n".to_string(),
             Self::GatiF => "i-f".to_string(),
@@ -356,6 +369,24 @@ pub fn decline(stem: &str, linga: Linga, class: &Class) -> Result<Paradigm, &'st
                 (f(p, "i"), f(p, "yO"), f(p, "yaH")),
             ])
         }
+        Class::IIFN => {
+            // नदीसंज्ञक lexical `-I` stem: the `I-f` grid with the visarga
+            // in prathamA-ekavacana (site शब्द `@lakSmI1`).
+            if linga != Linga::F || !stem.ends_with('I') {
+                return Err(NOT_POSSIBLE);
+            }
+            let p = &stem[..stem.len() - 1];
+            table(&[
+                (f(stem, "H"), f(p, "yO"), f(p, "yaH")),
+                (f(p, "Im"), f(p, "yO"), f(p, "IH")),
+                (f(p, "yA"), f(p, "IByAm"), f(p, "IBiH")),
+                (f(p, "yE"), f(p, "IByAm"), f(p, "IByaH")),
+                (f(p, "yAH"), f(p, "IByAm"), f(p, "IByaH")),
+                (f(p, "yAH"), f(p, "yoH"), f(p, "InAm")),
+                (f(p, "yAm"), f(p, "yoH"), f(p, "Izu")),
+                (f(p, "i"), f(p, "yO"), f(p, "yaH")),
+            ])
+        }
         Class::UMF => {
             if linga == Linga::N || !stem.ends_with('u') {
                 return Err(NOT_POSSIBLE);
@@ -427,6 +458,24 @@ pub fn decline(stem: &str, linga: Linga, class: &Class) -> Result<Paradigm, &'st
             let p = &stem[..stem.len() - 1];
             table(&[
                 (stem.to_string(), f(p, "vO"), f(p, "vaH")),
+                (f(p, "Um"), f(p, "vO"), f(p, "UH")),
+                (f(p, "vA"), f(p, "UByAm"), f(p, "UBiH")),
+                (f(p, "vE"), f(p, "UByAm"), f(p, "UByaH")),
+                (f(p, "vAH"), f(p, "UByAm"), f(p, "UByaH")),
+                (f(p, "vAH"), f(p, "voH"), f(p, "UnAm")),
+                (f(p, "vAm"), f(p, "voH"), f(p, "Uzu")),
+                (f(p, "u"), f(p, "vO"), f(p, "vaH")),
+            ])
+        }
+        Class::UUFN => {
+            // नदीसंज्ञक lexical `-U` stem: the `U-f` grid with the visarga
+            // in prathamA-ekavacana.
+            if linga != Linga::F || !stem.ends_with('U') {
+                return Err(NOT_POSSIBLE);
+            }
+            let p = &stem[..stem.len() - 1];
+            table(&[
+                (f(stem, "H"), f(p, "vO"), f(p, "vaH")),
                 (f(p, "Um"), f(p, "vO"), f(p, "UH")),
                 (f(p, "vA"), f(p, "UByAm"), f(p, "UBiH")),
                 (f(p, "vE"), f(p, "UByAm"), f(p, "UByaH")),
@@ -888,10 +937,12 @@ fn natva_cells(cells: Vec<Slot>, stem: &str, linga: Linga, class: &Class) -> Vec
             | Class::AN
             | Class::AAF
             | Class::IIF
+            | Class::IIFN
             | Class::IMF
             | Class::UMF
             | Class::UF
             | Class::UUF
+            | Class::UUFN
             | Class::GatiF
     );
     let neuter_n_affix = linga == Linga::N && !matches!(class, Class::AtN(_));
@@ -1721,6 +1772,10 @@ pub fn classes_for(stem: &str, linga: Linga) -> Vec<Class> {
         }
     } else if stem.ends_with('I') {
         if linga == Linga::F {
+            // नदीसंज्ञा is the Pāṇinian default for lexical `-I` stems;
+            // the कृदन्त/उगित् flavour is the second candidate — a bare
+            // stem cannot say which is meant, so both tables are offered.
+            out.push(Class::IIFN);
             out.push(Class::IIF);
         }
     } else if stem.ends_with('u') {
@@ -1730,6 +1785,7 @@ pub fn classes_for(stem: &str, linga: Linga) -> Vec<Class> {
         }
     } else if stem.ends_with('U') {
         if linga == Linga::F {
+            out.push(Class::UUFN);
             out.push(Class::UUF);
         }
     } else if stem.ends_with('f') {
@@ -2425,12 +2481,44 @@ pub fn analyze<S: ::std::hash::BuildHasher>(
                 | Class::VasN
                 | Class::JvsN
                 | Class::ManN => Linga::N,
-                Class::AAF | Class::IIF | Class::UUF | Class::UF | Class::GatiF => Linga::F,
+                Class::AAF
+                | Class::IIF
+                | Class::IIFN
+                | Class::UUF
+                | Class::UUFN
+                | Class::UF
+                | Class::GatiF => Linga::F,
                 Class::Word(_) => continue,
                 _ => Linga::M,
             };
             // Known words handled separately below with exact tables.
             push(probe.clone(), linga, class);
+        }
+    }
+    // 2b. नदीसंज्ञक `-I`/`-U` base-word readings: the bare stem is no
+    // declined cell of those paradigms (prathamA-ekavacana takes the
+    // visarga), so state the citation reading directly — the word view's
+    // premise ("this word as base word").
+    for probe in &variants {
+        if *probe != form {
+            continue;
+        }
+        for class in classes_for(probe, Linga::F) {
+            if !matches!(class, Class::IIFN | Class::UUFN) {
+                continue;
+            }
+            let key = (probe.clone(), "f".to_string(), "citation".to_string());
+            if seen.contains_key(&key) || decline(probe, Linga::F, &class).is_err() {
+                continue;
+            }
+            seen.insert(key, true);
+            out.push(Analysis {
+                stem: probe.clone(),
+                linga: Linga::F,
+                class,
+                slot: "citation".to_string(),
+                refs: vec![],
+            });
         }
     }
     // 3. Known pronoun/numeral words (exact tables + citation forms like
@@ -2605,6 +2693,10 @@ const STRIPS: &[StripRule] = &[
     (Class::IIF, "Im", "I"),
     (Class::IIF, "IH", "I"),
     (Class::IIF, "i", "I"),
+    // नदीसंज्ञक `-I` stems differ from `I-f` only in prathamA-ekavacana
+    // (the visarga); this one rule unlocks exactly that reading — all
+    // other cells are shared and dedupe under `I-f`.
+    (Class::IIFN, "IH", "I"),
     // u-stems.
     (Class::UMF, "uByAm", "u"),
     (Class::UMF, "uByaH", "u"),
@@ -2654,6 +2746,8 @@ const STRIPS: &[StripRule] = &[
     (Class::UUF, "Um", "U"),
     (Class::UUF, "UH", "U"),
     (Class::UUF, "u", "U"),
+    // नदीसंज्ञक `-U` stems differ from `U-f` only in prathamA-ekavacana.
+    (Class::UUFN, "UH", "U"),
     // f-stems.
     (Class::RFM, "fByAm", "f"),
     (Class::RFM, "fByaH", "f"),

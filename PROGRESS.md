@@ -696,3 +696,40 @@ reverse_audit_full 237s — 0 misses, krt click/prefixed audits green);
 the one failure was the first self-test run — `waitFor` returns a
 boolean and the new code called `.getAttribute` on it — fixed, 449/449,
 and the fast `./check.sh` re-run: ALL CHECKS PASSED.
+
+## 2026-10-18 (3) — ई/ऊ-feminines: lexical नदीसंज्ञा default (लक्ष्मीः)
+
+User review with two screenshots: ashtadhyayi.com शब्द `@lakSmI1` (लक्ष्मी,
+ईकारान्त स्त्रीलिङ्ग, नदीसंज्ञकः) leads with **लक्ष्मीः** in
+प्रथमा-एकवचन (and लक्ष्मीणाम् in षष्ठी-बहुवचन), while our word view
+offered nominative = लक्ष्मी (no visarga). Root cause: `Class::IIF` is the
+**कृदन्त/उगित्** flavour — nominative = bare stem — which is exactly what
+the site's own कृदन्त grids do (pinned for शतृ f भवन्ती, and even the अच् f
+pin "नदी" suppresses the visarga). The lexical **नदीसंज्ञा** vṛtti (the
+Pāṇinian default for `-I`/`-U` stems, and what the site's शब्द pages
+decline) was missing.
+
+Engine: new `Class::IIFN` / `Class::UUFN` (labels `I-f-nadi`/`U-f-nadi`) —
+the `I-f`/`U-f` grids with prathamA-ekavacana taking the visarga; every
+other cell is identical, so the ष्/र्/ऋ-triggered ṇatva of णाम् applies
+identically (लक्ष्मीणाम् — genpl codepoint-checked). `classes_for` now
+offers नदी first, कृदन्त second: a bare stem cannot say which is meant, so
+the word view shows both tables and both readings. Kṛt paths untouched
+(`krt_class` f+`I`→`IIF`, `KrtParadigm::DevIF`→`IIF`), so every site pin
+(भवन्ती grid, अच्-नदी grid, 49,536-cell click-through corpus) stays exact.
+
+`analyze`: one new strip rule each (`IH`→`I`, `UH`→`U`) unlocks the नदी
+nominative reading (लक्ष्मीः → prathamA.ekavacana next to the shared
+accusative-plural cell); all shared cells dedupe under `I-f` as before. A
+bare `-I`/`-U` stem is no cell of the नदी grid, so it now also reads as a
+`citation` for that candidate ("base word" — the word view's premise; the
+`I-f` prathamA reading stays beside it).
+
+Tests: `tests/wasm_api.rs` +1 (18) — full 24-cell शब्द pin
+(`लक्ष्मीः|…|लक्ष्मीणाम्|…`), readings for लक्ष्मीः (नदी nominative +
+accusative pl.), वधू mirror (वधूः/वधूनाम्), no SLP1; e2e 22 → 24;
+browser self-test 449 → 451 (first table is the नदी grid, citation
+reading visible). Gate: `./check.sh` ALL CHECKS PASSED (render 12/12,
+e2e 24/24, smoke, 451 checks) + `./check.sh --full` green: exhaustive
+audits (reverse_audit_full 0 misses; derive_ting; krt click/prefixed)
+confirm no कृदन्त/kṛt grid moved.

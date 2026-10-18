@@ -379,6 +379,20 @@ try {
   const wn = await wordRun('Wrampena');
   ok('word: Wrampena reads only as itself', !/instrumental/.test(wn.readings), wn.readings.slice(0, 90));
 
+  // ---- word view: lexical नदीसंज्ञक `-I` stems. The ashtadhyayi.com शब्द
+  // @lakSmI1 default leads with the visarga (लक्ष्मीः … लक्ष्मीणाम्); the
+  // कृदन्त/उगित् `I-f` grid follows as the second candidate, and the bare
+  // stem reads as a citation ("base word").
+  const wl = await wordRun('लक्ष्मी');
+  const wlFirst = $('word-tables').querySelector('section.word-table');
+  const wlHead = wlFirst ? text(wlFirst.querySelector('h4')) : '(no table)';
+  const wlText = wlFirst ? text(wlFirst) : '';
+  ok('word: लक्ष्मी first table is the नदी grid',
+    /I-f-nadi/.test(wlHead) && wlText.includes('लक्ष्मीः'), wlHead);
+  ok('word: लक्ष्मी reads as base word + नदी nominative',
+    /citation form/.test(wl.readings) && /I-f-nadi/.test(wl.readings) && wl.tables === 2,
+    wl.readings.slice(0, 140));
+
   // ---- word view: readings link to the dhātus whose kṛt paradigms produce
   // the form. गच्छन् occurs in the subanta index as शतृ of गम् (01.1137);
   // the matching reading must carry that link and open that page.
