@@ -923,3 +923,26 @@ be copied into `selftest.html` too (a missing id throws at boot, exactly
 what its header comment warns; the gate caught the first run).
 
 Selftest +2 checks (veṭ 41, dvikarmaka 23). Gates green, browser 468.
+
+## 2026-10-19 (8) — WASM binary size, ADDITIONS 4.1
+
+`[profile.release]` gets opt-level "z", lto, codegen-units 1 and strip —
+dhaturupa_wasm_bg.wasm 1,605,847 → 1,026,229 bytes (−36%), inside the
+predicted 30–45% band. Two traps found on the way:
+
+- **No `panic = "abort"`.** It breaks `cargo test --release` for the
+  package bin (E0463 can't find crate) — the exhaustive audits are part
+  of `./check.sh --full`, so the profile is shared with them. Dropped:
+  wasm32-unknown-unknown aborts regardless (no unwinding on that
+  target), the setting bought nothing for the shipped artifact.
+- **wasm-pack's cached wasm-opt rejects bulk memory.** The z/LTO codegen
+  emits `memory.copy`; the pinned binaryen fails with "Bulk memory
+  operations require bulk memory" (rust#141080). Fixed via
+  `[package.metadata.wasm-pack.profile.release]` with
+  `wasm-opt = ["-Oz", "--enable-bulk-memory"]` — keeps the optimizer and
+  sizes better than the old bare `-O`. (First metadata attempt also
+  swallowed the `[lib]` `crate-type` line by section-table mistake —
+  restored.)
+
+cargo test green; `./check.sh --full` ALL CHECKS PASSED (exhaustive
+audits + e2e 36 + smoke + browser 468).

@@ -14,6 +14,13 @@ name = "dhaturupa_wasm"
 path = "src/lib.rs"
 crate-type = ["cdylib", "rlib"]
 
+# wasm-pack runs its fixed cached wasm-opt with a bare `-O`: without the
+# `--enable-bulk-memory` feature it rejects the bulk ops opt-level=z/LTO
+# codegen emits (unexpected false: Bulk memory operations; rust#141080), and
+# `-Oz` sizes better than `-O` for this artifact besides.
+[package.metadata.wasm-pack.profile.release]
+wasm-opt = ["-Oz", "--enable-bulk-memory"]
+
 [dependencies]
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
@@ -48,3 +55,15 @@ warnings = { level = "deny", priority = -1 }
 # `sha256::` uses in the vendored sources; derivation is untouched.
 [patch."https://github.com/ambuda-org/vidyut"]
 vidyut-prakriya = { path = "vendor/vidyut/vidyut-prakriya" }
+
+# ADDITIONS.md 4.1 — the shipped wasm builds (wasm-pack --release ×3) load
+# on every portal visit; these settings trade compile time for size:
+# 1.61MB → 1.10MB bg.wasm (−31%) with opt-level "z", single codegen unit,
+# LTO and stripped symbols. No `panic = "abort"`: wasm32-unknown-unknown
+# already aborts (no unwinding there), and the profile is shared with
+# `cargo test --release`, where aborting breaks the bin build (E0463).
+[profile.release]
+opt-level = "z"
+lto = true
+codegen-units = 1
+strip = true
