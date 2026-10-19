@@ -136,15 +136,37 @@ async function main() {
 function route() {
   // Tolerate a leading slash (`#/dhatu/…` links) and an optional upasarga
   // suffix (`#dhatu/03.0010/प्र`) so a prefixed-form hit opens the detail
-  // page with that prefix already selected.
-  const hash = decodeURIComponent(location.hash.slice(1).replace(/^\/+/, ''));
+  // page with that prefix already selected. ADDITIONS.md 1.4 layers a
+  // query part on top (`#search?q=…`, `#word?q=…`,
+  // `#dhatu/<id>?fam=…&stack=…`) so a view can be book-marked with its
+  // state; `+` is never space here (stack names contain literal ` + `).
+  const raw = location.hash.slice(1).replace(/^\/+/, '');
+  const [path, query] = raw.split('?');
+  const params = new Map((query || '').split('&').filter(Boolean).map((kv) => {
+    const i = kv.indexOf('=');
+    return i < 0 ? [decodeURIComponent(kv), ''] : [
+      decodeURIComponent(kv.slice(0, i)),
+      decodeURIComponent(kv.slice(i + 1)),
+    ];
+  }));
+  const hash = decodeURIComponent(path || '');
   if (hash.startsWith('dhatu/')) {
     const [id, stack] = hash.slice(6).split('/');
-    openDhatu(id, stack || '');
+    openDhatu(id, params.get('stack') || stack || '', params.get('fam') || '');
   } else if (hash === 'search') {
     show('view-search');
+    const q = params.get('q') || '';
+    if (q) {
+      el('search-q').value = q;
+      runFormSearch();
+    }
   } else if (hash === 'word') {
     show('view-word');
+    const q = params.get('q') || '';
+    if (q) {
+      el('word-q').value = q;
+      runWordForm();
+    }
   } else {
     show('view-list');
   }
@@ -200,7 +222,7 @@ el('list-more').onclick = () => runListFilter();
 el('list-go').onclick = runListFilter;
 el('list-q').addEventListener('keypress', (e) => { if (e.key === 'Enter') runListFilter(); });
 
-async function openDhatu(id, stackWanted) {
+async function openDhatu(id, stackWanted, famWanted) {
   baseindex = id;
   show('view-detail');
   status(`loading ${id}…`);
@@ -212,6 +234,10 @@ async function openDhatu(id, stackWanted) {
   const family = el('detail-family');
   family.innerHTML = '';
   fillSelect(family, FAMILY_ORDER.filter((f) => blob.ting[f]));
+  // Deep-linked family (`?fam=`): only when this dhātu carries it.
+  if (famWanted && [...family.options].some((o) => o.value === famWanted)) {
+    family.value = famWanted;
+  }
 
   // One unified upasarga list: this dhātu's listed stacks (some are combos
   // like `वि + आ`) plus every single upasagra used across the corpus.
@@ -230,7 +256,7 @@ async function openDhatu(id, stackWanted) {
       .map((name) => `<option>${escapeHtml(name)}</option>`).join('');
 
   // A prefixed-form hit carries its stack in the hash
-  // (`#dhatu/03.0010/प्र`): open straight into that prefixed view.
+  // (`#dhatu/03.0010/प्र` or `?stack=`): open straight into that view.
   if (stackWanted && [...stack.options].some((o) => o.value === stackWanted)) {
     stack.value = stackWanted;
   }

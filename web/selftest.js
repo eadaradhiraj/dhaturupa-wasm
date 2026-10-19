@@ -187,6 +187,40 @@ try {
   location.hash = '/dhatu/01.0001';
   await waitFor(() => text($('detail-title')).includes('01.0001'), { timeout: 5000 });
 
+  // ---- deep links (ADDITIONS.md 1.4): ?q=… executes the view, ?fam=&stack=
+  // restores the detail selections (hashchange → route on back/forward).
+  location.hash = 'search?q=bhavati';
+  await waitFor(() => $('search-q').value === 'bhavati' &&
+    /\d+ hits? —/.test(text($('search-note'))) &&
+    $('search-hits').querySelectorAll('a,li,div').length > 0, { timeout: 20000 });
+  ok('deep link: #search?q=bhavati prefills and runs',
+    $('search-q').value === 'bhavati' &&
+    $('search-hits').textContent.length > 0, text($('search-note')).slice(0, 90));
+  location.hash = 'search?q=' + encodeURIComponent('भवति');
+  await waitFor(() => $('search-q').value === 'भवति', { timeout: 10000 });
+  ok('deep link: encoded Devanagari query round-trips',
+    $('search-q').value === 'भवति', $('search-q').value);
+  location.hash = 'word?q=rAma';
+  await waitFor(() => $('word-tables').querySelectorAll('section.word-table').length > 0,
+    { timeout: 20000 });
+  ok('deep link: #word?q=rAma declines',
+    $('word-q').value === 'rAma' && /राम/.test(text($('word-tables'))),
+    $('word-q').value);
+  location.hash = 'dhatu/01.1096?fam=yang&stack=वि';
+  await waitFor(() => $('view-detail').querySelectorAll('section.lakara').length > 0 &&
+    text($('detail-title')).includes('01.1096'), { timeout: 10000 });
+  ok('deep link: #dhatu?fam&stack restores selections',
+    $('detail-family').value === 'yang' && $('detail-stack').value === 'वि' &&
+    document.querySelectorAll('#detail-ting section.lakara').length > 0,
+    `${$('detail-family').value}·${$('detail-stack').value}`);
+  // Unknown fam values ignore (dhātu has no such family): the second
+  // navigation shares the id, so wait on the selection state itself.
+  location.hash = 'dhatu/01.1096?fam=nonexistent';
+  await waitFor(() => $('detail-family').value === 'shuddha' && $('detail-stack').value === '',
+    { timeout: 10000 });
+  ok('deep link: bogus fam ignored (default shuddha)',
+    $('detail-family').value === 'shuddha', $('detail-family').value);
+
   // ---- systematic dhātu sweep: page ⇔ blob ⇄ पद, across coverage classes
   // (a single-dhātu test missed real gaps — this is the class that caught
   // 01.1096: a परस्मैपदी dhātu must NOT show आत्मनेपदम् लट् sections).
