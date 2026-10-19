@@ -782,7 +782,16 @@ async function runWordForm() {
     // (foreign names, fresh stems).
     ensureShabda().then(() => {
       if (!alive() || !shabdaIndex) return;
-      const site = siteTables(shabdaIndex, res.word);
+      let site = siteTables(shabdaIndex, res.word);
+      if (site.length === 0) {
+        // An inflected form resolves to its base word: the site's शब्द
+        // search shows that word's grid, so try the reading stems (the
+        // oracle is keyed by citation — सरिद्भ्याम् → सरित्).
+        for (const a of res.analyses) {
+          site = siteTables(shabdaIndex, a.stem);
+          if (site.length > 0) break;
+        }
+      }
       if (site.length === 0) return;
       setNote(site.length, true);
       el('word-tables').innerHTML = renderWordTables(site);

@@ -976,3 +976,18 @@ Tests: `subanta_analyze_new_paradigm_readings` (wasm_api) pins the
 UsN/Cons/known-word readings; selftest +2 (word view: आयुषा → आयुष्
 us-n, सरिद्भ्याम् → सरित् cons). cargo test green; `./check.sh --full`
 ALL CHECKS PASSED (exhaustive audits + e2e 36 + smoke + browser 470).
+
+## 2026-10-19 (10) — inflected form → the site's base-word grid
+
+The word view showed the vendored शब्दपाठः grid only for the exact
+citation, so an inflected input (सरिद्भ्याम्) fell back to the derived
+tables of the input-as-a-stem — empty for a form that is no stem, or
+worse, a junk shape (सरितः → the अस्-family). The site resolves the form
+to its base word and shows *that* word's grid, and the readings already
+carry the base word: the oracle lookup now falls back to the reading
+stems when the input itself is not a listed word (सरिद्भ्याम् →
+सरित् → @sarit1). No index change — the शब्द oracle stays keyed by
+citation, and the junk readings simply miss it.
+
+Selftest +1 (सरिद्भ्याम् → the @sarit1 grid, credited to the site).
+Gates green, browser 471.

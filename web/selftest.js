@@ -511,6 +511,12 @@ try {
     const wss = await wordSite('सखि');
     ok('word: सखि shows the site grid with सखा',
       wss.credited && wss.firstCell === 'सखा', `${wss.head} · ${wss.firstCell}`);
+    // An inflected form resolves to its base word: the site's शब्द search
+    // shows that word's grid, so सरिद्भ्याम् lands on @sarit1.
+    const wsi = await wordSite('सरिद्भ्याम्');
+    ok('word: सरिद्भ्याम् shows the site @sarit1 grid (inflected → base word)',
+      wsi.credited && /ashtadhyayi\.com @sarit1/.test(wsi.head) &&
+      wsi.grid.includes('सरित्'), `${wsi.head} · ${wsi.firstCell}`);
   }
 
   // ---- word view: readings link to the dhātus whose kṛt paradigms produce
