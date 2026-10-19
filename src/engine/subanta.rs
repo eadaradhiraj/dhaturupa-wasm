@@ -128,6 +128,11 @@ pub enum Class {
     /// `in`-stem neuter (`kzamin`): `kzami`, `kzamiRI`, `kzami` vocative
     /// (the ashtadhyayi.com @kSamin2 paradigm).
     InN,
+    /// `an`-stem feminine (`dAman`/`sIman`): the [`Class::AnM`] shape,
+    /// cell-for-cell identical (weak accusative plural included).
+    AnF,
+    /// `in`-stem feminine (`mahAjAlin`): identical to [`Class::InM`].
+    InF,
     /// `as`-stem neuter (`manas`).
     AsN,
     /// `as`-stem masculine (`vedHas`).
@@ -184,7 +189,9 @@ impl Class {
             Self::AtN(AtNStyle::BothDual) => "at-n-tudat".to_string(),
             Self::AtN(AtNStyle::Abhyasta) => "at-n-abhyasta".to_string(),
             Self::AnM => "an-m".to_string(),
+            Self::AnF => "an-f".to_string(),
             Self::InM => "in-m".to_string(),
+            Self::InF => "in-f".to_string(),
             Self::InN => "in-n".to_string(),
             Self::AsN => "as-n".to_string(),
             Self::AsM => "as-m".to_string(),
@@ -690,8 +697,60 @@ pub fn decline(stem: &str, linga: Linga, class: &Class) -> Result<Paradigm, &'st
             }
             cells
         }
+        Class::AnF => {
+            // Feminine `-an` (`dAman`/`sIman`): identical to [`Class::AnM`]
+            // cell-for-cell, including the weak accusative plural
+            // (`dAmnaH`, not `dAmAnaH`); drop/keep picks match
+            // [`Class::AnM`] via `an_weak`.
+            if linga != Linga::F || !stem.ends_with("an") {
+                return Err(NOT_POSSIBLE);
+            }
+            let p = &stem[..stem.len() - 2];
+            let weak = match an_weak(p) {
+                AnWeak::Y => format!("{p}Y"),
+                AnWeak::Keep => stem.to_string(),
+                AnWeak::Drop => format!("{p}n"),
+            };
+            let an = format!("{p}An");
+            let az = format!("{p}a");
+            let mut cells = table(&[
+                (f(p, "A"), f(&an, "O"), f(&an, "aH")),
+                (f(&an, "am"), f(&an, "O"), f(&weak, "aH")),
+                (f(&weak, "A"), f(&az, "ByAm"), f(&az, "BiH")),
+                (f(&weak, "e"), f(&az, "ByAm"), f(&az, "ByaH")),
+                (f(&weak, "aH"), f(&az, "ByAm"), f(&az, "ByaH")),
+                (f(&weak, "aH"), f(&weak, "oH"), f(&weak, "Am")),
+                (f(&weak, "i"), f(&weak, "oH"), f(&az, "su")),
+                (stem.to_string(), f(&an, "O"), f(&an, "aH")),
+            ]);
+            // Locative singular keeps the site's second variant for the
+            // elided families (`दाम्नि-दामनि`); `keep` collapses (आत्मनि).
+            if weak != stem {
+                put(&mut cells, 6, 0, vec![f(&weak, "i"), f(stem, "i")]);
+            }
+            cells
+        }
         Class::InM => {
             if linga != Linga::M || !stem.ends_with("in") {
+                return Err(NOT_POSSIBLE);
+            }
+            let p = &stem[..stem.len() - 2];
+            let strong = format!("{p}in");
+            let weak = format!("{p}i");
+            table(&[
+                (f(p, "I"), f(&strong, "O"), f(&strong, "aH")),
+                (f(&strong, "am"), f(&strong, "O"), f(&strong, "aH")),
+                (f(&strong, "A"), f(&weak, "ByAm"), f(&weak, "BiH")),
+                (f(&strong, "e"), f(&weak, "ByAm"), f(&weak, "ByaH")),
+                (f(&strong, "aH"), f(&weak, "ByAm"), f(&weak, "ByaH")),
+                (f(&strong, "aH"), f(&strong, "oH"), f(&strong, "Am")),
+                (f(&strong, "i"), f(&strong, "oH"), f(&weak, "zu")),
+                (stem.to_string(), f(&strong, "O"), f(&strong, "aH")),
+            ])
+        }
+        Class::InF => {
+            // Feminine `-in` (`mahAjAlin`): identical to [`Class::InM`].
+            if linga != Linga::F || !stem.ends_with("in") {
                 return Err(NOT_POSSIBLE);
             }
             let p = &stem[..stem.len() - 2];
@@ -1849,12 +1908,14 @@ pub fn classes_for(stem: &str, linga: Linga) -> Vec<Class> {
             // elide or keep by the same spelling rule; `dhanvan`/`parvan`
             // keep).
             out.push(Class::ManN);
+        } else if linga == Linga::F {
+            out.push(Class::AnF);
         }
     } else if stem.ends_with("in") {
         match linga {
             Linga::M => out.push(Class::InM),
             Linga::N => out.push(Class::InN),
-            Linga::F => out.push(Class::IMF),
+            Linga::F => out.push(Class::InF),
         }
     } else if stem.ends_with('A') {
         if linga == Linga::F {
@@ -2549,8 +2610,19 @@ pub fn analyze<S: ::std::hash::BuildHasher>(
                     continue;
                 }
                 let stem = format!("{pre}{append}");
+                // Feminine twins: `AnF`/`InF` are the `AnM`/`InM` shapes
+                // with a feminine guard, so each masculine strip also gets
+                // the feminine reading candidate (verification filters).
+                let fem = match class {
+                    Class::AnM => Some(Class::AnF),
+                    Class::InM => Some(Class::InF),
+                    _ => None,
+                };
                 for linga in [Linga::M, Linga::F, Linga::N] {
-                    push(stem.clone(), linga, class.clone());
+                    match fem.clone() {
+                        Some(fe) if linga == Linga::F => push(stem.clone(), linga, fe),
+                        _ => push(stem.clone(), linga, class.clone()),
+                    }
                 }
             }
         }
@@ -2582,6 +2654,8 @@ pub fn analyze<S: ::std::hash::BuildHasher>(
                 | Class::UUF
                 | Class::UUFN
                 | Class::UF
+                | Class::AnF
+                | Class::InF
                 | Class::GatiF => Linga::F,
                 Class::Word(_) => continue,
                 _ => Linga::M,

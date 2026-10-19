@@ -796,3 +796,45 @@ sequence (check.sh deliberately excludes it): `build-site` →
 add surfaces; शब्द oracle refreshed (6.5MB). README's shard-count note
 updated. `./check.sh` re-run against the fresh dist: ALL CHECKS PASSED
 (e2e 36/36, smoke, browser 455).
+
+## 2026-10-19 — feminine नजन्त paradigms (`AnF`/`InF`)
+
+Pushback on "not actionable" — the 3 feminine stems flagged in entry 4
+(`दामन्`/S, `सीमन्`/S, `महाजालिन्`/S) were claimed DB-covered, but an
+UNLISTED feminine `-an`/`-in` base word (foreign names included — the
+contract) had no derived table: `F + -an` produced nothing and `F +
+-in` routed to the i-stem `IMF` guard (which fails, the stem doesn't
+end in `i`).
+
+**New classes.** `Class::AnF` (`an-f`) and `Class::InF` (`in-f`). Both
+grids were read off the site's own 24 cells:
+- `महाजालिन्` (@mahAjAlin1) is cell-for-cell the `InM` shape — the
+  अवान्तर accusative plural already equals the strong nominative there.
+- `दामन्` (@dAman2)/`सीमन्` (@sIman1) is cell-for-cell the `AnM`
+  drop shape *including* the weak accusative plural (`दाम्नः`, not
+  `दामानः`). An earlier arm used a "feminine acc.pl = nom.pl" rule —
+  wrong; the audit's 23/24 caught it and the arm now mirrors `AnM`
+  exactly (drop/keep via `an_weak`, loc-sg pair variants `दाम्नि-दामनि`).
+
+Routing in `classes_for`: `F + -an → AnF`, `F + -in → InF` (was `IMF`).
+
+**Readings.** `analyze` now surfaces feminine readings for नजन्त forms:
+STRIPS twin-push (each `AnM`/`InM` strip also pushes its `AnF`/`InF`
+twin at `linga=f` — verification filters junk as always) and the
+self-stem linga inference maps `AnF`/`InF → Linga::F` (was falling to
+the masculine `_ =>` arm). `दाम्ना → दामन्/m an-m` ∥ `दामन्/f an-f`,
+both `tftIyA.ekavacanam`; same for दामानम्/दामसु/महाजालिनौ/महाजालिना.
+Existing pins unaffected (they assert presence, not order).
+
+**Audit refresh.** `web/audit-an-stems.cjs`: S 0/3 → **3/3**; अहन्/N
+moved into ACCEPTED with its दिवस्-family reason (अहः nom/voc, अहोभ्याम्
+सन्धि, अहःसु/अहस्सु loc.pl — engine derives the regular मनिन् shape;
+unrelated to this change, it was an unflagged pre-existing miss).
+P 286/313 and N 80/84 unchanged (accepted irregulars + हेमन्).
+
+Tests: `subanta_table_feminine_an_in_stems` (20th wasm_api test) —
+24-cell grids for दामन्/सीमन्/महाजालिन्, loc-sg variant pins, and
+analyze readings assertive of `linga=f` with class ≠ `A-f`. No dist
+rebuild needed: the subanta shard indexes kṛt-cell declines only
+(`krt_class` never emits AnF/InF), word view/analyze are live.
+`./check.sh` ALL CHECKS PASSED (e2e 36/36, smoke, browser 455).

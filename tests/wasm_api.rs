@@ -375,6 +375,99 @@ fn subanta_analyze_an_stem_families() {
 }
 
 #[test]
+fn subanta_table_feminine_an_in_stems() {
+    // Feminine नजन्त (`दामन्`/`सीमन्` elided, `महाजालिन्` इन्-keep): the
+    // AnM/InM shapes with a feminine guard — grids read off the
+    // site's own cells (@dAman2/@sIman1/@mahAjAlin1). The accusative
+    // plural stays weak (`दाम्नः`), exactly like the masculine analog.
+    let grid = |stem: &str, linga: &str, class: &str| -> String {
+        let payload = ok(&wasm::subanta_table(stem, linga));
+        let tables = payload["tables"].as_array().expect("array");
+        assert_eq!(tables[0]["class"], serde_json::json!(class), "{stem}");
+        tables[0]["cells"]
+            .as_array()
+            .expect("cells")
+            .iter()
+            .map(|c| c["forms"][0].as_str().expect("form").to_string())
+            .collect::<Vec<_>>()
+            .join("|")
+    };
+    assert_eq!(
+        grid("दामन्", "f", "an-f"),
+        "दामा|दामानौ|दामानः|दामानम्|दामानौ|दाम्नः|दाम्ना|दामभ्याम्|दामभिः|दाम्ने|\
+         दामभ्याम्|दामभ्यः|दाम्नः|दामभ्याम्|दामभ्यः|दाम्नः|दाम्नोः|दाम्नाम्|दाम्नि|\
+         दाम्नोः|दामसु|दामन्|दामानौ|दामानः"
+    );
+    assert_eq!(
+        grid("सीमन्", "f", "an-f"),
+        "सीमा|सीमानौ|सीमानः|सीमानम्|सीमानौ|सीम्नः|सीम्ना|सीमभ्याम्|सीमभिः|सीम्ने|\
+         सीमभ्याम्|सीमभ्यः|सीम्नः|सीमभ्याम्|सीमभ्यः|सीम्नः|सीम्नोः|सीम्नाम्|सीम्नि|\
+         सीम्नोः|सीमसु|सीमन्|सीमानौ|सीमानः"
+    );
+    assert_eq!(
+        grid("महाजालिन्", "f", "in-f"),
+        "महाजाली|महाजालिनौ|महाजालिनः|महाजालिनम्|महाजालिनौ|महाजालिनः|महाजालिना|\
+         महाजालिभ्याम्|महाजालिभिः|महाजालिने|महाजालिभ्याम्|महाजालिभ्यः|महाजालिनः|\
+         महाजालिभ्याम्|महाजालिभ्यः|महाजालिनः|महाजालिनोः|महाजालिनाम्|महाजालिनि|\
+         महाजालिनोः|महाजालिषु|महाजालिन्|महाजालिनौ|महाजालिनः"
+    );
+    // Locative singular: pair variants for the elided families
+    // (दाम्नि-दामनि, सीम्नि-सीमनि), single for the इन्-keep.
+    let floc = |stem: &str, linga: &str| -> serde_json::Value {
+        let payload = ok(&wasm::subanta_table(stem, linga));
+        payload["tables"][0]["cells"][18]["forms"].clone()
+    };
+    assert_eq!(floc("दामन्", "f"), serde_json::json!(["दाम्नि", "दामनि"]));
+    assert_eq!(floc("सीमन्", "f"), serde_json::json!(["सीम्नि", "सीमनि"]));
+    assert_eq!(floc("महाजालिन्", "f"), serde_json::json!(["महाजालिनि"]));
+    // Reverse readings: feminine readings surface alongside the masculine.
+    let analyzed = |form: &str| -> Vec<(String, String, String)> {
+        let payload = ok(&wasm::subanta_analyze(form));
+        payload["analyses"]
+            .as_array()
+            .expect("array")
+            .iter()
+            .map(|a| {
+                (
+                    a["stem"].as_str().expect("stem").to_string(),
+                    a["class"].as_str().expect("class").to_string(),
+                    format!(
+                        "{}.{}",
+                        a["vibhakti"].as_str().expect("vibhakti"),
+                        a["vacana"].as_str().expect("vacana")
+                    ),
+                )
+            })
+            .collect()
+    };
+    let has_linga = |form: &str, stem: &str, linga: &str, slot: &str| {
+        let got = analyzed(form);
+        assert!(
+            got.iter().any(|(s, _, v)| s == stem && v == slot),
+            "{form}: want {stem} {slot}, got {got:?}"
+        );
+        let payload = ok(&wasm::subanta_analyze(form));
+        assert!(
+            payload["analyses"]
+                .as_array()
+                .expect("array")
+                .iter()
+                .any(|a| a["stem"] == stem && a["linga"] == linga && a["class"] != "A-f"),
+            "{form}: want {stem} {linga} {slot}"
+        );
+    };
+    has_linga("दाम्ना", "दामन्", "f", "tftIyA.ekavacanam");
+    has_linga("दामानम्", "दामन्", "f", "dvitIyA.ekavacanam");
+    has_linga("दामसु", "दामन्", "f", "saptamI.bahuvacanam");
+    has_linga("महाजालिनौ", "महाजालिन्", "f", "prathamA.dvivacanam");
+    has_linga("महाजालिना", "महाजालिन्", "f", "tftIyA.ekavacanam");
+    // No SLP1 anywhere in the payload.
+    assert!(!serde_json::to_string(&ok(&wasm::subanta_analyze("दाम्ना")))
+        .expect("serializes")
+        .contains("dAm"));
+}
+
+#[test]
 fn krt_subanta_deva() {
     let payload = ok(&wasm::krt_subanta("shuddha", "शतृ", "f", "भवन्ती", ""));
     // Portal contract: array under `tables`, like `subanta_table`.
