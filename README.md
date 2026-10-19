@@ -173,7 +173,9 @@ pinned in `tests/blob_wasm.rs`).
 ## Portal shell
 
 Static English-chrome app in `web/` (`app.html` + `app.js` + `render.js` +
-offline-first `sw.js`): dhatu list with metadata filters, per-dhatu detail
+offline-first `sw.js`): dhatu list with metadata filters (gaṇa, pada, seṭ/
+aniṭ/veṭ, sakarmaka/akarmaka/dvikarmaka) and an English-gloss search
+(`eat` → अद्, खाद्, स्वद् …), per-dhatu detail
 (info, upasargas, ting/krut tables, prefixed views, krt click-through
 declension, in-dhatu search), cross-dhatu form search (Devanagari or
 Harvard-Kyoto), and a word view (Decline a word: any word in → case
@@ -184,7 +186,14 @@ the vendored `data/shabda2.json` cells verbatim (लक्ष्मी gets ल�
 `ashtadhyayi.com @urlid`; unlisted words (foreign names like जॉन) keep the
 derived engine tables — the lexical नदीसंज्ञा default and the कृदन्त/उगित्
 grid both shown for a fresh ī/ū-stem; candra spellings like जॉन fold to
-plain vowels). Pure rendering is node-tested (`web/tests/`).
+plain vowels). An inflected form resolves to its base word the way the
+site's शब्द search does (सरिद्भ्याम् → सरित् → the @sarit1 grid), and the
+engine paradigms read back as well as decline: consonant-final nouns
+(सरित्, विद्युत्, संविद्, उपनिषद्, युध्, बुध्, ककुभ्, वाच्, त्वच्,
+मरुत्), the उस्/इस्-स्वादि neuters (आयुष्, हविस्, धनुस्) and the
+word-route grids (गो, नौ, रै, अन्य, इतर, कतर, कतम, उभय, उभ) each
+answer with the base word and the case they declined from. Pure
+rendering is node-tested (`web/tests/`).
 
 ```bash
 cargo run -q --release -- build-site --out dist   # shell + data + blobs
@@ -194,6 +203,12 @@ python3 -m http.server 8080 --directory dist      # open /index.html
 node --test web/tests/                            # render tests
 node web/e2e-dist.check.cjs                     # 36 portal-flow checks vs dist+pkg-node
 ```
+
+The release profile is tuned for size (`opt-level = "z"`, LTO, one codegen
+unit, stripped symbols) and `wasm-opt` runs with `-Oz
+--enable-bulk-memory` — `dist/pkg/dhaturupa_wasm_bg.wasm` is 1.03MB
+(1.61MB before). No `panic = "abort"`: the wasm target aborts anyway and
+the shared profile must keep `cargo test --release` working.
 
 Layout under `dist/`: `index.html app.js render.js sw.js pkg/`
 plus `data/dhatu_data.json`, `data/shabda2.json` (word-view शब्द oracle),

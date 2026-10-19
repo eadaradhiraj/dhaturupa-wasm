@@ -991,3 +991,16 @@ citation, and the junk readings simply miss it.
 
 Selftest +1 (सरिद्भ्याम् → the @sarit1 grid, credited to the site).
 Gates green, browser 471.
+
+## 2026-10-19 (11) — README: the portal shell and the build profile
+
+The Portal-shell paragraph now lists what the dhātu list filters accept
+(gaṇa, pada, seṭ/aniṭ/veṭ, sakarmaka/akarmaka/dvikarmaka, the English
+gloss search), that an inflected form resolves to its base word's site
+grid, and which engine paradigms read back as well as decline (the
+सरित्-family consonant-final nouns, the उस्/इस्-स्वादि neuters, the
+word-route grids). The build block records the size-tuned release
+profile and the `-Oz --enable-bulk-memory` wasm-opt flags (1.03MB vs
+1.61MB) and why there is no `panic = "abort"`.
+
+Docs only — gates re-run green (browser 471).
