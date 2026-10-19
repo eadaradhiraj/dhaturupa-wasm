@@ -20,14 +20,29 @@ test('slotLabel honors the 9-slot rule', () => {
 test('renderTingTables sorts lakaras and splits variants', () => {
   const slots = [['भवति'], ['भवतः', 'भवथः'], ['x'], ['x'], ['x'], ['x'], ['x'], ['x'], ['x']];
   const html = renderTingTables({ plat: slots, alat: [['भवते'], ['x'], ['x'], ['x'], ['x'], ['x'], ['x'], ['x'], ['x']] });
-  assert.match(html, /भवति/);
+  // 9-slot lakāras render the traditional 3x3 matrix (पुरुषः rows,
+  // वचनम् columns — ADDITIONS.md 1.1).
+  assert.match(html, /तथा|भवति/);
   assert.match(html, /भवतः , भवथः/);
-  assert.match(html, /prathama · ekavacana/);
+  assert.match(html, /<th>पुरुषः<\/th><th>एकवचनम्<\/th><th>द्विवचनम्<\/th><th>बहुवचनम्<\/th>/);
+  assert.match(html, /<th>प्रथमपुरुषः<\/th><td>भवति<\/td>/);
+  assert.match(html, /<th>मध्यमपुरुषः<\/th>/);
+  assert.match(html, /<th>उत्तमपुरुषः<\/th>/);
   // Lakāra labels spell out the पद: `a*` codes are आत्मनेपदम्, and
   // परस्मैपदम् sections render first regardless of alphabetical code order.
   assert.match(html, /लट् · परस्मैपदम्/);
   assert.match(html, /लट् · आत्मनेपदम्/);
   assert.ok(html.indexOf('परस्मैपदम्') < html.indexOf('आत्मनेपदम्'), html);
+});
+
+test('renderTingTables keeps the numbered fallback for other lengths', () => {
+  const slots = Array.from({ length: 18 }, (_, i) => [i === 0 ? 'भवति' : 'x']);
+  const html = renderTingTables({ plat: slots });
+  // Multiples of 9 keep the numbered rows (slotLabel), not the matrix.
+  assert.match(html, /<table><tbody>/);
+  assert.match(html, /prathama · ekavacana/);
+  assert.match(html, /<td>भवति<\/td>/);
+  assert.doesNotMatch(html, /प्रथमपुरुषः/);
 });
 
 test('renderKrutTables applies the site click convention', () => {
@@ -53,7 +68,7 @@ test('krtLinkTarget mirrors the site f rule', () => {
   assert.equal(krtLinkTarget('f', 'भूति', '—'), 'भूति');
 });
 
-test('renderParadigm renders the site bare 8x3 grid with हे', () => {
+test('renderParadigm labels the 8x3 grid (विभक्तिः rows, वचनम् columns)', () => {
   const row = (vibhakti, forms) =>
     ['ekavacanam', 'dvivacanam', 'bahuvacanam']
       .map((vacana, i) => ({ vibhakti, vacana, forms: [forms[i]] }));
@@ -61,11 +76,11 @@ test('renderParadigm renders the site bare 8x3 grid with हे', () => {
     ...row('prathamA', ['रामः', 'रामौ', 'रामाः']),
     ...row('sambodhana', ['राम', 'रामौ', 'रामाः']),
   ] });
-  // Bare grid: no labels, one row per vibhakti, three cells per row.
-  assert.equal((html.match(/<tr>/g) || []).length, 2);
-  assert.doesNotMatch(html, /<th|prathamA|ekavacanam|sambodhana/);
-  assert.match(html, /<td>रामः<\/td>/);
-  assert.match(html, /<td>हे राम<\/td>/);
+  // Labeled grid: वचनम् column headers, one th-labeled row per vibhakti.
+  assert.equal((html.match(/<tr>/g) || []).length, 3);
+  assert.match(html, /<th>विभक्तिः<\/th><th>एकवचनम्<\/th><th>द्विवचनम्<\/th><th>बहुवचनम्<\/th>/);
+  assert.match(html, /<th>प्रथमा<\/th><td>रामः<\/td>/);
+  assert.match(html, /<th>सम्बोधनम्<\/th><td>हे राम<\/td>/);
   assert.match(html, /<td>हे रामौ<\/td>/);
   assert.match(html, /<td>हे रामाः<\/td>/);
   // Alternants stay comma-joined inside one cell.
@@ -176,7 +191,7 @@ test('renderWordTables heads sections and renders bare grids', () => {
   assert.match(html, /masculine \(a-m\)/);
   assert.match(html, /ठ्रम्पः/);
   assert.match(html, /हे ठ्रम्प/);
-  assert.match(html, /<table><tbody>/);
+  assert.match(html, /<table><thead>/);
   assert.match(renderWordTables([]), /No declension/);
 });
 

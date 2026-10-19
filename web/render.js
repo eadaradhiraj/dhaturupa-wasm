@@ -43,20 +43,41 @@ const lakaraSort = (a, b) => {
   return LAKARA_ORDER.indexOf(a.slice(1)) - LAKARA_ORDER.indexOf(b.slice(1));
 };
 
+// Traditional matrix chrome (ADDITIONS.md 1.1): वचनम् column headers and
+// पुरुषः row headers, as ashtadhyayi.com prints its tiṅanta pages.
+const PURUSHA_HDR = ['प्रथमपुरुषः', 'मध्यमपुरुषः', 'उत्तमपुरुषः'];
+const VACANA_HDR = ['एकवचनम्', 'द्विवचनम्', 'बहुवचनम्'];
+
 export function renderTingTables(tables) {
   const lakaras = Object.keys(tables).sort(lakaraSort);
   return lakaras
     .map((lakara) => {
       const slots = tables[lakara];
-      const rows = slots
-        .map(
-          (variants, pos) =>
-            `<tr><th>${escapeHtml(slotLabel(pos, slots.length))}</th>` +
-            `<td>${variants.map(escapeHtml).join(' , ')}</td></tr>`,
-        )
-        .join('');
+      // 9 slots = the purusha-major 3x3 matrix (slot r*3+c); anything
+      // else keeps the numbered fallback.
+      const head = slots.length === 9
+        ? `<thead><tr><th>पुरुषः</th>${VACANA_HDR
+          .map((v) => `<th>${v}</th>`)
+          .join('')}</tr></thead>`
+        : '';
+      const body = slots.length === 9
+        ? PURUSHA_HDR.map((puru, r) =>
+          `<tr><th>${puru}</th>${[0, 1, 2]
+            .map((c) => {
+              const variants = slots[r * 3 + c];
+              return `<td>${variants.map(escapeHtml).join(' , ')}</td>`;
+            })
+            .join('')}</tr>`)
+          .join('')
+        : slots
+          .map(
+            (variants, pos) =>
+              `<tr><th>${escapeHtml(slotLabel(pos, slots.length))}</th>` +
+              `<td>${variants.map(escapeHtml).join(' , ')}</td></tr>`,
+          )
+          .join('');
       return `<section class="lakara"><h3>${escapeHtml(lakaraLabel(lakara))}</h3>` +
-        `<table><tbody>${rows}</tbody></table></section>`;
+        `<table>${head}<tbody>${body}</tbody></table></section>`;
     })
     .join('');
 }
@@ -106,13 +127,21 @@ export function renderKrutTables(tables, family) {
 }
 
 // WASM paradigm JSON -> HTML. The site's sidebar (`krit-subanta-table-template`)
-// is a bare 8x3 grid — one row per vibhakti, one column per vacana, no
-// labels — and सम्बोधन cells get the `हे ` prefix (`getFinalForm`).
+// is a bare 8x3 grid — one row per vibhakti, one column per vacana — and
+// सम्बोधन cells get the `हे ` prefix (`getFinalForm`). ADDITIONS.md 1.2 adds
+// the legibility chrome: विभक्तिः row labels + वचनम् column headers
+// (Sanskrit, matching the tiṅanta matrix).
+const VIB_DEVA = {
+  prathamA: 'प्रथमा', dvitIyA: 'द्वितीया', tftIyA: 'तृतीया',
+  caturTI: 'चतुर्थी', paJcamI: 'पञ्चमी', zazWI: 'षष्ठी',
+  saptamI: 'सप्तमी', sambodhana: 'सम्बोधनम्',
+};
 export function renderParadigm(table) {
   const cells = table.cells || [];
   const rows = [];
   for (let i = 0; i < cells.length; i += 3) {
-    rows.push(`<tr>${cells
+    const vib = cells[i] && VIB_DEVA[cells[i].vibhakti];
+    rows.push(`<tr><th>${vib ? vib : escapeHtml((cells[i] && cells[i].vibhakti) || '')}</th>${cells
       .slice(i, i + 3)
       .map((cell) => {
         const he = cell.vibhakti === 'sambodhana' ? 'हे ' : '';
@@ -121,7 +150,9 @@ export function renderParadigm(table) {
       })
       .join('')}</tr>`);
   }
-  return `<table><tbody>${rows.join('')}</tbody></table>`;
+  return `<table><thead><tr><th>विभक्तिः</th><th>एकवचनम्</th>` +
+    `<th>द्विवचनम्</th><th>बहुवचनम्</th></tr></thead>` +
+    `<tbody>${rows.join('')}</tbody></table>`;
 }
 
 // Word-view (subanta reading) labels: engine slot codes -> English.
