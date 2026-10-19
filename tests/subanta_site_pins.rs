@@ -133,6 +133,15 @@ fn cons_family_and_participle_pins() {
     pin_word("गच्छत्");
 }
 
+/// गो/नौ/रै diphthong words (ADDITIONS 2.5) ride the `KNOWN_WORDS`
+/// word-route; the db carries both लिङ्ग entries where present.
+#[test]
+fn diphthong_word_pins() {
+    for word in ["गो", "नौ", "रै"] {
+        pin_word(word);
+    }
+}
+
 /// उस्/इस्-स्वादि neuters (ADDITIONS 2.4): आयुष् against its vendored db
 /// grid (`@AyuS1`), and the pattern-derived हविस्/धनुस् grids the site
 /// does not list — the contract says derived engine tables must cover

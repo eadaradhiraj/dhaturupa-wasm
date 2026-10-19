@@ -1395,6 +1395,40 @@ fn word_table(stem: &str, linga: Linga, word: &'static str) -> Result<Paradigm, 
             ["sarvasyAm", "sarvayoH", "sarvAsu"],
             ["sarve", "sarve", "sarvAH"],
         ]),
+        // गो/नौ/रै diphthong words (ADDITIONS 2.5), gridded verbatim from
+        // the site (@go1/@go2, @nau1, @rai1/@rai2): the उभयवृद्धि stem
+        // गाव्/नाव्, प्रथमा-सि as the bare diphthong + visarga, and the
+        // गो-distinct accusative-bahu गाः.
+        ("go", Linga::M | Linga::F) => rows1(&[
+            ["gOH", "gAvO", "gAvaH"],
+            ["gAm", "gAvO", "gAH"],
+            ["gavA", "goByAm", "goBiH"],
+            ["gave", "goByAm", "goByaH"],
+            ["goH", "goByAm", "goByaH"],
+            ["goH", "gavoH", "gavAm"],
+            ["gavi", "gavoH", "gozu"],
+            ["gOH", "gAvO", "gAvaH"],
+        ]),
+        ("nO", Linga::F) => rows1(&[
+            ["nOH", "nAvO", "nAvaH"],
+            ["nAvam", "nAvO", "nAvaH"],
+            ["nAvA", "nOByAm", "nOBiH"],
+            ["nAve", "nOByAm", "nOByaH"],
+            ["nAvaH", "nOByAm", "nOByaH"],
+            ["nAvaH", "nAvoH", "nAvAm"],
+            ["nAvi", "nAvoH", "nOzu"],
+            ["nOH", "nAvO", "nAvaH"],
+        ]),
+        ("rE", Linga::M | Linga::F) => rows1(&[
+            ["rAH", "rAyO", "rAyaH"],
+            ["rAyam", "rAyO", "rAyaH"],
+            ["rAyA", "rAByAm", "rABiH"],
+            ["rAye", "rAByAm", "rAByaH"],
+            ["rAyaH", "rAByAm", "rAByaH"],
+            ["rAyaH", "rAyoH", "rAyAm"],
+            ["rAyi", "rAyoH", "rAsu"],
+            ["rAH", "rAyO", "rAyaH"],
+        ]),
         ("tad", Linga::M) => rows1(&[
             ["saH", "tO", "te"],
             ["tam", "tO", "tAn"],
@@ -1985,10 +2019,11 @@ fn td_slots(cells: &mut [Slot], t: &str, d: &str) {
     }
 }
 
-/// Known pronoun/numeral stems.
+/// Known pronoun/numeral stems. गो/नौ/रै (ADDITIONS 2.5) are gridded
+/// diphthong words — 'go'/'nO'/'rE' in SLP1.
 pub const KNOWN_WORDS: &[&str] = &[
     "sarva", "tad", "etad", "yad", "kim", "idam", "adas", "yuzmad", "asmad", "Bavat", "eka", "dvi",
-    "tri", "catur", "paJcan", "zaz", "saptan", "azwan", "navan", "daSan",
+    "tri", "catur", "paJcan", "zaz", "saptan", "azwan", "navan", "daSan", "go", "nO", "rE",
 ];
 
 /// Strict manual classes for (stem, linga). May be plural for `-an`.
