@@ -261,4 +261,7 @@ cargo test --release -- --ignored
 # same runner as a CLI report:
 cargo run -q --release -- audit
 cargo run -q --release -- audit --full
+# subanta parity hand-runs (the site grid vs the derived tables):
+node web/audit-an-stems.cjs        # अन्-stem nouns
+node web/audit-cons-stems.cjs      # consonant-final nouns (158/288 exact)
 ```
