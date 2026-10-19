@@ -191,9 +191,10 @@ fn cons_family_and_participle_pins() {
     }
     // Participle regression: गच्छत् keeps the गच्छन्-prathamA shape.
     pin_word("गच्छत्");
-    // The वतुप् nominalization (आत्मवान्) and the ऋ-वत् participle
-    // (आप्नुवन्) end alike; the engine offers both shapes.
-    for word in ["आत्मवत्", "उरस्वत्", "क्रियावत्", "आप्नुवत्"]
+    // The वतुप् nominalization (आत्मवान्), its मतुप्/यतुप् siblings
+    // (आयुष्मान्, इयान्) and the ऋ-वत् participle (आप्नुवन्) end alike;
+    // the engine offers both shapes.
+    for word in ["आत्मवत्", "उरस्वत्", "क्रियावत्", "आप्नुवत्", "आयुष्मत्", "इयत्"]
     {
         pin_word_any(word, "P");
     }

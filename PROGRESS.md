@@ -1065,3 +1065,26 @@ siblings of the वतुप् (आयुष्मत् → आयुष्म
 Pins: आत्मवत् / उरस्वत् / क्रियावत् / आप्नुवत् pin the मस्कुल
 entry (either candidate reproduces the site's grid). cargo test green;
 `./check.sh --full` ALL CHECKS PASSED (browser 471).
+
+## 2026-10-20 (2) — the मतुप्/यतुप् siblings, and the तुप् family reads back
+
+`Class::VantM` now serves the whole तुप् family: the suffix letter is
+the तुप्'s own (व/म/य), so आयुष्मत् declines as आयुष्मान्-आयुष्मन्तौ-
+आयुष्मन्तः (site @AyuSmat1) and इयत् as इयान्-इयन्तौ (site @iyat1) —
+the same vṛddhi-strong shape with a different letter. The manual route
+offers the तुप् and the participle candidate together, as for the
+वतुप् family.
+
+The family also reads back now: 25 strip rules (the vṛddhi strong
+swaps the suffix letter, the `-ant` strong swaps it the same way, the
+plain endings rebuild the stem, and the भ-endings keep the द-voiced
+weak stem so the suffix carries the `ad` and the tail restores the
+`at`), so आत्मवान् → आत्मवत् and आत्मवद्भ्याम् → आत्मवत्.
+
+Audit: **158/288** consonant-final db entries reproduce the site grid
+(146 before). Remaining are separate paradigms: the neuter/feminine
+ई-स्वादि of the वत family (आत्मवती, आत्मवन्ति), the सम्-अधिक-रूप
+(अत्यस्मद् → अतित्वम्) and the masculine ञ्च-स्वादि (अर्वाञ्चः).
+
+Pins: आत्मवत् / उरस्वत् / क्रियावत् / आप्नुवत् / आयुष्मत् / इयत्.
+`./check.sh --full` ALL CHECKS PASSED (browser 471).

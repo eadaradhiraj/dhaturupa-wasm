@@ -740,26 +740,34 @@ pub fn decline(stem: &str, linga: Linga, class: &Class) -> Result<Paradigm, &'st
             cells
         }
         Class::VantM => {
-            // मतुप्/वतुप् masculine: like AtM, but prathamā-ekavacana
-            // takes vṛddhi strong (`BUtavAn`, not `*BUtavan`); the
-            // vocative keeps the short weak (`BUtavan`, as in `Bagavan`).
-            // Weak stems end `vat` (normalized by `krt_class`).
-            if linga != Linga::M || !stem.ends_with("vat") || stem.len() < 4 {
+            // मतुप्/वतुप्/यतुप् masculine: like AtM, but prathamā-ekavacana
+            // takes the vṛddhi strong (`BUtavAn`, `AyuSmAn`, `IyAn`, not
+            // `*BUtavan`); the vocative keeps the short weak (`BUtavan`, as
+            // in `Bagavan`). The suffix letter is the तुप्'s own (व/म/य),
+            // and the weak stems end `vat`/`mat`/`yat` (normalized by
+            // `krt_class`).
+            let Some(l) = ["v", "m", "y"]
+                .iter()
+                .find(|l| stem.ends_with(&format!("{l}at")))
+            else {
+                return Err(NOT_POSSIBLE);
+            };
+            if linga != Linga::M || stem.len() < 4 {
                 return Err(NOT_POSSIBLE);
             }
             let p = &stem[..stem.len() - 1];
             let q = &stem[..stem.len() - 3];
-            let strong = format!("{q}vant");
+            let strong = format!("{q}{l}ant");
             let d = format!("{p}d");
             table(&[
-                (format!("{q}vAn"), f(&strong, "O"), f(&strong, "aH")),
+                (format!("{q}{l}An"), f(&strong, "O"), f(&strong, "aH")),
                 (f(&strong, "am"), f(&strong, "O"), f(stem, "aH")),
                 (f(stem, "A"), f(&d, "ByAm"), f(&d, "BiH")),
                 (f(stem, "e"), f(&d, "ByAm"), f(&d, "ByaH")),
                 (f(stem, "aH"), f(&d, "ByAm"), f(&d, "ByaH")),
                 (f(stem, "aH"), f(stem, "oH"), f(stem, "Am")),
                 (f(stem, "i"), f(stem, "oH"), f(stem, "su")),
-                (format!("{q}van"), f(&strong, "O"), f(&strong, "aH")),
+                (format!("{q}{l}an"), f(&strong, "O"), f(&strong, "aH")),
             ])
         }
         Class::AtN(style) => {
@@ -2360,7 +2368,7 @@ pub fn classes_for(stem: &str, linga: Linga) -> Vec<Class> {
                 // (भवत् → भवन्, site @Bhavat1) ends the same way, so both
                 // candidates are offered; the site's grid decides for the
                 // words it lists.
-                if stem.ends_with("vat") {
+                if stem.ends_with("vat") || stem.ends_with("mat") || stem.ends_with("yat") {
                     out.push(Class::VantM);
                     out.push(Class::AtM(AtMStyle::Num));
                 } else if stem.ends_with("at") || stem.ends_with("ant") {
@@ -3622,6 +3630,37 @@ const STRIPS: &[StripRule] = &[
     (Class::Cons, "psu", "B"),
     (Class::Cons, "kzu", "k"),
     (Class::Cons, "kzu", "c"),
+    // तुप् nominalizations (वतुप्/मतुप्/यतुप्): the vṛddhi strong reads
+    // back by swapping the suffix letter (आत्मवान् → आत्मवत्), the
+    // `-ant` strong by the same swap (आत्मवन्तौ → आत्मवत्), and the
+    // plain endings rebuild the stem as-is. The भ-endings keep the
+    // द-voiced weak stem, so the suffix carries the `ad` and the tail
+    // restores the `at` (आत्मवद्भ्याम् → आत्मवत्).
+    (Class::VantM, "vAn", "vat"),
+    (Class::VantM, "vantO", "vat"),
+    (Class::VantM, "vantam", "vat"),
+    (Class::VantM, "vantAH", "vat"),
+    (Class::VantM, "van", "vat"),
+    (Class::VantM, "mAn", "mat"),
+    (Class::VantM, "mantO", "mat"),
+    (Class::VantM, "mantam", "mat"),
+    (Class::VantM, "mantAH", "mat"),
+    (Class::VantM, "man", "mat"),
+    (Class::VantM, "yAn", "yat"),
+    (Class::VantM, "yantO", "yat"),
+    (Class::VantM, "yantam", "yat"),
+    (Class::VantM, "yantAH", "yat"),
+    (Class::VantM, "yan", "yat"),
+    (Class::VantM, "adByAm", "at"),
+    (Class::VantM, "adBiH", "at"),
+    (Class::VantM, "adByaH", "at"),
+    (Class::VantM, "aH", ""),
+    (Class::VantM, "A", ""),
+    (Class::VantM, "e", ""),
+    (Class::VantM, "oH", ""),
+    (Class::VantM, "Am", ""),
+    (Class::VantM, "i", ""),
+    (Class::VantM, "su", ""),
     // क्वसु neuter (@vidvas2: `-vat`/`-vad`, यण् weak, `-vAMsi`).
     (Class::VasN, "AMsi", "as"),
     (Class::VasN, "vat", "vas"),
