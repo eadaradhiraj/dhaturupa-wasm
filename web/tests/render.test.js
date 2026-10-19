@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {
   escapeHtml, slotLabel, renderTingTables, renderKrutTables, krtLinkTarget,
   renderParadigm, renderChandrika, renderHits, renderMeta,
-  renderWordReadings, renderWordTables, siteTables,
+  renderWordReadings, renderWordTables, siteTables, tablePayload,
 } from '../render.js';
 
 test('escapeHtml neutralizes markup', () => {
@@ -22,7 +22,7 @@ test('renderTingTables sorts lakaras and splits variants', () => {
   const html = renderTingTables({ plat: slots, alat: [['भवते'], ['x'], ['x'], ['x'], ['x'], ['x'], ['x'], ['x'], ['x']] });
   // 9-slot lakāras render the traditional 3x3 matrix (पुरुषः rows,
   // वचनम् columns — ADDITIONS.md 1.1).
-  assert.match(html, /तथा|भवति/);
+  assert.match(html, /भवति/);
   assert.match(html, /भवतः , भवथः/);
   assert.match(html, /<th>पुरुषः<\/th><th>एकवचनम्<\/th><th>द्विवचनम्<\/th><th>बहुवचनम्<\/th>/);
   assert.match(html, /<th>प्रथमपुरुषः<\/th><td>भवति<\/td>/);
@@ -88,6 +88,34 @@ test('renderParadigm labels the 8x3 grid (विभक्तिः rows, वच�
     { vibhakti: 'prathamA', vacana: 'ekavacanam', forms: ['रामः', 'रामो वा'] },
   ] });
   assert.match(multi, /रामः , रामो वा/);
+});
+
+test('tablePayload copies labeled tables as Markdown and TSV', () => {
+  const rows = [
+    { label: null, cells: ['विभक्तिः', 'एकवचनम्', 'द्विवचनम्', 'बहुवचनम्'] },
+    { label: 'प्रथमा', cells: ['रामः', 'रामौ', 'रामाः'] },
+    { label: 'सम्बोधनम्', cells: ['हे राम', '', 'हे रामाः'] },
+  ];
+  assert.equal(tablePayload(rows, 'md'), [
+    '| विभक्तिः | एकवचनम् | द्विवचनम् | बहुवचनम् |',
+    '| --- | --- | --- | --- |',
+    '| प्रथमा | रामः | रामौ | रामाः |',
+    '| सम्बोधनम् | हे राम |  | हे रामाः |',
+  ].join('\n'));
+  assert.equal(tablePayload(rows, 'tsv'), [
+    'विभक्तिः\tएकवचनम्\tद्विवचनम्\tबहुवचनम्',
+    'प्रथमा\tरामः\tरामौ\tरामाः',
+    'सम्बोधनम्\tहे राम\t\tहे रामाः',
+  ].join('\n'));
+  // Alternants keep their display join; a table without a header row
+  // stays data-only (no fabricated header or separator).
+  assert.equal(
+    tablePayload(
+      [{ label: 'उत्तमपुरुषः', cells: ['भवामि', 'भवतः , भवथः'] }],
+      'md',
+    ),
+    '| उत्तमपुरुषः | भवामि | भवतः , भवथः |',
+  );
 });
 
 test('renderChandrika highlights examples', () => {

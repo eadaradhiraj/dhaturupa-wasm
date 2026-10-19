@@ -12,6 +12,7 @@ import init, {
 import {
   escapeHtml, renderTingTables, renderKrutTables, renderParadigm,
   renderHits, renderMeta, renderWordReadings, renderWordTables, siteTables,
+  tablePayload,
 } from './render.js';
 
 const GANAS = { 1: 'bhvādi', 2: 'adādi', 3: 'juhotyādi', 4: 'divādi', 5: 'svādi', 6: 'tudādi', 7: 'rudhādi', 8: 'tanādi', 9: 'kryādi', 10: 'curādi' };
@@ -273,6 +274,8 @@ function renderDetailTables() {
       Object.keys(krutTables).length === 0
         ? '<p class="muted">No krt forms for this family.</p>'
         : renderKrutTables(krutTables, family);
+    addCopyButtons(el('detail-ting'));
+    addCopyButtons(el('detail-krut'));
   }
 
   el('detail-hits').innerHTML = '';
@@ -343,6 +346,7 @@ function renderPrefixedTables(stack, tingTables, krutTables, family) {
     renderCellPrefixedTing(stack, tingTables, family);
   }
   renderCellPrefixedKrut(stack, krutTables, family);
+  addCopyButtons(el('detail-ting'));
 }
 
 // Blob/upstream `{lakara: 'row;row;…'}` strings → renderer shape.
@@ -374,6 +378,7 @@ function renderCellPrefixedTing(stack, tingTables, family) {
     Object.keys(pTing).length === 0
       ? '<p class="muted">No ting forms for this stack/family/prayoga.</p>'
       : renderTingTables(pTing);
+  addCopyButtons(el('detail-ting'));
 }
 
 function renderCellPrefixedKrut(stack, krutTables, family) {
@@ -392,6 +397,7 @@ function renderCellPrefixedKrut(stack, krutTables, family) {
       Object.keys(tables).length === 0
         ? '<p class="muted">No krt forms for this stack/family.</p>'
         : renderKrutTables(tables, family);
+    addCopyButtons(el('detail-krut'));
     return;
   }
   // Live engine derivation (same engine + mapping as the backfill source).
@@ -448,6 +454,7 @@ function renderCellPrefixedKrut(stack, krutTables, family) {
     Object.keys(pKrut).length === 0
       ? '<p class="muted">No krt forms for this stack/family.</p>'
       : renderKrutTables(pKrut, family);
+  addCopyButtons(el('detail-krut'));
 }
 
 // base form → prefixed-surface string via `prefixed_table_ctx` (GenCtx:
@@ -495,6 +502,7 @@ function onKrtClick(event) {
     el('detail-subanta').innerHTML =
       `<h4 class="deva">${escapeHtml(value)} [${escapeHtml(field)}]</h4>` +
       tables.map(renderParadigm).join('');
+    addCopyButtons(el('detail-subanta'));
   }
 }
 
@@ -504,6 +512,72 @@ function ok(result, context) {
   if (!parsed.ok) throw new Error(`${context}: ${parsed.error}`);
   return parsed;
 }
+
+// ADDITIONS.md 1.3: one-click "Copy Table" (Markdown / TSV). Each rendered
+// table gets a small button bar; cell text is read from the DOM verbatim
+// (so copied output always equals what is displayed), serialization is the
+// pure tablePayload in render.js.
+function tableRows(tableEl) {
+  const rows = [];
+  const head = tableEl.querySelector('thead tr');
+  if (head) {
+    rows.push({ label: null, cells: [...head.querySelectorAll('th,td')].map((x) => x.textContent.trim()) });
+  }
+  for (const tr of tableEl.querySelectorAll('tbody tr')) {
+    const th = tr.querySelector('th');
+    rows.push({
+      label: th ? th.textContent.trim() : null,
+      cells: [...tr.querySelectorAll('td')].map((x) => x.textContent.trim()),
+    });
+  }
+  return rows;
+}
+
+function addCopyButtons(container) {
+  if (!container) return;
+  for (const table of [...container.querySelectorAll('table')]) {
+    if (table.parentElement.classList.contains('table-wrap')) continue;
+    const wrap = document.createElement('div');
+    wrap.className = 'table-wrap';
+    table.replaceWith(wrap);
+    const bar = document.createElement('div');
+    bar.className = 'copy-bar';
+    bar.innerHTML =
+      '<button type="button" class="copy-btn" data-kind="md">Copy Markdown</button>' +
+      '<button type="button" class="copy-btn" data-kind="tsv">Copy TSV</button>';
+    wrap.append(bar, table);
+  }
+}
+
+function flash(btn, msg) {
+  btn.dataset.label = btn.textContent;
+  btn.textContent = msg;
+  setTimeout(() => { btn.textContent = btn.dataset.label; }, 1200);
+}
+
+async function copyTable(btn) {
+  const table = btn.closest('.table-wrap').querySelector('table');
+  const text = tablePayload(tableRows(table), btn.dataset.kind);
+  // Assertable signal for the headless suite; harmless in normal use.
+  window.__lastCopy = { kind: btn.dataset.kind, text };
+  try {
+    await navigator.clipboard.writeText(text);
+    flash(btn, 'Copied!');
+  } catch {
+    // Clipboard API denied (headless or insecure context): execCommand path.
+    const ta = document.createElement('textarea');
+    ta.value = text;
+    document.body.appendChild(ta);
+    ta.select();
+    flash(btn, document.execCommand('copy') ? 'Copied!' : 'Copy failed');
+    ta.remove();
+  }
+}
+
+document.addEventListener('click', (e) => {
+  const btn = e.target.closest('.copy-btn');
+  if (btn) copyTable(btn);
+});
 
 el('detail-krut').onclick = onKrtClick;
 el('detail-family').onchange = renderDetailTables;
@@ -660,6 +734,7 @@ async function runWordForm() {
     setNote(res.tables.length, false);
     el('word-readings').innerHTML = renderWordReadings(res.analyses);
     el('word-tables').innerHTML = renderWordTables(res.tables);
+    addCopyButtons(el('word-tables'));
     // The vendored शब्दपाठः is the oracle for every word it lists: once it
     // has loaded (lazily, first run), swap the site's own grids in place.
     // The derived tables above stand for words the corpus does not list
@@ -670,6 +745,7 @@ async function runWordForm() {
       if (site.length === 0) return;
       setNote(site.length, true);
       el('word-tables').innerHTML = renderWordTables(site);
+      addCopyButtons(el('word-tables'));
     });
     // Reading → dhātu links: probe the subanta shard for the input form
     // itself; kṛt postings whose slot matches a reading name that reading's
@@ -722,6 +798,7 @@ async function onReadingTableClick(event) {
     div.className = 'reading-table';
     div.innerHTML = tables.map(renderParadigm).join('');
     li.after(div);
+    addCopyButtons(div);
     btn.textContent = 'hide';
   } catch (e) {
     status(String(e));

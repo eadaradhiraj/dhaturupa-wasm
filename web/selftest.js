@@ -256,6 +256,30 @@ try {
     gamHeads.includes('लट् · परस्मैपदम्') && gamHeads.includes('लट् · आत्मनेपदम्'),
     gamHeads.join(','));
 
+  // ---- copy-table buttons (ADDITIONS.md 1.3): every rendered table gets a
+  // Markdown/TSV copy bar; the click path serializes the visible text into
+  // window.__lastCopy (the clipboard itself is not assertable headless).
+  const latSec = [...document.querySelectorAll('#detail-ting section.lakara')]
+    .find((s) => s.querySelector('h3').textContent.includes('लट् · परस्मैपदम्'));
+  const mdBtn = latSec && latSec.querySelector('.copy-btn[data-kind="md"]');
+  ok('copy: detail tables carry Markdown/TSV buttons',
+    Boolean(mdBtn) && Boolean(latSec.querySelector('.copy-btn[data-kind="tsv"]')));
+  if (mdBtn) {
+    mdBtn.click();
+    const copied = await waitFor(() => (window.__lastCopy || {}).kind === 'md', { timeout: 5000 });
+    const payload = copied ? window.__lastCopy.text : '';
+    ok('copy: markdown payload mirrors the visible table',
+      /पुरुषः/.test(payload) && /एकवचनम्/.test(payload) &&
+      /गच्छति/.test(payload) && /\| --- /m.test(payload), payload.slice(0, 90));
+    const tsvBtn = latSec.querySelector('.copy-btn[data-kind="tsv"]');
+    tsvBtn.click();
+    await waitFor(() => (window.__lastCopy || {}).kind === 'tsv', { timeout: 5000 });
+    ok('copy: tsv payload is tab-shaped',
+      /\t/.test(window.__lastCopy.text) &&
+      window.__lastCopy.text.split('\n').every((l) => l.split('\t').length === 4),
+      window.__lastCopy.text.slice(0, 90));
+  }
+
   // ---- no console errors anywhere above
   ok('no console errors during the run', errors.length === 0, errors.slice(0, 3).join(' | '));
 
@@ -386,6 +410,17 @@ try {
   // list (ठ्रम्पेण / Wrampena) keep the derived tables checked above.
   ok('word: unlisted Wrampena stays on derived tables',
     !wn.note.includes('ashtadhyayi.com'), wn.note);
+  // Copy bar rides on the word tables too; the TSV carries the labeled
+  // grid chrome even for a derived/unlisted stem.
+  const wCopy = $('word-tables').querySelector('.copy-btn[data-kind="tsv"]');
+  ok('copy: word tables carry copy buttons', Boolean(wCopy));
+  if (wCopy) {
+    wCopy.click();
+    await waitFor(() => (window.__lastCopy || {}).kind === 'tsv', { timeout: 5000 });
+    ok('copy: word TSV carries the labeled grid',
+      /विभक्तिः\t/.test(window.__lastCopy.text) && /प्रथमा\t/.test(window.__lastCopy.text),
+      window.__lastCopy.text.slice(0, 90));
+  }
   const hasShabda = await fetch('data/shabda2.json')
     .then((r) => r.ok).catch(() => false);
   const wl = await wordRun('लक्ष्मी');

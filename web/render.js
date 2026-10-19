@@ -82,6 +82,28 @@ export function renderTingTables(tables) {
     .join('');
 }
 
+// ADDITIONS.md 1.3: DOM-table rows ({label: row-head text or null for the
+// header row, cells: body texts}) -> "Copy Table" payloads. Cell text is
+// copied verbatim (variants keep the ` , ` join); markdown gets the
+// GitHub/Obsidian pipe+separator shape, TSV one tab per column.
+export function tablePayload(rows, kind) {
+  const text = (row) => (row.label === null ? row.cells : [row.label, ...row.cells])
+    .map((c) => (c == null ? '' : String(c)));
+  if (kind === 'tsv') {
+    return rows.map((row) => text(row).join('\t')).join('\n');
+  }
+  const lines = rows.map((row) => `| ${text(row).join(' | ')} |`);
+  const width = rows.length ? text(rows[0]).length : 0;
+  const bar = `| ${Array.from({ length: Math.max(width, 1) }, () => '---').join(' | ')} |`;
+  // Header row first (label===null), then the separator directly after it.
+  const out = [];
+  for (const [i, line] of lines.entries()) {
+    out.push(line);
+    if (rows[i].label === null) out.push(bar);
+  }
+  return out.join('\n');
+}
+
 // Kṛt link target per ashtadhyayi.com's `createSubantaForms`: m/n links
 // decline the row's base, not the clicked cell; f links pass the f form
 // itself only when its last letter (`WordUtils.getLettersOfWord` — matras
