@@ -946,3 +946,33 @@ predicted 30–45% band. Two traps found on the way:
 
 cargo test green; `./check.sh --full` ALL CHECKS PASSED (exhaustive
 audits + e2e 36 + smoke + browser 468).
+
+## 2026-10-19 (9) — reverse analysis for the 2.x paradigms
+
+The 2.x classes declined but did not *read back*: the analyzer inverts
+through the `STRIPS` table, and none of the new classes were in it. So
+the word view showed no reading (and no table) for आयुषा, सरिद्भ्याम्,
+ककुप्सु — the second half of "decline a word + reverse-analyze the
+form" was missing for exactly the words this session added.
+
+- **UsN** (26 rules): the citation is the root plus its ष्/स्, and
+  every ending but the visarga one carries the षत्व, so the stem is the
+  stripped prefix plus the citation letter. The rules are root-vowel
+  specific (u-root → `uz`, i-root → `is`) — each form then reads back to
+  exactly one citation: आयुष् for the u-roots, हविस् for the i-roots.
+  A citation pass (2c) states the base-word reading for the stem itself
+  (the सि is root+विसर्ग, not a cell of the paradigm). Known limit: the
+  lengthened बहु form (आयूंषि) cannot be rebuilt by appending a tail.
+- **Cons** (43 rules): the strong cells keep the input final, so the
+  plain endings rebuild the stem as-is; the प्रथमा-एकवचन pair and the
+  भ-endings voice that final and सु devoices it, so those rules restore
+  the final the stem carries (`t`/`d`/`D`, `p`/`B`, `k`/`c`). Now
+  सरितः/सरिद्भ्याम्/सरित्सु/ककुप्सु/वाग्भ्याम्/वाक्षु/युद्भ्याम्/
+  उपनिषद्भ्याम्/मरुद्भ्याम्/संविद्भ्याम् all read back to their
+  सरित्-family stem. The अ-उपधा-त् guard keeps the participles
+  (गच्छतः, भवन्तः) out of the Cons readings.
+
+Tests: `subanta_analyze_new_paradigm_readings` (wasm_api) pins the
+UsN/Cons/known-word readings; selftest +2 (word view: आयुषा → आयुष्
+us-n, सरिद्भ्याम् → सरित् cons). cargo test green; `./check.sh --full`
+ALL CHECKS PASSED (exhaustive audits + e2e 36 + smoke + browser 470).

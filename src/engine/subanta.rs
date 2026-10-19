@@ -3066,6 +3066,32 @@ pub fn analyze<S: ::std::hash::BuildHasher>(
             });
         }
     }
+    // 2c. उस्/इस्-स्वादि neuter citations: the stem itself is not a
+    // declined cell of that paradigm (the सि is root+विसर्ग), so state the
+    // citation reading directly — the word view's premise ("this word as
+    // base word").
+    for probe in &variants {
+        if *probe != form {
+            continue;
+        }
+        for class in classes_for(probe, Linga::N) {
+            if !matches!(class, Class::UsN) {
+                continue;
+            }
+            let key = (probe.clone(), "n".to_string(), "citation".to_string());
+            if seen.contains_key(&key) || decline(probe, Linga::N, &class).is_err() {
+                continue;
+            }
+            seen.insert(key, true);
+            out.push(Analysis {
+                stem: probe.clone(),
+                linga: Linga::N,
+                class,
+                slot: "citation".to_string(),
+                refs: vec![],
+            });
+        }
+    }
     // 3. Known pronoun/numeral words (exact tables + citation forms like
     // `tad`/`adas`, whose dictionary entry is not itself a declined cell).
     for word in KNOWN_WORDS {
@@ -3461,6 +3487,89 @@ const STRIPS: &[StripRule] = &[
     (Class::VasM, "vadsu", "vas"),
     (Class::VasM, "dByAm", "s"),
     (Class::VasM, "dsu", "s"),
+    // उस्/इस्-स्वादि neuters (आयुष् @AyuS1). The citation is the root
+    // plus its ष्/स्, and every ending but the visarga one carries the
+    // षत्व (`zA`, `zI`, `ze`, `zaH`, `zoH`, `zAm`, `zi`, `zzu`) — so the
+    // stem is the stripped prefix plus the citation letter. The rules are
+    // root-vowel-specific (u-root → `uz`, i-root → `is`), so each form
+    // reads back to exactly one citation: आयुष् for the u-roots, हविस्
+    // for the i-roots. The र्-discard भ-endings (`urByAm`/`urBiH`/
+    // `urByaH`) and the loc-pl pair (`uHzu`/`uzzu`) work the same way; the
+    // visarga prathamā (`AyuH`) has no ष in it, so it needs its own rules.
+    (Class::UsN, "uzI", "uz"),
+    (Class::UsN, "uzA", "uz"),
+    (Class::UsN, "uze", "uz"),
+    (Class::UsN, "uzaH", "uz"),
+    (Class::UsN, "uzoH", "uz"),
+    (Class::UsN, "uzAm", "uz"),
+    (Class::UsN, "uzi", "uz"),
+    (Class::UsN, "uzzu", "uz"),
+    (Class::UsN, "uHzu", "uz"),
+    (Class::UsN, "urByAm", "uz"),
+    (Class::UsN, "urBiH", "uz"),
+    (Class::UsN, "urByaH", "uz"),
+    (Class::UsN, "uH", "uz"),
+    (Class::UsN, "izI", "is"),
+    (Class::UsN, "izA", "is"),
+    (Class::UsN, "ize", "is"),
+    (Class::UsN, "izaH", "is"),
+    (Class::UsN, "izoH", "is"),
+    (Class::UsN, "izAm", "is"),
+    (Class::UsN, "izi", "is"),
+    (Class::UsN, "izzu", "is"),
+    (Class::UsN, "iHzu", "is"),
+    (Class::UsN, "irByAm", "is"),
+    (Class::UsN, "irBiH", "is"),
+    (Class::UsN, "irByaH", "is"),
+    (Class::UsN, "iH", "is"),
+    // Consonant-final nouns (सरित्-family). The strong cells keep the
+    // input final, so the plain endings rebuild the stem as-is; the
+    // प्रथमा-एकवचन pair and the भ-endings voice that final, and सु
+    // devoices it — so those rules restore the final the stem actually
+    // carries (`t`/`d`/`D`, `p`/`B`, `k`/`c`).
+    (Class::Cons, "O", ""),
+    (Class::Cons, "aH", ""),
+    (Class::Cons, "am", ""),
+    (Class::Cons, "A", ""),
+    (Class::Cons, "e", ""),
+    (Class::Cons, "oH", ""),
+    (Class::Cons, "Am", ""),
+    (Class::Cons, "i", ""),
+    (Class::Cons, "d", "t"),
+    (Class::Cons, "d", "d"),
+    (Class::Cons, "d", "D"),
+    (Class::Cons, "b", "p"),
+    (Class::Cons, "b", "B"),
+    (Class::Cons, "g", "k"),
+    (Class::Cons, "g", "c"),
+    (Class::Cons, "dByAm", "t"),
+    (Class::Cons, "dByAm", "d"),
+    (Class::Cons, "dByAm", "D"),
+    (Class::Cons, "dBiH", "t"),
+    (Class::Cons, "dBiH", "d"),
+    (Class::Cons, "dBiH", "D"),
+    (Class::Cons, "dByaH", "t"),
+    (Class::Cons, "dByaH", "d"),
+    (Class::Cons, "dByaH", "D"),
+    (Class::Cons, "bByAm", "p"),
+    (Class::Cons, "bByAm", "B"),
+    (Class::Cons, "bBiH", "p"),
+    (Class::Cons, "bBiH", "B"),
+    (Class::Cons, "bByaH", "p"),
+    (Class::Cons, "bByaH", "B"),
+    (Class::Cons, "gByAm", "k"),
+    (Class::Cons, "gByAm", "c"),
+    (Class::Cons, "gBiH", "k"),
+    (Class::Cons, "gBiH", "c"),
+    (Class::Cons, "gByaH", "k"),
+    (Class::Cons, "gByaH", "c"),
+    (Class::Cons, "tsu", "t"),
+    (Class::Cons, "tsu", "d"),
+    (Class::Cons, "tsu", "D"),
+    (Class::Cons, "psu", "p"),
+    (Class::Cons, "psu", "B"),
+    (Class::Cons, "kzu", "k"),
+    (Class::Cons, "kzu", "c"),
     // क्वसु neuter (@vidvas2: `-vat`/`-vad`, यण् weak, `-vAMsi`).
     (Class::VasN, "AMsi", "as"),
     (Class::VasN, "vat", "vas"),

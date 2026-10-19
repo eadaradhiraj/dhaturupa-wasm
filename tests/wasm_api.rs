@@ -713,3 +713,74 @@ fn per_dhatu_search_roundtrip() {
     assert_eq!(payload["total"], serde_json::json!(3));
     assert_eq!(payload["hits"][0]["kind"], serde_json::json!("subanta"));
 }
+
+#[test]
+fn subanta_analyze_new_paradigm_readings() {
+    // The classes added for ADDITIONS 2.x must read back, not just decline:
+    // the word view shows "readings" (base word + case) for the form the
+    // user typed, and a paradigm whose surfaces cannot be inverted is
+    // half-delivered.
+    //
+    // उस्/इस्-स्वादि neuters (2.4): every inflected form of the आयुष्
+    // family reads back to the one citation, and the citation itself reads
+    // as a base word (the सि is root+विसर्ग, not a cell of the paradigm).
+    for (form, vibhakti, vacana) in [
+        ("आयुषा", "tftIyA", "ekavacanam"),
+        ("आयुषः", "paJcamI", "ekavacanam"),
+        ("आयुषे", "caturTI", "ekavacanam"),
+        ("आयुषि", "saptamI", "ekavacanam"),
+        ("आयुषी", "prathamA", "dvivacanam"),
+        ("आयुर्भ्याम्", "tftIyA", "dvivacanam"),
+    ] {
+        let payload = ok(&wasm::subanta_analyze(form));
+        let analyses = payload["analyses"].as_array().expect("array");
+        assert!(
+            analyses.iter().any(|a| {
+                a["stem"] == "आयुष्"
+                    && a["class"] == "us-n"
+                    && a["vibhakti"] == vibhakti
+                    && a["vacana"] == vacana
+            }),
+            "{form} should read back to आयुष् us-n {vibhakti}.{vacana}"
+        );
+    }
+    let payload = ok(&wasm::subanta_analyze("आयुष्"));
+    let analyses = payload["analyses"].as_array().expect("array");
+    assert!(analyses.iter().any(|a| {
+        a["stem"] == "आयुष्" && a["class"] == "us-n" && a["vibhakti"] == "citation"
+    }));
+    // The i-root family keeps its स् spelling (हविस्, not हविज्).
+    let payload = ok(&wasm::subanta_analyze("हविषा"));
+    let analyses = payload["analyses"].as_array().expect("array");
+    assert!(analyses.iter().any(|a| {
+        a["stem"] == "हविस्" && a["class"] == "us-n" && a["vibhakti"] == "tftIyA"
+    }));
+
+    // Consonant-final nouns (2.1–2.3): the भ-endings read back to the
+    // सरित्-family stem, both in its pause spelling and its voiced one.
+    let payload = ok(&wasm::subanta_analyze("सरिद्भ्याम्"));
+    let analyses = payload["analyses"].as_array().expect("array");
+    assert!(analyses.iter().any(|a| {
+        a["stem"] == "सरित्"
+            && a["class"] == "cons"
+            && a["vibhakti"] == "tftIyA"
+            && a["vacana"] == "dvivacanam"
+    }));
+    let payload = ok(&wasm::subanta_analyze("सरित्सु"));
+    let analyses = payload["analyses"].as_array().expect("array");
+    assert!(analyses.iter().any(|a| {
+        a["stem"] == "सरित्" && a["class"] == "cons" && a["vibhakti"] == "saptamI"
+    }));
+
+    // Word-route words (2.5/2.6) read back through their exact tables.
+    let payload = ok(&wasm::subanta_analyze("अन्यस्मात्"));
+    let analyses = payload["analyses"].as_array().expect("array");
+    assert!(analyses.iter().any(|a| {
+        a["stem"] == "अन्य" && a["class"] == "known word" && a["vibhakti"] == "paJcamI"
+    }));
+    let payload = ok(&wasm::subanta_analyze("गोभ्याम्"));
+    let analyses = payload["analyses"].as_array().expect("array");
+    assert!(analyses.iter().any(|a| {
+        a["stem"] == "गो" && a["class"] == "known word" && a["vibhakti"] == "tftIyA"
+    }));
+}

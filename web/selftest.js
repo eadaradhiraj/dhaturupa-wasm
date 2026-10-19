@@ -464,6 +464,16 @@ try {
   }
   const hasShabda = await fetch('data/shabda2.json')
     .then((r) => r.ok).catch(() => false);
+  // The paradigms added for ADDITIONS 2.x read back, not just decline: the
+  // word view lists the base word + case for the form the user typed.
+  const wAy = await wordRun('आयुषा');
+  ok('word: आयुषा reads back to आयुष् (us-n)',
+    wAy.readings.includes('आयुष्') && wAy.readings.includes('us-n'),
+    wAy.readings.slice(0, 110));
+  const wSr = await wordRun('सरिद्भ्याम्');
+  ok('word: सरिद्भ्याम् reads back to सरित् (cons)',
+    wSr.readings.includes('सरित्') && wSr.readings.includes('cons'),
+    wSr.readings.slice(0, 110));
   const wl = await wordRun('लक्ष्मी');
   ok('word: लक्ष्मी reads as base word + नदी nominative',
     /citation form/.test(wl.readings) && /I-f-nadi/.test(wl.readings),
