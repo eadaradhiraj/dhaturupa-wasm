@@ -243,6 +243,28 @@ export function renderWordReadings(analyses, krtRefs = [], meta = {}) {
   return `<ul class="word-readings">${rows.join('')}</ul>`;
 }
 
+// The search fallback: the corpus shards carry the kṛt families only, so a
+// noun paradigm (सरिद्भ्याम् → सरित्) finds no index hit. The word
+// analyzer does, so the search offers the base-word readings and links
+// each to the word view, where the paradigm lives.
+export function renderSearchReadings(analyses, query) {
+  if (!analyses || analyses.length === 0) return '';
+  const rows = analyses.slice(0, 24).map((a) => {
+    const slot = [VIBHAKTIS[a.vibhakti] || a.vibhakti, VACANAS[a.vacana] || a.vacana]
+      .filter(Boolean).join(' ');
+    const linga = LINGAS[a.linga] || a.linga;
+    return `<li><span class="reading-slot">${escapeHtml(slot)}</span> of ` +
+      `<a class="deva" href="#word?q=${encodeURIComponent(a.stem)}">` +
+      `${escapeHtml(a.stem)}</a> ` +
+      `<span class="muted">(${escapeHtml(linga)} · ${escapeHtml(a.class)})</span></li>`;
+  });
+  return `<p class="muted">No corpus hit — base-word readings for ` +
+    `<span class="deva">${escapeHtml(query)}</span>. ` +
+    `<a href="#word?q=${encodeURIComponent(query)}">Open the word view</a> ` +
+    `for the full paradigm.</p>` +
+    `<ul class="word-readings">${rows.join('')}</ul>`;
+}
+
 // [{stem, linga, lingaLabel?, class, cells}] -> headed declension sections
 // (bare 8x3). `lingaLabel` overrides the single-gender label when one site
 // entry stands for several लिङ्गs (e.g. ग्रामणी masc/fem).

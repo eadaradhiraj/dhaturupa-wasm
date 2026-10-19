@@ -12,7 +12,7 @@ import init, {
 import {
   escapeHtml, renderTingTables, renderKrutTables, renderParadigm,
   renderHits, renderMeta, renderWordReadings, renderWordTables, siteTables,
-  tablePayload,
+  renderSearchReadings, tablePayload,
 } from './render.js';
 
 const GANAS = { 1: 'bhvādi', 2: 'adādi', 3: 'juhotyādi', 4: 'divādi', 5: 'svādi', 6: 'tudādi', 7: 'rudhādi', 8: 'tanādi', 9: 'kryādi', 10: 'curādi' };
@@ -723,13 +723,31 @@ async function runFormSearch() {
         }
       }
     }
-    const html = renderHits(hits.slice(0, 200), dhatuCards(), reads[0].text);
+    // No index hit: the shards carry the kṛt families only, so a noun
+    // paradigm (सरिद्भ्याम् → सरित्) finds nothing. The word analyzer
+    // knows it, so fall back to the base-word readings — the site's
+    // शब्द search resolves a form to its base word the same way.
+    let readings = [];
+    if (hits.length === 0) {
+      try {
+        const res = ok(subanta_analyze(q), 'word');
+        readings = res.analyses || [];
+      } catch {
+        readings = [];
+      }
+    }
+    const html = hits.length > 0
+      ? renderHits(hits.slice(0, 200), dhatuCards(), reads[0].text)
+      : renderSearchReadings(readings, q);
     const ms = Math.round(performance.now() - t0);
     if (!alive()) return;
     el('search-hits').innerHTML = html;
     el('search-note').textContent =
       `${hits.length} hit${hits.length === 1 ? '' : 's'}` +
       (hits.length > 200 ? ' (showing first 200)' : '') +
+      (readings.length
+        ? ` — ${readings.length} base-word reading${readings.length === 1 ? '' : 's'}`
+        : '') +
       ` — ${ms}ms`;
     status('done');
   } catch (e) {

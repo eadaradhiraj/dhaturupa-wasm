@@ -1088,3 +1088,22 @@ Audit: **158/288** consonant-final db entries reproduce the site grid
 
 Pins: आत्मवत् / उरस्वत् / क्रियावत् / आप्नुवत् / आयुष्मत् / इयत्.
 `./check.sh --full` ALL CHECKS PASSED (browser 471).
+
+## 2026-10-20 (3) — the search box falls back to the word analyzer
+
+The corpus shards carry the kṛt families only, so the form search
+resolved verb and कृत् forms (गच्छत् → 5 hits, भवति → 6) but no noun
+paradigm at all: सरिद्भ्याम्, सरित्, अन्यस्मात् and आत्मवान् all came
+back with zero hits, while the site's शब्द search resolves a form to
+its base word. The word analyzer already knows these forms (the 2.x
+reverse-analysis rules), so a search with no index hit now offers the
+base-word readings — the base word and the case it declined from, each
+linking to the word view, which carries the paradigm and the site's own
+grid.
+
+`renderSearchReadings` (render.js) renders the group; the search note
+counts the readings. Selftest +1 (सरिद्भ्याम् → base-word readings
+naming सरित्) and a render unit test for the new renderer.
+
+Gates green: `./check.sh` ALL CHECKS PASSED (browser 472), node render
+tests 17.

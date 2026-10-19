@@ -184,6 +184,14 @@ try {
   ok('search: HK pradadadbhiH hits > 0', hkdec.hits > 0, hkdec.note);
   const dadan = await formSearch('ददानम्');
   ok('search: ददानम् (kṛdanta subanta) hits > 0', dadan.hits > 0, dadan.note);
+  // A noun paradigm is not in the corpus shards (they carry the kṛt
+  // families), so the search falls back to the word analyzer: सरिद्भ्याम्
+  // reads back to सरित्, the way the site's शब्द search resolves a form
+  // to its base word.
+  const sari = await formSearch('सरिद्भ्याम्');
+  ok('search: सरिद्भ्याम् falls back to the base word (सरित्)',
+    /base-word reading/.test(sari.note) && sari.hits > 0 &&
+    text($('search-hits')).includes('सरित्'), sari.note);
 
 
   // ---- plain dhatu navigation

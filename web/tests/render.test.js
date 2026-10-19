@@ -4,6 +4,7 @@ import {
   escapeHtml, slotLabel, renderTingTables, renderKrutTables, krtLinkTarget,
   renderParadigm, renderChandrika, renderHits, renderMeta,
   renderWordReadings, renderWordTables, siteTables, tablePayload,
+  renderSearchReadings,
 } from '../render.js';
 
 test('escapeHtml neutralizes markup', () => {
@@ -272,4 +273,19 @@ test('siteTables collapses cell-identical entries, labels every लिङ्ग'
   assert.match(renderWordTables(tables),
     /masculine, feminine \(ashtadhyayi\.com @grAmaNI1 @grAmaNI2\)/);
   assert.equal(siteTables(byWord, 'अस्मद्')[0].lingaLabel, 'any gender');
+});
+
+test('renderSearchReadings lists base-word readings and links to the word view', () => {
+  const html = renderSearchReadings([
+    { stem: 'सरित्', linga: 'f', class: 'cons', vibhakti: 'tftIyA', vacana: 'dvivacanam' },
+    { stem: 'सरित्', linga: 'f', class: 'cons', vibhakti: 'prathamA', vacana: 'ekavacanam' },
+  ], 'सरिद्भ्याम्');
+  assert.match(html, /No corpus hit/);
+  assert.match(html, /सरिद्भ्याम्/);
+  assert.match(html, /instrumental dual<\/span> of/);
+  assert.match(html, /href="#word\?q=/);
+  // The link carries the Devanagari stem, percent-encoded.
+  assert.match(html, /q=%E0%A4%B8%E0%A4%B0%E0%A4%BF%E0%A4%A4%E0%A5%8D/);
+  // No readings → nothing to offer.
+  assert.equal(renderSearchReadings([], 'x'), '');
 });
