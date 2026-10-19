@@ -838,3 +838,62 @@ analyze readings assertive of `linga=f` with class ≠ `A-f`. No dist
 rebuild needed: the subanta shard indexes kṛt-cell declines only
 (`krt_class` never emits AnF/InF), word view/analyze are live.
 `./check.sh` ALL CHECKS PASSED (e2e 36/36, smoke, browser 455).
+
+## 2026-10-19 (2) — consonant-final noun paradigm (`Cons`), ADDITIONS 2.1–2.3
+
+One class covers every consonant-final noun the site tables on the
+सरित्-shape — finals t/d/D (सरित् @sarit1, विद्युत्, संविद्, उपनिषद्,
+युध्, मरुत्/m @marut1, बुध्/m @budh1), B (ककुभ् @kakubh1) and c (वाच्
+@vAc1, त्वच्). प्रथमा- and सम्बोधन-सि carry the site's pausa pairs
+(सरिद्-सरित्, युद्-युत्, ककुब्-ककुप्, वाग्-वाक्), भ्-endings voice the
+final (सरिद्भ्याम्, ककुब्भ्याम्, वाग्भ्याम्), सु devoices it (सरित्सु,
+ककुप्सु, वाक्षु) and the strong cells keep the input final (सरितौ/
+संविदौ/युधौ/ककुभौ). Feminine reaches every final; masculine only
+{t,d,D}. Previously मरुत्/m crewed `AtM(Num)` and produced the
+participle-न् मरुन् — the reroute repairs that parity miss; अ-उपधा-त्
+spellings (गच्छत्, भवन्त, वसुमत्) still go to `AtM(Num)` via the
+`at`/`ant` split, and N t/d keeps `AtN` (विदत्) — no neuter भ्/च् noun
+grids exist on the site.
+
+Tests: new `tests/subanta_site_pins.rs` reads the vendored शब्द db and
+demands cell-for-cell Devanagari equality for 10 सरित्-family words +
+the गच्छत् participle regression; the `@budh1` भु-typo is corrected in
+the expectation (engine emits बुद्-बुत्). ./check.sh ALL CHECKS PASSED
+(browser 465).
+
+## 2026-10-19 (3) — उस्/इस्-स्वादि neuter paradigm (`UsN`), ADDITIONS 2.4
+
+`Class::UsN` (`us-n`) for the इस्वादि neuters the site tables through
+आयुष् (@AyuS1): stem minus its final ष्/स् is the root (आयु, हवि, धनु)
+— सि root+विसर्ग (आयुः), द्वि root+षि (आयुषी), बहु lengthened root +
+ंषि (आयूंषि, हवींषि, धनूंषि), भ्-endings the weak र्-discard (आयुर्भ्याम्),
+loc-pl pairs आयुःषु-आयुष्षु, सम्बोधन mirrors प्रथमा. Route: N inputs
+ending us/is/uz/iz (the latter two are the षत्व spellings). हविस्/धनुस्
+derive from the आयुष् shape per the DB-first-then-derived contract.
+
+Tests: आयुष् vs `@AyuS1` cell-for-cell + full derived हविस्/धनुस् grids
+(`us_swadi_pins`). Gates green, browser 465.
+
+## 2026-10-19 (4) — गो/नौ/रै through the word route, ADDITIONS 2.5
+
+The three diphthong words (उभयवृद्धि गव्/नाव् shapes) join
+`KNOWN_WORDS` (SLP1 'go'/'nO'/'rE') with verbatim `word_table` grids:
+गो m and f identical (@go1/@go2 — प्रथमा-सि गौः, accusative-bahu गाः,
+गवा/गोभ्याम्, गवि), नौ feminine-only (@nau1 नौः/नावौ/नावम्/नौभ्याम्/
+नावोः/नौषु), रै both लिङ्ग (@rai1/@rai2 राः/रायौ/रायम्/राभ्याम्/रायोः/
+रासु). No rule shape for the गाम्/गाः वृद्धि accusatives — gridded
+data. Tests: `diphthong_word_pins` vs every db entry. Gates green.
+
+## 2026-10-19 (5) — सर्व-family pronominals through the word route, ADDITIONS 2.6
+
+अन्य/इतर/कतर/कतम/उभय (m+n per db entry), अन्या (f, @anyA1), उभ
+(dual-only) join `KNOWN_WORDS` with verbatim grids. Alternant pairs in
+their cells: प्रथमा-/सम्बोधन-eka अन्यद्-अन्यत् (neuters; उभय-N samb-eka
+stays bare उभय per @ubhaya2), पञ्चमी-eka स्माद्-स्मात् for every
+member. उभ duals leave eka/bahu empty (rows carry "" cells;
+`rows_to_slots` drops them → rendered —), so the pin test keys cells by
+(विभक्ति, वचन) instead of position. SLP1 note: भ् is 'B', so उभय =
+'uBaya' (an 'ubh…' spelling never matches); the णत्व split is per-stem
+(इतरेण/कतरेण with र्, अन्येन/कतमेन/उभयेन dental; इतराणि/कतराणि vs
+अन्यानि/कतमानि/उभयानि). Tests: `pronominal_word_pins` — all 13 db
+entries verbatim. Gates green, browser 465.
