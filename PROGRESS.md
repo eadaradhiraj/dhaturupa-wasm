@@ -909,3 +909,17 @@ case-insensitive substring search of `artha_english` (93 rows for
 meaning.
 
 Selftest +1 check ('eat' → 93). Gates green, browser 466.
+
+## 2026-10-19 (7) — dhātu-list grammatical filters, ADDITIONS 3.2
+
+Two list dropdowns over the `dhatu_data.json` fields the CLI already
+takes (`--settva`/`--karma`): `#list-settva` (seṭ S/aniṭ A/veṭ V —
+1882/306/41 rows) and `#list-karma` (sakarmaka S/akarmaka A/dvikarmaka
+D — 1553/653/23). Rows tagged '-' drop out under any filter. Both live
+in `runListFilter` beside gaṇa/pace, applied by the same Filter button.
+
+The selftest page hand-maintains the app shell — the new selects had to
+be copied into `selftest.html` too (a missing id throws at boot, exactly
+what its header comment warns; the gate caught the first run).
+
+Selftest +2 checks (veṭ 41, dvikarmaka 23). Gates green, browser 468.

@@ -40,11 +40,17 @@ pre { white-space: pre-wrap; background: #f6f6f6; padding: .5em; }
 <section id="view-list">
 <h2>Select dhātu</h2>
 <div>
-<input id="list-q" placeholder="exact dhātu (Devanāgarī or HK)" size="24">
+<input id="list-q" placeholder="dhātu (Devanāgarī/HK) or English meaning" size="24">
 <select id="list-gana"><option value="">all gaṇas</option></select>
 <select id="list-pada"><option value="">all padas</option>
 <option value="P">parasmaipadī</option><option value="A">ātmanepadī</option>
 <option value="U">ubhayapadī</option></select>
+<select id="list-settva"><option value="">all settvas</option>
+<option value="S">seṭ</option><option value="A">aniṭ</option>
+<option value="V">veṭ</option></select>
+<select id="list-karma"><option value="">all karmas</option>
+<option value="S">sakarmaka</option><option value="A">akarmaka</option>
+<option value="D">dvikarmaka</option></select>
 <button id="list-go">Filter</button>
 </div>
 <p id="list-count" class="muted"></p>

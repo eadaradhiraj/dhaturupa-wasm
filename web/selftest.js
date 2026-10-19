@@ -66,6 +66,11 @@ try {
   ok('list: pada filter applies', /^[1-9]\d* \/ 2259$/.test(padaCount), padaCount);
   $('list-pada').value = ''; $('list-go').click();
   ok('list: no upasarga box', !document.getElementById('list-upasarga'));
+  $('list-settva').value = 'V'; $('list-go').click();
+  ok('list: veṭ filter (41)', text($('list-count')) === '41 / 2259', text($('list-count')));
+  $('list-settva').value = ''; $('list-karma').value = 'D'; $('list-go').click();
+  ok('list: dvikarmaka filter (23)', text($('list-count')) === '23 / 2259', text($('list-count')));
+  $('list-karma').value = ''; $('list-go').click();
 
   // ---- form search: base, prefixed, declined-prefixed, kṛdanta-subanta, HK
   // Returns the result; stops waiting as soon as the search settles

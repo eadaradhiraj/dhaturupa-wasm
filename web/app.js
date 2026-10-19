@@ -182,6 +182,13 @@ function runListFilter() {
   let rows = dhatuList.data;
   if (gana) rows = rows.filter((r) => String(r.gana) === gana);
   if (pada) rows = rows.filter((r) => r.pada === pada);
+  // ADDITIONS.md 3.2: the dhatu_data.json `settva` (S/A/V) and `karma`
+  // (S/A/D) fields as list dropdowns — the CLI already takes --settva/-
+  // karma over the same fields; rows with '-' are unmatched and drop out.
+  const settva = el('list-settva').value;
+  if (settva) rows = rows.filter((r) => r.settva === settva);
+  const karma = el('list-karma').value;
+  if (karma) rows = rows.filter((r) => r.karma === karma);
   if (raw) {
     // Exact dhātu match, compared in Devanagari: HK `dA` must normalize to
     // `दा` first; queries that decode to nothing fall through as-is.
