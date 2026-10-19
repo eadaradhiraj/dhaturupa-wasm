@@ -54,34 +54,54 @@ fn linga_from_marker(mark: &str) -> Linga {
     Linga::parse(code).expect("well-formed linga")
 }
 
-/// Decline a display stem and render each of the 24 cells the same way
-/// the portal does (Devanagari, alternants joined, `हे ` on sambodhana).
+/// Decline a display stem and render the 8×3 grid the same way the
+/// portal does (Devanagari, alternants joined, `हे ` on sambodhana).
+/// Lookup goes by (विभक्ति, वचन) so slots the engine drops — उभ's empty
+/// eka/bahu — come back as '' instead of shifting every later cell.
 fn engine_grid(word: &str, mark: &str) -> Vec<String> {
     let linga = linga_from_marker(mark);
     let stem = deva_to_slp1(word).unwrap_or_else(|| panic!("{word} transliterates"));
     let tables = generate_tables(&stem, linga);
     assert!(!tables.is_empty(), "{word} [{mark}] produced no table");
     let paradigm = &tables[0];
-    let mut out = Vec::with_capacity(24);
-    for (i, cell) in paradigm.cells.iter().enumerate() {
+    let mut slots: std::collections::HashMap<(&str, &str), Vec<String>> =
+        std::collections::HashMap::new();
+    for cell in &paradigm.cells {
         let rendered: Vec<String> = cell
             .forms
             .iter()
             .map(|f| slp1_to_deva(f).unwrap_or_else(|| panic!(" cell '{f}' transliterates")))
             .collect();
-        let joined = rendered.join(" , ").replace(" , ", "-");
-        if i / 3 == 7 && !joined.is_empty() {
-            // The portal prefixes हे per alternant (render.js renderParadigm).
-            out.push(
-                rendered
-                    .iter()
-                    .map(|r| format!("हे {r}"))
-                    .collect::<Vec<_>>()
-                    .join(" , ")
-                    .replace(" , ", "-"),
-            );
-        } else {
-            out.push(joined);
+        slots.insert((cell.vibhakti, cell.vacana), rendered);
+    }
+    let vib_row = [
+        "prathamA",
+        "dvitIyA",
+        "tftIyA",
+        "caturTI",
+        "paJcamI",
+        "zazWI",
+        "saptamI",
+        "sambodhana",
+    ];
+    let mut out = Vec::with_capacity(24);
+    for (row, vib) in vib_row.iter().enumerate() {
+        for vac in ["ekavacanam", "dvivacanam", "bahuvacanam"] {
+            let rendered = slots.get(&(*vib, vac)).cloned().unwrap_or_default();
+            let joined = rendered.join(" , ").replace(" , ", "-");
+            if row == 7 && !joined.is_empty() {
+                // The portal prefixes हे per alternant (render.js renderParadigm).
+                out.push(
+                    rendered
+                        .iter()
+                        .map(|r| format!("हे {r}"))
+                        .collect::<Vec<_>>()
+                        .join(" , ")
+                        .replace(" , ", "-"),
+                );
+            } else {
+                out.push(joined);
+            }
         }
     }
     out
@@ -138,6 +158,17 @@ fn cons_family_and_participle_pins() {
 #[test]
 fn diphthong_word_pins() {
     for word in ["गो", "नौ", "रै"] {
+        pin_word(word);
+    }
+}
+
+/// सर्व-family स्म-ending pronominals (ADDITIONS 2.6): every db entry
+/// — अन्य/इतर/कतर/कतम/उभय in m+n, अन्या in f, उभ dual-only with its
+/// empty eka/bahu cells — must reproduce verbatim.
+#[test]
+fn pronominal_word_pins() {
+    for word in ["अन्य", "अन्या", "इतर", "कतर", "कतम", "उभय", "उभ"]
+    {
         pin_word(word);
     }
 }

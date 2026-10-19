@@ -1429,6 +1429,195 @@ fn word_table(stem: &str, linga: Linga, word: &'static str) -> Result<Paradigm, 
             ["rAyi", "rAyoH", "rAsu"],
             ["rAH", "rAyO", "rAyaH"],
         ]),
+        // प्रण-नाम-श्री (ADDITIONS 2.6) — सर्व-family स्म-शेषों grid
+        // (@anya1/@anya2, @itara1/@itara2, @katara1/@katara2,
+        // @katama1/@katama2, @ubhaya1/@ubhaya2, @ubha1/@ubha2,
+        // @anyA1) with the site's alternant pairs in the singular slots
+        // they show them: प्रथमा-/सम्बोधन-eka अन्यद्-अन्यत् (neuters) and
+        // पञ्चमी-eka स्माद्-स्मात् (every member). उभ duals-only — the site
+        // leaves eka/bahu cells empty (filtered slots, rendered —).
+        ("anya", Linga::M) => {
+            let mut rows = rows1(&[
+                ["anyaH", "anyO", "anye"],
+                ["anyam", "anyO", "anyAn"],
+                ["anyena", "anyAByAm", "anyEH"],
+                ["anyasmE", "anyAByAm", "anyeByaH"],
+                ["anyasmAd", "anyAByAm", "anyeByaH"],
+                ["anyasya", "anyayoH", "anyezAm"],
+                ["anyasmin", "anyayoH", "anyezu"],
+                ["anya", "anyO", "anye"],
+            ]);
+            rows[4].0 = vec!["anyasmAd".to_string(), "anyasmAt".to_string()];
+            rows
+        }
+        ("anya", Linga::N) => {
+            let mut rows = rows1(&[
+                ["anyat", "anye", "anyAni"],
+                ["anyat", "anye", "anyAni"],
+                ["anyena", "anyAByAm", "anyEH"],
+                ["anyasmE", "anyAByAm", "anyeByaH"],
+                ["anyasmAd", "anyAByAm", "anyeByaH"],
+                ["anyasya", "anyayoH", "anyezAm"],
+                ["anyasmin", "anyayoH", "anyezu"],
+                ["anyat", "anye", "anyAni"],
+            ]);
+            rows[0].0 = vec!["anyad".to_string(), "anyat".to_string()];
+            rows[1].0 = vec!["anyad".to_string(), "anyat".to_string()];
+            rows[4].0 = vec!["anyasmAd".to_string(), "anyasmAt".to_string()];
+            rows[7].0 = vec!["anyad".to_string(), "anyat".to_string()];
+            rows
+        }
+        ("anyA", Linga::F) => rows1(&[
+            ["anyA", "anye", "anyAH"],
+            ["anyAm", "anye", "anyAH"],
+            ["anyayA", "anyAByAm", "anyABiH"],
+            ["anyasyE", "anyAByAm", "anyAByaH"],
+            ["anyasyAH", "anyAByAm", "anyAByaH"],
+            ["anyasyAH", "anyayoH", "anyAsAm"],
+            ["anyasyAm", "anyayoH", "anyAsu"],
+            ["anye", "anye", "anyAH"],
+        ]),
+        ("itara", Linga::M) => {
+            let mut rows = rows1(&[
+                ["itaraH", "itarO", "itare"],
+                ["itaram", "itarO", "itarAn"],
+                ["itareRa", "itarAByAm", "itarEH"],
+                ["itarasmE", "itarAByAm", "itareByaH"],
+                ["itarasmAd", "itarAByAm", "itareByaH"],
+                ["itarasya", "itarayoH", "itarezAm"],
+                ["itarasmin", "itarayoH", "itarezu"],
+                ["itara", "itarO", "itare"],
+            ]);
+            rows[4].0 = vec!["itarasmAd".to_string(), "itarasmAt".to_string()];
+            rows
+        }
+        ("itara", Linga::N) => {
+            let mut rows = rows1(&[
+                ["itarat", "itare", "itarARi"],
+                ["itarat", "itare", "itarARi"],
+                ["itareRa", "itarAByAm", "itarEH"],
+                ["itarasmE", "itarAByAm", "itareByaH"],
+                ["itarasmAd", "itarAByAm", "itareByaH"],
+                ["itarasya", "itarayoH", "itarezAm"],
+                ["itarasmin", "itarayoH", "itarezu"],
+                ["itarat", "itare", "itarARi"],
+            ]);
+            rows[0].0 = vec!["itarad".to_string(), "itarat".to_string()];
+            rows[1].0 = vec!["itarad".to_string(), "itarat".to_string()];
+            rows[4].0 = vec!["itarasmAd".to_string(), "itarasmAt".to_string()];
+            rows[7].0 = vec!["itarad".to_string(), "itarat".to_string()];
+            rows
+        }
+        ("katara", Linga::M) => {
+            let mut rows = rows1(&[
+                ["kataraH", "katarO", "katare"],
+                ["kataram", "katarO", "katarAn"],
+                ["katareRa", "katarAByAm", "katarEH"],
+                ["katarasmE", "katarAByAm", "katareByaH"],
+                ["katarasmAd", "katarAByAm", "katareByaH"],
+                ["katarasya", "katarayoH", "katarezAm"],
+                ["katarasmin", "katarayoH", "katarezu"],
+                ["katara", "katarO", "katare"],
+            ]);
+            rows[4].0 = vec!["katarasmAd".to_string(), "katarasmAt".to_string()];
+            rows
+        }
+        ("katara", Linga::N) => {
+            let mut rows = rows1(&[
+                ["katarat", "katare", "katarARi"],
+                ["katarat", "katare", "katarARi"],
+                ["katareRa", "katarAByAm", "katarEH"],
+                ["katarasmE", "katarAByAm", "katareByaH"],
+                ["katarasmAd", "katarAByAm", "katareByaH"],
+                ["katarasya", "katarayoH", "katarezAm"],
+                ["katarasmin", "katarayoH", "katarezu"],
+                ["katarat", "katare", "katarARi"],
+            ]);
+            rows[0].0 = vec!["katarad".to_string(), "katarat".to_string()];
+            rows[1].0 = vec!["katarad".to_string(), "katarat".to_string()];
+            rows[4].0 = vec!["katarasmAd".to_string(), "katarasmAt".to_string()];
+            rows[7].0 = vec!["katarad".to_string(), "katarat".to_string()];
+            rows
+        }
+        ("katama", Linga::M) => {
+            let mut rows = rows1(&[
+                ["katamaH", "katamO", "katame"],
+                ["katamam", "katamO", "katamAn"],
+                ["katamena", "katamAByAm", "katamEH"],
+                ["katamasmE", "katamAByAm", "katameByaH"],
+                ["katamasmAd", "katamAByAm", "katameByaH"],
+                ["katamasya", "katamayoH", "katamezAm"],
+                ["katamasmin", "katamayoH", "katamezu"],
+                ["katama", "katamO", "katame"],
+            ]);
+            rows[4].0 = vec!["katamasmAd".to_string(), "katamasmAt".to_string()];
+            rows
+        }
+        ("katama", Linga::N) => {
+            let mut rows = rows1(&[
+                ["katamat", "katame", "katamAni"],
+                ["katamat", "katame", "katamAni"],
+                ["katamena", "katamAByAm", "katamEH"],
+                ["katamasmE", "katamAByAm", "katameByaH"],
+                ["katamasmAd", "katamAByAm", "katameByaH"],
+                ["katamasya", "katamayoH", "katamezAm"],
+                ["katamasmin", "katamayoH", "katamezu"],
+                ["katamat", "katame", "katamAni"],
+            ]);
+            rows[0].0 = vec!["katamad".to_string(), "katamat".to_string()];
+            rows[1].0 = vec!["katamad".to_string(), "katamat".to_string()];
+            rows[4].0 = vec!["katamasmAd".to_string(), "katamasmAt".to_string()];
+            rows[7].0 = vec!["katamad".to_string(), "katamat".to_string()];
+            rows
+        }
+        ("uBaya", Linga::M) => {
+            let mut rows = rows1(&[
+                ["uBayaH", "uBayO", "uBaye"],
+                ["uBayam", "uBayO", "uBayAn"],
+                ["uBayena", "uBayAByAm", "uBayEH"],
+                ["uBayasmE", "uBayAByAm", "uBayeByaH"],
+                ["uBayasmAd", "uBayAByAm", "uBayeByaH"],
+                ["uBayasya", "uBayayoH", "uBayezAm"],
+                ["uBayasmin", "uBayayoH", "uBayezu"],
+                ["uBaya", "uBayO", "uBaye"],
+            ]);
+            rows[4].0 = vec!["uBayasmAd".to_string(), "uBayasmAt".to_string()];
+            rows
+        }
+        ("uBaya", Linga::N) => {
+            let mut rows = rows1(&[
+                ["uBayam", "uBaye", "uBayAni"],
+                ["uBayam", "uBaye", "uBayAni"],
+                ["uBayena", "uBayAByAm", "uBayEH"],
+                ["uBayasmE", "uBayAByAm", "uBayeByaH"],
+                ["uBayasmAd", "uBayAByAm", "uBayeByaH"],
+                ["uBayasya", "uBayayoH", "uBayezAm"],
+                ["uBayasmin", "uBayayoH", "uBayezu"],
+                ["uBaya", "uBaye", "uBayAni"],
+            ]);
+            rows[4].0 = vec!["uBayasmAd".to_string(), "uBayasmAt".to_string()];
+            rows
+        }
+        ("uBa", Linga::M) => rows1(&[
+            ["", "uBO", ""],
+            ["", "uBO", ""],
+            ["", "uBAByAm", ""],
+            ["", "uBAByAm", ""],
+            ["", "uBAByAm", ""],
+            ["", "uBayoH", ""],
+            ["", "uBayoH", ""],
+            ["", "uBO", ""],
+        ]),
+        ("uBa", Linga::N) => rows1(&[
+            ["", "uBe", ""],
+            ["", "uBe", ""],
+            ["", "uBAByAm", ""],
+            ["", "uBAByAm", ""],
+            ["", "uBAByAm", ""],
+            ["", "uBayoH", ""],
+            ["", "uBayoH", ""],
+            ["", "uBe", ""],
+        ]),
         ("tad", Linga::M) => rows1(&[
             ["saH", "tO", "te"],
             ["tam", "tO", "tAn"],
@@ -2020,10 +2209,13 @@ fn td_slots(cells: &mut [Slot], t: &str, d: &str) {
 }
 
 /// Known pronoun/numeral stems. गो/नौ/रै (ADDITIONS 2.5) are gridded
-/// diphthong words — 'go'/'nO'/'rE' in SLP1.
+/// diphthong words — 'go'/'nO'/'rE' in SLP1. अन्य/इतर/कतर/कतम/उभय/उभ/अन्या
+/// (ADDITIONS 2.6) are the सर्व-family स्म-ending pronominals the site
+/// grids explicitly.
 pub const KNOWN_WORDS: &[&str] = &[
     "sarva", "tad", "etad", "yad", "kim", "idam", "adas", "yuzmad", "asmad", "Bavat", "eka", "dvi",
-    "tri", "catur", "paJcan", "zaz", "saptan", "azwan", "navan", "daSan", "go", "nO", "rE",
+    "tri", "catur", "paJcan", "zaz", "saptan", "azwan", "navan", "daSan", "go", "nO", "rE", "anya",
+    "anyA", "itara", "katara", "katama", "uBaya", "uBa",
 ];
 
 /// Strict manual classes for (stem, linga). May be plural for `-an`.
