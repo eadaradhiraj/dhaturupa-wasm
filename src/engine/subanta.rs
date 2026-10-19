@@ -152,6 +152,13 @@ pub enum Class {
     /// `j`-stem neuter (नजिङ्): `svapnajI`, `svapnaYji` (the @svapnaj2
     /// paradigm).
     JvsN,
+    /// Full consonant-final noun paradigm (सरित्, विद्युत्, संविद्,
+    /// उपनिषद्, युध्/बुध्, ककुभ्, वाच्/त्वच्): प्रथमा- and सम्बोधन-सि are
+    /// pausa pairs (सरिद्-सरित्, ककुब्-ककुप्, वाग्-वाक्; site
+    /// @sarit1/@kakubh1/@vAc1), भ्-endings take the voiced final, सु the
+    /// voiceless one. Strong cells keep the input final. Distinct from
+    /// the participle [`Class::AtM`] only in the prathamā-eka slot.
+    Cons,
     /// `van`-stem masculine (ङ्वनिप्, like `rAjan` with न्-drop):
     /// `yajvA`, `yajvAnO`, `yajvasu` (the @yajvan1 paradigm).
     VanM,
@@ -195,6 +202,7 @@ impl Class {
             Self::InN => "in-n".to_string(),
             Self::AsN => "as-n".to_string(),
             Self::AsM => "as-m".to_string(),
+            Self::Cons => "cons".to_string(),
             Self::VasM => "vas-m".to_string(),
             Self::VasN => "vas-n".to_string(),
             Self::VantM => "vant-m".to_string(),
@@ -431,6 +439,66 @@ pub fn decline(stem: &str, linga: Linga, class: &Class) -> Result<Paradigm, &'st
             put(&mut cells, 4, 0, vec![f(p, "oH"), f(p, "vAH")]);
             put(&mut cells, 5, 0, vec![f(p, "oH"), f(p, "vAH")]);
             put(&mut cells, 6, 0, vec![f(p, "O"), f(p, "vAm")]);
+            cells
+        }
+        Class::Cons => {
+            // Full consonant-final noun (सरित्/विद्युत्/संविद्/उपनिषद्/
+            // युध्/ककुभ्/वाच्; site @sarit1/@kakubh1/@vAc1). One shape for
+            // the finals {t, d, D, B, c}: प्रथमा- and सम्बोधन-सि carry the
+            // pausa pairs (सरिद्-सरित्, युद्-युत्, ककुब्-ककुप्, वाग्-वाक्),
+            // the भ्-endings voice the final (सरिद्भ्याम्, ककुब्भ्याम्,
+            // वाग्भ्याम्), and सु devoices it (सरित्सु, ककुप्सु; वाक्षु for
+            // च्). Strong cells keep the input final (सरितौ/संविदौ/युधौ/
+            // ककुभौ). Feminine reaches every final; masculine only {t, d,
+            // D} (मरुत्, बुध्) — participle अ-उपधा spellings stay with AtM.
+            if !matches!(linga, Linga::M | Linga::F) || stem.len() < 3 {
+                return Err(NOT_POSSIBLE);
+            }
+            if stem.ends_with("at") || stem.ends_with("ant") {
+                return Err(NOT_POSSIBLE);
+            }
+            let Some(c) = stem.chars().next_back() else {
+                return Err(NOT_POSSIBLE);
+            };
+            let (voiced, voiceless, su_suffix) = match c {
+                't' | 'd' | 'D' => ("d", "t", "su"),
+                'B' => ("b", "p", "su"),
+                'c' => ("g", "k", "zu"),
+                _ => return Err(NOT_POSSIBLE),
+            };
+            if linga == Linga::M && (c == 'B' || c == 'c') {
+                return Err(NOT_POSSIBLE);
+            }
+            let base = &stem[..stem.len() - 1];
+            let voiced_stem = f(base, voiced);
+            let pausa_stem = f(base, voiceless);
+            let dvi_form = f(stem, "O");
+            let bahu_form = f(stem, "aH");
+            let mut cells = table(&[
+                (voiced_stem.clone(), dvi_form.clone(), bahu_form.clone()),
+                (f(stem, "am"), dvi_form.clone(), bahu_form.clone()),
+                (
+                    f(stem, "A"),
+                    f(&voiced_stem, "ByAm"),
+                    f(&voiced_stem, "BiH"),
+                ),
+                (
+                    f(stem, "e"),
+                    f(&voiced_stem, "ByAm"),
+                    f(&voiced_stem, "ByaH"),
+                ),
+                (
+                    f(stem, "aH"),
+                    f(&voiced_stem, "ByAm"),
+                    f(&voiced_stem, "ByaH"),
+                ),
+                (f(stem, "aH"), f(stem, "oH"), f(stem, "Am")),
+                (f(stem, "i"), f(stem, "oH"), f(&pausa_stem, su_suffix)),
+                (pausa_stem.clone(), dvi_form, bahu_form),
+            ]);
+            // The प्रथमा- and सम्बोधन-सि pausa pairs (सरिद्-सरित्).
+            put(&mut cells, 0, 0, vec![voiced_stem, pausa_stem.clone()]);
+            put(&mut cells, 7, 0, vec![f(base, voiced), pausa_stem]);
             cells
         }
         Class::UN => {
@@ -1953,11 +2021,31 @@ pub fn classes_for(stem: &str, linga: Linga) -> Vec<Class> {
             Linga::M | Linga::F => out.push(Class::Jvs),
             Linga::N => out.push(Class::JvsN),
         }
-    } else if stem.ends_with('t') || stem.ends_with('d') {
+    } else if stem.ends_with('t')
+        || stem.ends_with('d')
+        || stem.ends_with('D')
+        || stem.ends_with('B')
+        || stem.ends_with('c')
+    {
         match linga {
-            Linga::M => out.push(Class::AtM(AtMStyle::Num)),
-            Linga::N => out.push(Class::AtN(AtNStyle::Num)),
-            Linga::F => {}
+            Linga::M => {
+                // अ-उपधा त् participles/adjectives (गच्छत्, भवन्त, वसुमत्)
+                // keep the गच्छन् shape; bare consonant-final nouns (मरुत्,
+                // बुध्) take the सरित् paradigm with its pausa pair.
+                if stem.ends_with("at") || stem.ends_with("ant") {
+                    out.push(Class::AtM(AtMStyle::Num));
+                } else {
+                    out.push(Class::Cons);
+                }
+            }
+            Linga::F => out.push(Class::Cons),
+            Linga::N => {
+                // Neuter participles keep गच्छत्/गच्छन् (site @gacchat3);
+                // no neuter noun grids for भ्/च् finals.
+                if stem.ends_with('t') || stem.ends_with('d') {
+                    out.push(Class::AtN(AtNStyle::Num));
+                }
+            }
         }
     } else if stem.ends_with('s') || stem.ends_with('H') {
         match linga {
