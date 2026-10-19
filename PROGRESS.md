@@ -1035,3 +1035,33 @@ The audit did find three real misses inside the Cons class:
 
 Pins: गर्दभ् and ऋच् join the site-parity pins. `./check.sh --full`
 ALL CHECKS PASSED (exhaustive audits + e2e 36 + smoke + browser 471).
+
+## 2026-10-20 — the वतुप् nominalization (VantM) reaches the manual path
+
+The consonant-final audit's biggest miss family was the वतुप्
+nominalization (63 entries): the site grids आत्मवत् as
+आत्मवान्-आत्मवन्तौ-आत्मवन्तः (the vṛddhi-strong shape) while the
+engine produced the participle shape (आत्मवन्). `Class::VantM` already
+declines that shape cell-for-cell (the class was only reachable through
+the कृत् path), so the fix is routing: a masculine `…vat` stem now
+offers VantM.
+
+But the ऋ-वत् participle (भवत् → भवन्, आप्नुवत् → आप्नुवन्) ends the
+same way, and the two are indistinguishable from the spelling alone (the
+difference is the derivation, not the shape) — and neither is in the
+कृत् corpus, so the corpus path does not cover them. Both candidates
+are therefore offered (VantM + AtM) and the site's grid decides for the
+words it lists; the portal's multi-candidate word view is built for
+exactly this.
+
+Audit numbers: **146/288** consonant-final db entries now reproduce the
+site grid (107 before this round; the ऋ-chart, the masculine भ्-final
+and the जश् brought the first +2, the वतुप् family the rest). What is
+left are separate paradigms, each its own class: the मतुप्/यतुप्
+siblings of the वतुप् (आयुष्मत् → आयुष्मान्), the neuter/feminine
+ई-स्वादि of the वत family (आत्मवती, आत्मवन्ति), the सम्-अधिक-रूप
+(अत्यस्मद् → अतित्वम्) and the masculine ञ्च-स्वादि (अर्वाञ्चः).
+
+Pins: आत्मवत् / उरस्वत् / क्रियावत् / आप्नुवत् pin the मस्कुल
+entry (either candidate reproduces the site's grid). cargo test green;
+`./check.sh --full` ALL CHECKS PASSED (browser 471).

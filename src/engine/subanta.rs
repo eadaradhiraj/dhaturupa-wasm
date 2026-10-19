@@ -2352,10 +2352,18 @@ pub fn classes_for(stem: &str, linga: Linga) -> Vec<Class> {
     {
         match linga {
             Linga::M => {
-                // अ-उपधा त् participles/adjectives (गच्छत्, भवन्त, वसुमत्)
-                // keep the गच्छन् shape; bare consonant-final nouns (मरुत्,
-                // बुध्) take the सरित् paradigm with its pausa pair.
-                if stem.ends_with("at") || stem.ends_with("ant") {
+                // अ-उपधा त् participles/adjectives (गच्छत्, भवन्त) keep the
+                // गच्छन् shape; bare consonant-final nouns (मरुत्, बुध्)
+                // take the सरित् paradigm with its pausa pair. The वतुप्
+                // nominalization (आत्मवत् → आत्मवान्, site @Atmavat1) is
+                // the vṛddhi-strong shape — but the ऋ-वत् participle
+                // (भवत् → भवन्, site @Bhavat1) ends the same way, so both
+                // candidates are offered; the site's grid decides for the
+                // words it lists.
+                if stem.ends_with("vat") {
+                    out.push(Class::VantM);
+                    out.push(Class::AtM(AtMStyle::Num));
+                } else if stem.ends_with("at") || stem.ends_with("ant") {
                     out.push(Class::AtM(AtMStyle::Num));
                 } else {
                     out.push(Class::Cons);

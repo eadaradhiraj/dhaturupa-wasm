@@ -23,22 +23,23 @@ function siteCells(entry) {
 function engineCells(payload, word) {
   const json = JSON.parse(payload);
   if (!json.ok) return null;
-  const table = (json.tables || [])[0];
-  if (!table) return null;
-  const out = [];
-  for (let i = 0; i < 24; i += 1) {
-    const cell = (table.cells || []).find(
-      (c) => c.vibhakti === ['prathamA', 'dvitIyA', 'tftIyA', 'caturTI',
-        'paJcamI', 'zazWI', 'saptamI', 'sambodhana'][Math.floor(i / 3)]
-        && c.vacana === ['ekavacanam', 'dvivacanam', 'bahuvacanam'][i % 3],
-    );
-    const forms = cell ? (cell.forms || []) : [];
-    // The portal prefixes हे per alternant on the सम्बोधन row.
-    const rendered = (Math.floor(i / 3) === 7 ? forms.map((f) => `हे ${f}`) : forms)
-      .join(' , ').replace(/ , /g, '-');
-    out.push(rendered);
-  }
-  return out;
+  const vib = ['prathamA', 'dvitIyA', 'tftIyA', 'caturTI',
+    'paJcamI', 'zazWI', 'saptamI', 'sambodhana'];
+  const vac = ['ekavacanam', 'dvivacanam', 'bahuvacanam'];
+  const grids = (json.tables || []).map((table) => {
+    const out = [];
+    for (let i = 0; i < 24; i += 1) {
+      const cell = (table.cells || []).find(
+        (c) => c.vibhakti === vib[Math.floor(i / 3)] && c.vacana === vac[i % 3],
+      );
+      const forms = cell ? (cell.forms || []) : [];
+      // The portal prefixes हे per alternant on the सम्बोधन row.
+      out.push((Math.floor(i / 3) === 7 ? forms.map((f) => `हे ${f}`) : forms)
+        .join(' , ').replace(/ , /g, '-'));
+    }
+    return out;
+  });
+  return grids.length ? grids : null;
 }
 
 const db = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'data', 'shabda_data2.json'), 'utf8'));
@@ -58,23 +59,26 @@ for (const entry of candidates) {
     diffs.push({ word: entry.word, id: entry.urlid, why: `no linga code (${entry.linga})` });
     continue;
   }
-  const cells = engineCells(wasm.subanta_table(entry.word, code), entry.word);
-  if (!cells) {
+  const grids = engineCells(wasm.subanta_table(entry.word, code), entry.word);
+  if (!grids) {
     noTable += 1;
     diffs.push({ word: entry.word, id: entry.urlid, why: 'no derived table' });
     continue;
   }
   const want = siteCells(entry);
+  // The site grid must be reproducible by one of the derived candidates.
+  const matched = grids.some((cells) => cells.every((c, i) => c === want[i]));
+  if (matched) {
+    exact += 1;
+    continue;
+  }
+  diverged += 1;
+  const best = grids[0];
   const bad = [];
   for (let i = 0; i < 24; i += 1) {
-    if (cells[i] !== want[i]) bad.push(`${i}: got '${cells[i]}' want '${want[i]}'`);
+    if (best[i] !== want[i]) bad.push(`${i}: got '${best[i]}' want '${want[i]}'`);
   }
-  if (bad.length === 0) {
-    exact += 1;
-  } else {
-    diverged += 1;
-    diffs.push({ word: entry.word, id: entry.urlid, why: bad.slice(0, 3).join(' | ') });
-  }
+  diffs.push({ word: entry.word, id: entry.urlid, why: bad.slice(0, 3).join(' | ') });
 }
 
 console.log(`exact: ${exact}  diverged: ${diverged}  no table: ${noTable}`);

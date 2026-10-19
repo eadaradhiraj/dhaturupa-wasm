@@ -58,22 +58,14 @@ fn linga_from_marker(mark: &str) -> Linga {
 /// portal does (Devanagari, alternants joined, `हे ` on sambodhana).
 /// Lookup goes by (विभक्ति, वचन) so slots the engine drops — उभ's empty
 /// eka/bahu — come back as '' instead of shifting every later cell.
-fn engine_grid(word: &str, mark: &str) -> Vec<String> {
+/// Returns every candidate the engine offers: some stems have more than
+/// one plausible paradigm (the वतुप् nominalization vs the ऋ-वत्
+/// participle), and the site picks one of them.
+fn engine_grids(word: &str, mark: &str) -> Vec<Vec<String>> {
     let linga = linga_from_marker(mark);
     let stem = deva_to_slp1(word).unwrap_or_else(|| panic!("{word} transliterates"));
     let tables = generate_tables(&stem, linga);
     assert!(!tables.is_empty(), "{word} [{mark}] produced no table");
-    let paradigm = &tables[0];
-    let mut slots: std::collections::HashMap<(&str, &str), Vec<String>> =
-        std::collections::HashMap::new();
-    for cell in &paradigm.cells {
-        let rendered: Vec<String> = cell
-            .forms
-            .iter()
-            .map(|f| slp1_to_deva(f).unwrap_or_else(|| panic!(" cell '{f}' transliterates")))
-            .collect();
-        slots.insert((cell.vibhakti, cell.vacana), rendered);
-    }
     let vib_row = [
         "prathamA",
         "dvitIyA",
@@ -84,27 +76,50 @@ fn engine_grid(word: &str, mark: &str) -> Vec<String> {
         "saptamI",
         "sambodhana",
     ];
-    let mut out = Vec::with_capacity(24);
-    for (row, vib) in vib_row.iter().enumerate() {
-        for vac in ["ekavacanam", "dvivacanam", "bahuvacanam"] {
-            let rendered = slots.get(&(*vib, vac)).cloned().unwrap_or_default();
-            let joined = rendered.join(" , ").replace(" , ", "-");
-            if row == 7 && !joined.is_empty() {
-                // The portal prefixes हे per alternant (render.js renderParadigm).
-                out.push(
-                    rendered
-                        .iter()
-                        .map(|r| format!("हे {r}"))
-                        .collect::<Vec<_>>()
-                        .join(" , ")
-                        .replace(" , ", "-"),
-                );
-            } else {
-                out.push(joined);
+    tables
+        .iter()
+        .map(|paradigm| {
+            let mut slots: std::collections::HashMap<(&str, &str), Vec<String>> =
+                std::collections::HashMap::new();
+            for cell in &paradigm.cells {
+                let rendered: Vec<String> = cell
+                    .forms
+                    .iter()
+                    .map(|f| {
+                        slp1_to_deva(f).unwrap_or_else(|| panic!(" cell '{f}' transliterates"))
+                    })
+                    .collect();
+                slots.insert((cell.vibhakti, cell.vacana), rendered);
             }
-        }
-    }
-    out
+            let mut out = Vec::with_capacity(24);
+            for (row, vib) in vib_row.iter().enumerate() {
+                for vac in ["ekavacanam", "dvivacanam", "bahuvacanam"] {
+                    let rendered = slots.get(&(*vib, vac)).cloned().unwrap_or_default();
+                    let joined = rendered.join(" , ").replace(" , ", "-");
+                    if row == 7 && !joined.is_empty() {
+                        // The portal prefixes हे per alternant (render.js
+                        // renderParadigm).
+                        out.push(
+                            rendered
+                                .iter()
+                                .map(|r| format!("हे {r}"))
+                                .collect::<Vec<_>>()
+                                .join(" , ")
+                                .replace(" , ", "-"),
+                        );
+                    } else {
+                        out.push(joined);
+                    }
+                }
+            }
+            out
+        })
+        .collect()
+}
+
+/// The first candidate — the shape the portal shows by default.
+fn engine_grid(word: &str, mark: &str) -> Vec<String> {
+    engine_grids(word, mark).remove(0)
 }
 
 fn pin_word(word: &str) {
@@ -127,6 +142,26 @@ fn pin_word(word: &str) {
                 "{word} [{mark}] {slot}-{vac} mismatch: got '{got_cell}' want '{want_cell}'"
             );
         }
+    }
+}
+
+/// Pin a word whose site grid may be any of the engine's candidates: the
+/// वतुप् nominalization (आत्मवत् → आत्मवान्) and the ऋ-वत् participle
+/// (आप्नुवत् → आप्नुवन्) end the same way, so the engine offers both and
+/// the site picks one. `mark` selects the लिङ्ग (the neuter आत्मवत् is the
+/// ई-स्वादि family, a different paradigm).
+fn pin_word_any(word: &str, mark: &str) {
+    for (entry_mark, forms) in site_entries(word) {
+        if entry_mark != mark {
+            continue;
+        }
+        let grids = engine_grids(word, entry_mark);
+        assert!(
+            grids.iter().any(|grid| {
+                grid.len() == forms.len() && grid.iter().zip(forms.iter()).all(|(a, b)| a == b)
+            }),
+            "{word} [{entry_mark}] is not reproduced by any derived grid"
+        );
     }
 }
 
@@ -156,6 +191,12 @@ fn cons_family_and_participle_pins() {
     }
     // Participle regression: गच्छत् keeps the गच्छन्-prathamA shape.
     pin_word("गच्छत्");
+    // The वतुप् nominalization (आत्मवान्) and the ऋ-वत् participle
+    // (आप्नुवन्) end alike; the engine offers both shapes.
+    for word in ["आत्मवत्", "उरस्वत्", "क्रियावत्", "आप्नुवत्"]
+    {
+        pin_word_any(word, "P");
+    }
 }
 
 /// गो/नौ/रै diphthong words (ADDITIONS 2.5) ride the `KNOWN_WORDS`
