@@ -59,6 +59,8 @@ try {
   ok('list: HK dA → दा', text($('list-count')) === '3 / 2259', text($('list-count')));
   $('list-q').value = 'zzz'; $('list-go').click();
   ok('list: unknown dhātu → 0', text($('list-count')).startsWith('0 /'), text($('list-count')));
+  $('list-q').value = 'eat'; $('list-go').click();
+  ok('list: English gloss eat (93)', text($('list-count')) === '93 / 2259', text($('list-count')));
   $('list-q').value = ''; $('list-pada').value = 'P'; $('list-go').click();
   const padaCount = text($('list-count'));
   ok('list: pada filter applies', /^[1-9]\d* \/ 2259$/.test(padaCount), padaCount);

@@ -897,3 +897,15 @@ member. उभ duals leave eka/bahu empty (rows carry "" cells;
 (इतरेण/कतरेण with र्, अन्येन/कतमेन/उभयेन dental; इतराणि/कतराणि vs
 अन्यानि/कतमानि/उभयानि). Tests: `pronominal_word_pins` — all 13 db
 entries verbatim. Gates green, browser 465.
+
+## 2026-10-19 (6) — dhātu-list English-gloss search, ADDITIONS 3.1
+
+`#list-q` still does its exact-Devanagari match first (दा, HK dA → दा),
+but when no dhātu matches exactly and the query is ASCII/HK — `eat`
+decodes to एअत् through HK, matching nothing — it falls back to a
+case-insensitive substring search of `artha_english` (93 rows for
+'eat': अद्, खाद्, स्वद्, खद् …). Pure-Devanagari misses still count 0;
+`zzz` → gloss miss → 0 unchanged. Placeholder mentions the English
+meaning.
+
+Selftest +1 check ('eat' → 93). Gates green, browser 466.

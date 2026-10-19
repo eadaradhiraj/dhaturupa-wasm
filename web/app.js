@@ -191,7 +191,15 @@ function runListFilter() {
     } catch {
       // not Devanagari or Harvard-Kyoto — keep raw (matches nothing exactly)
     }
-    rows = rows.filter((r) => r.dhatu === needle);
+    const exact = rows.filter((r) => r.dhatu === needle);
+    if (exact.length > 0 || !/[a-z]/.test(raw)) {
+      rows = exact;
+    } else {
+      // ADDITIONS.md 3.1: an ASCII/HK query no dhātu matches exactly
+      // ('eat' decodes to एअत्) searches the English gloss instead.
+      const latin = raw.toLowerCase();
+      rows = rows.filter((r) => (r.artha_english || '').toLowerCase().includes(latin));
+    }
   }
 
   el('list-count').textContent = `${rows.length} / ${dhatuList.data.length}`;
