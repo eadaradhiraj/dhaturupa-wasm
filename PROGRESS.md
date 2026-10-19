@@ -1129,3 +1129,25 @@ consonant-final slice 158 → 178/322).
 Pins: अग्निमथ् and अदृश् join the site-parity pins (the neuter अदृश्
 is the ई-स्वादि family — a different paradigm — so the pin takes the
 masculine entry). `./check.sh --full` ALL CHECKS PASSED (browser 472).
+
+## 2026-10-20 (5) — the अस्-family's locative-plural alternants
+
+The sweep's second-largest cluster was the अस्-family's locative plural:
+the site grids both alternants (अनःसु-अनस्सु, @anas1) where the engine
+gave only the doubled-स् form (अनस्सु). `AsM`/`AsN` now carry the pair
+(the visarga form first, then the स्स form) — the visarga form needs
+the explicit inherent vowel (`aHsu`), since a bare `H` after a
+consonant transliterates as the anusvāra-nukta (अन्ःसु).
+
+Whole-db parity: **7,893/9,007** exact (was 7,837). The remaining
+misses, measured by family: the ण-/य-स्वादि i-stems (~350; the
+ऋ-car roots take the य-formation with paired alternants — अक्षान्त्या,
+अक्षान्तये-अक्षान्त्यै), the a-stem's स्म-endings (~113; अधरस्मै),
+the neuter ई-स्वादि (~45; आत्मवती), the anusvāra-स्वादि (~44;
+अणीयान्), the u-stems (~67), the ञ्च-स्वादि (~25; अर्वाञ्चः,
+खञ्जः), the सम्-अधिक-रूप (23; अतित्वम्) and the numerals' compound
+spellings (14; the site grids them sparsely). Each is its own
+paradigm — the next candidates, in that order of size.
+
+Pins: अनस् (the locative-plural pair). `./check.sh --full` ALL CHECKS
+PASSED (browser 472).

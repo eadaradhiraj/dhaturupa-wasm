@@ -963,7 +963,7 @@ pub fn decline(stem: &str, linga: Linga, class: &Class) -> Result<Paradigm, &'st
             let w = normalize_visarga(stem);
             let q = &w[..w.len() - 2];
             let o = format!("{q}o");
-            table(&[
+            let mut cells = table(&[
                 (f(q, "aH"), f(&w, "I"), f(q, "AMsi")),
                 (f(q, "aH"), f(&w, "I"), f(q, "AMsi")),
                 (f(&w, "A"), f(&o, "ByAm"), f(&o, "BiH")),
@@ -972,7 +972,11 @@ pub fn decline(stem: &str, linga: Linga, class: &Class) -> Result<Paradigm, &'st
                 (f(&w, "aH"), f(&w, "oH"), f(&w, "Am")),
                 (f(&w, "i"), f(&w, "oH"), f(&w, "su")),
                 (f(q, "aH"), f(&w, "I"), f(q, "AMsi")),
-            ])
+            ]);
+            // The locative plural carries both alternants (अनःसु-अनस्सु,
+            // site @anas1): the visarga form and the doubled स् form.
+            put(&mut cells, 6, 2, vec![f(q, "aHsu"), f(&w, "su")]);
+            cells
         }
         Class::AsM => {
             if linga != Linga::M || !(stem.ends_with('s') || stem.ends_with('H')) || stem.len() < 2
@@ -982,7 +986,7 @@ pub fn decline(stem: &str, linga: Linga, class: &Class) -> Result<Paradigm, &'st
             let w = normalize_visarga(stem);
             let q = &w[..w.len() - 2];
             let o = format!("{q}o");
-            table(&[
+            let mut cells = table(&[
                 (f(q, "AH"), f(&w, "O"), f(&w, "aH")),
                 (f(&w, "am"), f(&w, "O"), f(&w, "aH")),
                 (f(&w, "A"), f(&o, "ByAm"), f(&o, "BiH")),
@@ -991,7 +995,11 @@ pub fn decline(stem: &str, linga: Linga, class: &Class) -> Result<Paradigm, &'st
                 (f(&w, "aH"), f(&w, "oH"), f(&w, "Am")),
                 (f(&w, "i"), f(&w, "oH"), f(&w, "su")),
                 (f(q, "AH"), f(&w, "O"), f(&w, "aH")),
-            ])
+            ]);
+            // The locative plural carries both alternants (अनःसु-अनस्सु,
+            // site @anas1): the visarga form and the doubled स् form.
+            put(&mut cells, 6, 2, vec![f(q, "aHsu"), f(&w, "su")]);
+            cells
         }
         Class::VasM => {
             if linga != Linga::M || !stem.ends_with("as") || stem.len() < 3 {
