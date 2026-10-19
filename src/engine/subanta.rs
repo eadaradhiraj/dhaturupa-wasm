@@ -159,6 +159,12 @@ pub enum Class {
     /// voiceless one. Strong cells keep the input final. Distinct from
     /// the participle [`Class::AtM`] only in the prathamā-eka slot.
     Cons,
+    /// उस्/इस्-स्वादि neuter (`आयुष्` `@AyuS1`; हविस्/धनुस् derive): the
+    /// stem minus its ष्/स् is the root (आयु, हवि, धनु) — सि is the bare
+    /// root + visarga (आयुः), द्वि the root + षि (आयुषी), बहु the
+    /// lengthened root + ंषि (आयूंषि, हवींषि), the भ्-endings take the
+    /// weak र्-discard (आयुर्भ्याम्), and loc-pl pairs आयुःषु-आयुष्षु.
+    UsN,
     /// `van`-stem masculine (ङ्वनिप्, like `rAjan` with न्-drop):
     /// `yajvA`, `yajvAnO`, `yajvasu` (the @yajvan1 paradigm).
     VanM,
@@ -203,6 +209,7 @@ impl Class {
             Self::AsN => "as-n".to_string(),
             Self::AsM => "as-m".to_string(),
             Self::Cons => "cons".to_string(),
+            Self::UsN => "us-n".to_string(),
             Self::VasM => "vas-m".to_string(),
             Self::VasN => "vas-n".to_string(),
             Self::VantM => "vant-m".to_string(),
@@ -499,6 +506,51 @@ pub fn decline(stem: &str, linga: Linga, class: &Class) -> Result<Paradigm, &'st
             // The प्रथमा- and सम्बोधन-सि pausa pairs (सरिद्-सरित्).
             put(&mut cells, 0, 0, vec![voiced_stem, pausa_stem.clone()]);
             put(&mut cells, 7, 0, vec![f(base, voiced), pausa_stem]);
+            cells
+        }
+        Class::UsN => {
+            if linga != Linga::N || stem.len() < 4 {
+                return Err(NOT_POSSIBLE);
+            }
+            let Some(c) = stem.chars().next_back() else {
+                return Err(NOT_POSSIBLE);
+            };
+            if !matches!(c, 's' | 'z') {
+                return Err(NOT_POSSIBLE);
+            }
+            let root = &stem[..stem.len() - 1];
+            // बहु-vacana lengthens the root's final vowel (आयु → आयूंषि).
+            let long_root = match root.chars().next_back() {
+                Some('a') => f(&root[..root.len() - 1], "A"),
+                Some('i') => f(&root[..root.len() - 1], "I"),
+                Some('u') => f(&root[..root.len() - 1], "U"),
+                Some('f') => f(&root[..root.len() - 1], "F"),
+                _ => root.to_string(),
+            };
+            let mut cells = table(&[
+                (f(root, "H"), f(root, "zI"), f(&long_root, "Mzi")),
+                (f(root, "H"), f(root, "zI"), f(&long_root, "Mzi")),
+                (
+                    f(root, "zA"),
+                    f(&f(root, "r"), "ByAm"),
+                    f(&f(root, "r"), "BiH"),
+                ),
+                (
+                    f(root, "ze"),
+                    f(&f(root, "r"), "ByAm"),
+                    f(&f(root, "r"), "ByaH"),
+                ),
+                (
+                    f(root, "zaH"),
+                    f(&f(root, "r"), "ByAm"),
+                    f(&f(root, "r"), "ByaH"),
+                ),
+                (f(root, "zaH"), f(root, "zoH"), f(root, "zAm")),
+                (f(root, "zi"), f(root, "zoH"), f(root, "Hzu")),
+                (f(root, "H"), f(root, "zI"), f(&long_root, "Mzi")),
+            ]);
+            // Loc-pl alternant pair (आयुःषु-आयुष्षु).
+            put(&mut cells, 6, 2, vec![f(root, "Hzu"), f(root, "zzu")]);
             cells
         }
         Class::UN => {
@@ -2047,6 +2099,15 @@ pub fn classes_for(stem: &str, linga: Linga) -> Vec<Class> {
                 }
             }
         }
+    } else if (stem.ends_with("us")
+        || stem.ends_with("is")
+        || stem.ends_with("uz")
+        || stem.ends_with("iz"))
+        && linga == Linga::N
+    {
+        // उस्/इस्-स्वादि neuters (आयुष्, हविस्, धनुस्); the `uz`/`iz`
+        // spellings are the षत्व forms (आयुष् = Ayuz). Neuter only.
+        out.push(Class::UsN);
     } else if stem.ends_with('s') || stem.ends_with('H') {
         match linga {
             Linga::M => out.push(Class::AsM),

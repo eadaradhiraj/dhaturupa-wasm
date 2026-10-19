@@ -94,7 +94,7 @@ fn pin_word(word: &str) {
         for (i, (got_cell, want)) in got.iter().zip(forms.iter()).enumerate() {
             let slot = ["pr", "dvi", "tft", "cat", "paJ", "zaz", "sap", "samb"][i / 3];
             let vac = ["eka", "dvi", "bahu"][i % 3];
-            // @budh1 carries a भु-typo in its pausa/भ्-ending cells; the
+            // `@budh1` carries a भु-typo in its pausa/भ्-ending cells; the
             // engine emits the correct बु- spellings.
             let want_cell = if word == "बुध्" {
                 want.replace("भु", "बु")
@@ -131,4 +131,53 @@ fn cons_family_and_participle_pins() {
     }
     // Participle regression: गच्छत् keeps the गच्छन्-prathamA shape.
     pin_word("गच्छत्");
+}
+
+/// उस्/इस्-स्वादि neuters (ADDITIONS 2.4): आयुष् against its vendored db
+/// grid (`@AyuS1`), and the pattern-derived हविस्/धनुस् grids the site
+/// does not list — the contract says derived engine tables must cover
+/// them anyway.
+#[test]
+fn us_swadi_pins() {
+    pin_word("आयुष्");
+    for (word, long, root) in [("हविस्", "हवी", "हवि"), ("धनुस्", "धनू", "धनु")]
+    {
+        let grid = engine_grid(word, "N");
+        let want: [&str; 24] = [
+            &format!("{root}ः"),
+            &format!("{root}षी"),
+            &format!("{long}ंषि"),
+            &format!("{root}ः"),
+            &format!("{root}षी"),
+            &format!("{long}ंषि"),
+            &format!("{root}षा"),
+            &format!("{root}र्भ्याम्"),
+            &format!("{root}र्भिः"),
+            &format!("{root}षे"),
+            &format!("{root}र्भ्याम्"),
+            &format!("{root}र्भ्यः"),
+            &format!("{root}षः"),
+            &format!("{root}र्भ्याम्"),
+            &format!("{root}र्भ्यः"),
+            &format!("{root}षः"),
+            &format!("{root}षोः"),
+            &format!("{root}षाम्"),
+            &format!("{root}षि"),
+            &format!("{root}षोः"),
+            &format!("{root}ःषु-{root}ष्षु"),
+            &format!("हे {root}ः"),
+            &format!("हे {root}षी"),
+            &format!("हे {long}ंषि"),
+        ];
+        for (i, (got, want_cell)) in grid.iter().zip(want.iter()).enumerate() {
+            let slot = ["pr", "dvi", "tft", "cat", "paJ", "zaz", "sap", "samb"][i / 3];
+            let vac = ["eka", "dvi", "bahu"][i % 3];
+            let want_cell = (*want_cell).to_string();
+            assert_eq!(
+                got.clone(),
+                want_cell,
+                "{word} {slot}-{vac} mismatch: got '{got}' want '{want_cell}'"
+            );
+        }
+    }
 }
