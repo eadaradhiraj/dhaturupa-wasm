@@ -146,6 +146,11 @@ fn cons_family_and_participle_pins() {
         "वाच्",
         "त्वच्",
         "मरुत्",
+        // The masculine भ्-final (गर्दभ् @gardabh1 — the जश्-व्यवस्था
+        // voices the stem's द in the weak forms) and the ऋ-chart (ऋच्
+        // @Rc1 — the Cons shape with a one-letter base).
+        "गर्दभ्",
+        "ऋच्",
     ] {
         pin_word(word);
     }

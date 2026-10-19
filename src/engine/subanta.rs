@@ -456,9 +456,15 @@ pub fn decline(stem: &str, linga: Linga, class: &Class) -> Result<Paradigm, &'st
             // the भ्-endings voice the final (सरिद्भ्याम्, ककुब्भ्याम्,
             // वाग्भ्याम्), and सु devoices it (सरित्सु, ककुप्सु; वाक्षु for
             // च्). Strong cells keep the input final (सरितौ/संविदौ/युधौ/
-            // ककुभौ). Feminine reaches every final; masculine only {t, d,
-            // D} (मरुत्, बुध्) — participle अ-उपधा spellings stay with AtM.
-            if !matches!(linga, Linga::M | Linga::F) || stem.len() < 3 {
+            // ककुभौ). Feminine reaches every final; masculine reaches
+            // {t, d, D, B} (मरुत्, बुध्, गर्दभ्) — the site's masculine
+            // च्-final words (अर्वाच्, अन्वच्) are the ञ्च-स्वादि family
+            // (अर्वाञ्चः), a different paradigm, so च् stays feminine-only.
+            // Participle अ-उपधा spellings stay with AtM.
+            // The ऋ-chart (ऋक्/ऋग्/ऋच्, site @Rc1) is the same shape with
+            // a one-letter base, so those two-letter stems are admitted.
+            let r_chart = matches!(stem, "fc" | "fk" | "fg");
+            if !matches!(linga, Linga::M | Linga::F) || (stem.len() < 3 && !r_chart) {
                 return Err(NOT_POSSIBLE);
             }
             if stem.ends_with("at") || stem.ends_with("ant") {
@@ -473,12 +479,20 @@ pub fn decline(stem: &str, linga: Linga, class: &Class) -> Result<Paradigm, &'st
                 'c' => ("g", "k", "zu"),
                 _ => return Err(NOT_POSSIBLE),
             };
-            if linga == Linga::M && (c == 'B' || c == 'c') {
+            if linga == Linga::M && c == 'c' {
                 return Err(NOT_POSSIBLE);
             }
             let base = &stem[..stem.len() - 1];
-            let voiced_stem = f(base, voiced);
-            let pausa_stem = f(base, voiceless);
+            // The भ्-final family voices its internal द/ब/ग/ज in the weak
+            // forms (the जश्-व्यवस्था): गर्दभ् → गर्धब्-गर्धप्,
+            // गर्धब्भ्याम्, गर्धप्सु — the strong cells keep गर्दभः.
+            let weak_base = if c == 'B' {
+                jash_voice(base)
+            } else {
+                base.to_string()
+            };
+            let voiced_stem = f(&weak_base, voiced);
+            let pausa_stem = f(&weak_base, voiceless);
             let dvi_form = f(stem, "O");
             let bahu_form = f(stem, "aH");
             let mut cells = table(&[
@@ -505,7 +519,7 @@ pub fn decline(stem: &str, linga: Linga, class: &Class) -> Result<Paradigm, &'st
             ]);
             // The प्रथमा- and सम्बोधन-सि pausa pairs (सरिद्-सरित्).
             put(&mut cells, 0, 0, vec![voiced_stem, pausa_stem.clone()]);
-            put(&mut cells, 7, 0, vec![f(base, voiced), pausa_stem]);
+            put(&mut cells, 7, 0, vec![f(&weak_base, voiced), pausa_stem]);
             cells
         }
         Class::UsN => {
@@ -1237,6 +1251,36 @@ fn site_natva(s: &str, ru_tva: bool) -> String {
 
 fn f(base: &str, ending: &str) -> String {
     format!("{base}{ending}")
+}
+
+/// The जश्-व्यवस्था, in the narrow form the भ्-final family needs: the
+/// stem's own द/ब/ग/ज voices before the भ्-ending — गर्दभ् → गर्धब्,
+/// गर्धप्, गर्धब्भ्याम्, गर्धप्सु. Only the last such consonant is
+/// voiced: the earlier ones sit before a soft consonant (ग in गर्दभ्
+/// keeps ग) and the SLP1 spelling cannot tell a silent inherent vowel
+/// from a real one.
+fn jash_voice(base: &str) -> String {
+    let chars: Vec<char> = base.chars().collect();
+    let Some(last) = chars
+        .iter()
+        .rposition(|c| matches!(c, 'd' | 'b' | 'g' | 'j'))
+    else {
+        return base.to_string();
+    };
+    let mut out = String::with_capacity(base.len());
+    for (i, ch) in chars.iter().enumerate() {
+        if i == last {
+            out.push(match ch {
+                'd' => 'D',
+                'b' => 'B',
+                'g' => 'G',
+                _ => 'J',
+            });
+        } else {
+            out.push(*ch);
+        }
+    }
+    out
 }
 
 /// Overwrite one cell's forms (row = 0-7 vibhakti, col = 0-2 vacana).

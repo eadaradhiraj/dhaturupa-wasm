@@ -1004,3 +1004,34 @@ profile and the `-Oz --enable-bulk-memory` wasm-opt flags (1.03MB vs
 1.61MB) and why there is no `panic = "abort"`.
 
 Docs only — gates re-run green (browser 471).
+
+## 2026-10-19 (12) — consonant-final audit: the ऋ-chart, the masculine भ्-final, the जश्
+
+`web/audit-cons-stems.cjs` (hand-run, like `web/audit-an-stems.cjs`)
+declines every consonant-final word the vendored शब्दपाठः lists and
+compares it with the site's grid: 288 entries, **107 exact**. The
+remaining misses are *other paradigms*, not Cons misses — the वत्-
+नामधातु family (63: आत्मवत् → आत्मवान्, a nominalization with its own
+shape), the सम्-अधिक-रूप (10: अत्यस्मद् → अतित्वम्), the neuter
+इ-स्वादि (अर्वाचि/अर्वाची) and the masculine ञ्च-स्वादि (अर्वाञ्चः) —
+each its own class, none of them the Cons shape. Those are the next
+coverage candidates; the portal shows the site's grid for all of them
+(the शब्द oracle wins), so only unlisted uses of those shapes are
+still un-derived.
+
+The audit did find three real misses inside the Cons class:
+
+- **Masculine भ्-final** (गर्दभ् @gardabh1) is the Cons shape, so the
+  masculine scope is {t, d, D, B} — च् stays feminine-only (the site's
+  masculine च्-final words are the ञ्च-स्वादि family).
+- **The ऋ-chart** (ऋच् @Rc1: ऋग्-ऋक् | ऋचौ | ऋचः) is the same shape
+  with a one-letter base, so those two-letter stems are admitted.
+- **The जश्-व्यवस्था**: the भ्-final family voices the stem's own
+  द/ब/ग/ज in the weak forms — गर्दभ् → गर्धब्-गर्धप्, गर्धब्भ्याम्,
+  गर्धप्सु (the strong cells keep गर्दभः). Only the last such
+  consonant voices; the earlier ones sit before a soft consonant (the
+  ग of गर्दभ् keeps ग), and the SLP1 spelling cannot tell a silent
+  inherent vowel from a real one.
+
+Pins: गर्दभ् and ऋच् join the site-parity pins. `./check.sh --full`
+ALL CHECKS PASSED (exhaustive audits + e2e 36 + smoke + browser 471).
