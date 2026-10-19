@@ -1107,3 +1107,25 @@ naming सरित्) and a render unit test for the new renderer.
 
 Gates green: `./check.sh` ALL CHECKS PASSED (browser 472), node render
 tests 17.
+
+## 2026-10-20 (4) — whole-db parity sweep, and two more Cons finals
+
+`web/audit-site-grids.cjs` (replacing the consonant-only script; the
+`cons` argument keeps that slice) declines **every** word the vendored
+शब्दपाठः lists and compares it with the site's grid: **7,837/9,007
+exact**. What misses is now measured, not guessed — the big groups are
+the ण-स्वादि (the ऋ/ऋ-car i-stems), the ई/ऊ-स्वादि, the अस्-family
+alternants, the ञ्च-स्वादि (अर्वाञ्चः), the सम्-अधिक-रूप
+(अत्यस्मद् → अतित्वम्) and the neuter ई-स्वादि of the वत family
+(आत्मवती) — each its own paradigm.
+
+The sweep also found two more Cons finals: the थ्-final (थ् is `T` in
+this SLP1 — अग्निमथ् @agnimath1 alternates like त्: अग्निमद्-अग्निमत्)
+and the ऋ-chart's श्-final, which carries a third alternant
+(अदृग्-अदृख्-अदृक् — the ख् in the middle of the pair). Both are
+the Cons shape, so the class covers them now (+20 db entries; the
+consonant-final slice 158 → 178/322).
+
+Pins: अग्निमथ् and अदृश् join the site-parity pins (the neuter अदृश्
+is the ई-स्वादि family — a different paradigm — so the pin takes the
+masculine entry). `./check.sh --full` ALL CHECKS PASSED (browser 472).

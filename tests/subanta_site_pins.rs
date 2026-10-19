@@ -182,13 +182,18 @@ fn cons_family_and_participle_pins() {
         "त्वच्",
         "मरुत्",
         // The masculine भ्-final (गर्दभ् @gardabh1 — the जश्-व्यवस्था
-        // voices the stem's द in the weak forms) and the ऋ-chart (ऋच्
-        // @Rc1 — the Cons shape with a one-letter base).
+        // voices the stem's द in the weak forms), the ऋ-chart (ऋच्
+        // @Rc1 — the Cons shape with a one-letter base) and the थ्-final
+        // (अग्निमथ् @agnimath1).
         "गर्दभ्",
         "ऋच्",
+        "अग्निमथ्",
     ] {
         pin_word(word);
     }
+    // The ऋ-chart's श्-final carries a third alternant (अदृग्-अदृख्-अदृक्);
+    // its neuter entry is the ई-स्वादि family, a different paradigm.
+    pin_word_any("अदृश्", "P");
     // Participle regression: गच्छत् keeps the गच्छन्-prathamA shape.
     pin_word("गच्छत्");
     // The वतुप् nominalization (आत्मवान्), its मतुप्/यतुप् siblings

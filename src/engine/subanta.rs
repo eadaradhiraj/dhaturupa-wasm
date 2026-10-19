@@ -451,13 +451,15 @@ pub fn decline(stem: &str, linga: Linga, class: &Class) -> Result<Paradigm, &'st
         Class::Cons => {
             // Full consonant-final noun (सरित्/विद्युत्/संविद्/उपनिषद्/
             // युध्/ककुभ्/वाच्; site @sarit1/@kakubh1/@vAc1). One shape for
-            // the finals {t, d, D, B, c}: प्रथमा- and सम्बोधन-सि carry the
-            // pausa pairs (सरिद्-सरित्, युद्-युत्, ककुब्-ककुप्, वाग्-वाक्),
-            // the भ्-endings voice the final (सरिद्भ्याम्, ककुब्भ्याम्,
-            // वाग्भ्याम्), and सु devoices it (सरित्सु, ककुप्सु; वाक्षु for
-            // च्). Strong cells keep the input final (सरितौ/संविदौ/युधौ/
-            // ककुभौ). Feminine reaches every final; masculine reaches
-            // {t, d, D, B} (मरुत्, बुध्, गर्दभ्) — the site's masculine
+            // the finals {t, d, D, B, c, th, S}: प्रथमा- and सम्बोधन-सि carry
+            // the pausa pairs (सरिद्-सरित्, युद्-युत्, ककुब्-ककुप्,
+            // वाग्-वाक्, अग्निमद्-अग्निमत्), the भ्-endings voice the final
+            // (सरिद्भ्याम्, ककुब्भ्याम्, वाग्भ्याम्), and सु devoices it
+            // (सरित्सु, ककुप्सु; वाक्षु for च्). The ऋ-chart's श्-final
+            // carries a third alternant (अदृग्-अदृख्-अदृक्). Strong cells
+            // keep the input final (सरितौ/संविदौ/युधौ/ककुभौ). Feminine
+            // reaches every final; masculine reaches {t, d, D, B, th, S}
+            // (मरुत्, बुध्, गर्दभ्, अग्निमथ्, अदृश्) — the site's masculine
             // च्-final words (अर्वाच्, अन्वच्) are the ञ्च-स्वादि family
             // (अर्वाञ्चः), a different paradigm, so च् stays feminine-only.
             // Participle अ-उपधा spellings stay with AtM.
@@ -470,23 +472,30 @@ pub fn decline(stem: &str, linga: Linga, class: &Class) -> Result<Paradigm, &'st
             if stem.ends_with("at") || stem.ends_with("ant") {
                 return Err(NOT_POSSIBLE);
             }
-            let Some(c) = stem.chars().next_back() else {
-                return Err(NOT_POSSIBLE);
+            // (base length, voiced, middle alternant, voiceless, सु suffix).
+            // थ् is `T` in SLP1 and alternates like त् (अग्निमद्-अग्निमत्);
+            // the श्-final ऋ-chart adds the ख् alternant between the voiced
+            // and the pause (अदृग्-अदृख्-अदृक्).
+            let (base_len, voiced, middle, voiceless, su_suffix) = {
+                let Some(c) = stem.chars().next_back() else {
+                    return Err(NOT_POSSIBLE);
+                };
+                match c {
+                    't' | 'd' | 'D' | 'T' => (1, "d", None, "t", "su"),
+                    'B' => (1, "b", None, "p", "su"),
+                    'c' => (1, "g", None, "k", "zu"),
+                    'S' => (1, "g", Some("K"), "k", "zu"),
+                    _ => return Err(NOT_POSSIBLE),
+                }
             };
-            let (voiced, voiceless, su_suffix) = match c {
-                't' | 'd' | 'D' => ("d", "t", "su"),
-                'B' => ("b", "p", "su"),
-                'c' => ("g", "k", "zu"),
-                _ => return Err(NOT_POSSIBLE),
-            };
-            if linga == Linga::M && c == 'c' {
+            if linga == Linga::M && stem.ends_with('c') {
                 return Err(NOT_POSSIBLE);
             }
-            let base = &stem[..stem.len() - 1];
+            let base = &stem[..stem.len() - base_len];
             // The भ्-final family voices its internal द/ब/ग/ज in the weak
             // forms (the जश्-व्यवस्था): गर्दभ् → गर्धब्-गर्धप्,
             // गर्धब्भ्याम्, गर्धप्सु — the strong cells keep गर्दभः.
-            let weak_base = if c == 'B' {
+            let weak_base = if stem.ends_with('B') {
                 jash_voice(base)
             } else {
                 base.to_string()
@@ -517,9 +526,20 @@ pub fn decline(stem: &str, linga: Linga, class: &Class) -> Result<Paradigm, &'st
                 (f(stem, "i"), f(stem, "oH"), f(&pausa_stem, su_suffix)),
                 (pausa_stem.clone(), dvi_form, bahu_form),
             ]);
-            // The प्रथमा- and सम्बोधन-सि pausa pairs (सरिद्-सरित्).
-            put(&mut cells, 0, 0, vec![voiced_stem, pausa_stem.clone()]);
-            put(&mut cells, 7, 0, vec![f(&weak_base, voiced), pausa_stem]);
+            // The प्रथमा- and सम्बोधन-सि pausa pairs (सरिद्-सरित्; the
+            // ऋ-chart's श्-final adds the ख् alternant — अदृग्-अदृख्-अदृक्).
+            let mut pair = vec![voiced_stem.clone()];
+            if let Some(m) = middle {
+                pair.push(f(&weak_base, m));
+            }
+            pair.push(pausa_stem.clone());
+            put(&mut cells, 0, 0, pair);
+            let mut samb_pair = vec![f(&weak_base, voiced)];
+            if let Some(m) = middle {
+                samb_pair.push(f(&weak_base, m));
+            }
+            samb_pair.push(pausa_stem);
+            put(&mut cells, 7, 0, samb_pair);
             cells
         }
         Class::UsN => {
@@ -2357,6 +2377,8 @@ pub fn classes_for(stem: &str, linga: Linga) -> Vec<Class> {
         || stem.ends_with('D')
         || stem.ends_with('B')
         || stem.ends_with('c')
+        || stem.ends_with('T')
+        || stem.ends_with('S')
     {
         match linga {
             Linga::M => {
@@ -3598,6 +3620,7 @@ const STRIPS: &[StripRule] = &[
     (Class::Cons, "d", "t"),
     (Class::Cons, "d", "d"),
     (Class::Cons, "d", "D"),
+    (Class::Cons, "d", "T"),
     (Class::Cons, "b", "p"),
     (Class::Cons, "b", "B"),
     (Class::Cons, "g", "k"),
