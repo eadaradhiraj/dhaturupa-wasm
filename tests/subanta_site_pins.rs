@@ -300,6 +300,19 @@ fn ha_final_masks() {
     }
 }
 
+/// The feminine ष्-final nouns: the ड/ट flavour (तृष् → तृड्-तृट्) and
+/// the vowel flavours (छदिष् → छदिः, आशिष् → आशीः, सजुष् → सजूः).
+#[test]
+fn sha_final_feminine_pins() {
+    for word in ["तृष्", "त्विष्", "प्रावृष्", "रुष्", "विप्रुष्"]
+    {
+        pin_word_any(word, "S");
+    }
+    for word in ["छदिष्", "अर्चिष्", "आशिष्", "सजुष्"] {
+        pin_word_any(word, "S");
+    }
+}
+
 /// The कृत agent nouns (तृ-स्वादि): the masculine ऋ-stem (धातृ → धाता,
 /// site @dhAtR1) and the neuter ण-first pairs (धातृ → धातृणी, @dhAtR2).
 #[test]

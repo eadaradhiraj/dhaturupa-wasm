@@ -1476,3 +1476,25 @@ where the ह् itself changes.
 
 Whole-db parity: **8,388/9,007** exact; the no-table bucket is down to
 80. Gates green (browser 472).
+
+## 2026-10-20 (20) — the feminine ष्-final nouns
+
+The feminine ष्-final nouns (तृष्, छदिष्, आशिष्, सजुष्) come in two
+shapes, and both are now derived:
+
+- `ZamF` (the ड/ट flavour; site @tRS1): the प्रथमा-/सम्बोधन-एकवचन
+  carry the ड/ट pair (तृड्-तृट्), the भ-endings voice the stem
+  (तृड्भ्याम्) and the locative plural the ट्सु pair (तृट्सु-तृट्त्सु).
+  Covered: तृष्, त्विष्, प्रावृष्, रुष्, विप्रुष्.
+- `ZvF` (the vowel flavours; site @chadiS1/@AziS1/@sajuS1): the ष्
+  becomes the stem's own vowel — the इ (छदिः), the ई (आशीः) or the ऊ
+  (सजूः). The nominative and the vocative take that vowel with the
+  visarga, the भ-endings the र-form (छदिर्भ्याम्) and the locative
+  plural the षु/ष्षु pair (छदिःषु-छदिष्षु). Covered: छदिष्, अर्चिष्,
+  आशिष्, सजुष्.
+
+A bare stem cannot say which flavour is meant, so all four candidates
+are offered and the site's grid decides.
+
+Whole-db parity: **8,397/9,007** exact; the no-table bucket is down to
+71. Gates green (browser 472).

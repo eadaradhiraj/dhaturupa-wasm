@@ -154,6 +154,13 @@ pub enum Class {
     /// The masculine ष्-final nouns (द्विष्; site @dviS1): the ड/ट pair in
     /// the प्रथमा-एकवचन (द्विड्-द्विट्) and the ट्सु locative plural.
     Zam,
+    /// The feminine ष्-final nouns of the ड/ट flavour (तृष्; site @tRS1):
+    /// the ड/ट pair (तृड्-तृट्).
+    ZamF,
+    /// The feminine ष्-final nouns of the vowel flavours (छदिष्; site
+    /// @chadiS1): the ष् becomes the stem's own vowel — `i` (छदिः), `I`
+    /// (आशीः) or `u` (सजूः).
+    ZvF(char),
     /// The masculine ष्-final nouns of the ग/क flavour (तक्ष्; site
     /// @takS2): the ग्/क् pair (तग्-तक्) and the क्षु locative plural.
     ZagM,
@@ -275,6 +282,8 @@ impl Class {
             Self::HasAM => "has-am".to_string(),
             Self::DuhM => "duh-m".to_string(),
             Self::Zam => "zam".to_string(),
+            Self::ZamF => "zam-f".to_string(),
+            Self::ZvF(v) => format!("zv-f-{v}"),
             Self::ZagM => "zag-m".to_string(),
             Self::AcN => "ac-n".to_string(),
             Self::AsAnM => "asan-m".to_string(),
@@ -1483,6 +1492,73 @@ pub fn decline(stem: &str, linga: Linga, class: &Class) -> Result<Paradigm, &'st
             // The प्रथमा- and सम्बोधन-एकवचन carry the ग/क pair.
             put(&mut cells, 0, 0, vec![voiced.clone(), pause.clone()]);
             put(&mut cells, 7, 0, vec![voiced, pause]);
+            cells
+        }
+        Class::ZamF => {
+            // The feminine ष्-final nouns of the ड/ट flavour (तृष्; site
+            // @tRS1): the प्रथमा-/सम्बोधन-एकवचन carry the ड/ट pair
+            // (तृड्-तृट्), the भ-endings voice the stem (तृड्भ्याम्) and
+            // the locative plural the ट्सु pair (तृट्सु-तृट्त्सु).
+            if linga != Linga::F || !stem.ends_with('z') || stem.len() < 3 {
+                return Err(NOT_POSSIBLE);
+            }
+            let base = &stem[..stem.len() - 1];
+            let voiced = f(base, "q");
+            let pause = f(base, "w");
+            let mut cells = table(&[
+                (f(stem, "aH"), f(stem, "O"), f(stem, "aH")),
+                (f(stem, "am"), f(stem, "O"), f(stem, "aH")),
+                (f(stem, "A"), f(&voiced, "ByAm"), f(&voiced, "BiH")),
+                (f(stem, "e"), f(&voiced, "ByAm"), f(&voiced, "ByaH")),
+                (f(stem, "aH"), f(&voiced, "ByAm"), f(&voiced, "ByaH")),
+                (f(stem, "aH"), f(stem, "oH"), f(stem, "Am")),
+                (f(stem, "i"), f(stem, "oH"), f(stem, "su")),
+                (f(stem, "aH"), f(stem, "O"), f(stem, "aH")),
+            ]);
+            put(&mut cells, 0, 0, vec![voiced.clone(), pause.clone()]);
+            put(&mut cells, 7, 0, vec![voiced.clone(), pause.clone()]);
+            put(&mut cells, 6, 2, vec![f(base, "wsu"), f(base, "wtsu")]);
+            cells
+        }
+        Class::ZvF(vowel) => {
+            // The feminine ष्-final nouns of the vowel flavours: the ष्
+            // becomes the stem's own vowel (site @chadiS1/@AziS1/@sajuS1) —
+            // the इ (छदिः), the ई (आशीः) or the ऊ (सजूः). The
+            // nominative and the vocative take that vowel with the
+            // visarga, the भ-endings the र-form (छदिर्भ्याम्) and the
+            // locative plural the षु/ष्षु pair (छदिःषु-छदिष्षु).
+            if linga != Linga::F || !stem.ends_with('z') || stem.len() < 3 {
+                return Err(NOT_POSSIBLE);
+            }
+            let base = &stem[..stem.len() - 1];
+            // The bare stem without its final matra (छदि → छद).
+            let short = match base.chars().last() {
+                Some('a' | 'A' | 'i' | 'I' | 'u' | 'U' | 'e' | 'E' | 'o' | 'O') => {
+                    &base[..base.len() - 1]
+                }
+                _ => base,
+            };
+            // The ष् becomes the stem's own vowel: the इ keeps the ि
+            // (छदिः), the ई and the ऊ lengthen it (आशीः, सजूः).
+            let rep_bare = match *vowel {
+                'i' => base.to_string(),
+                'I' => f(short, "I"),
+                'u' => f(short, "U"),
+                _ => return Err(NOT_POSSIBLE),
+            };
+            let rep = f(&rep_bare, "H");
+            let instr = f(&rep_bare, "r");
+            let mut cells = table(&[
+                (rep.clone(), f(stem, "O"), f(stem, "aH")),
+                (f(stem, "am"), f(stem, "O"), f(stem, "aH")),
+                (f(stem, "A"), f(&instr, "ByAm"), f(&instr, "BiH")),
+                (f(stem, "e"), f(&instr, "ByAm"), f(&instr, "ByaH")),
+                (f(stem, "aH"), f(&instr, "ByAm"), f(&instr, "ByaH")),
+                (f(stem, "aH"), f(stem, "oH"), f(stem, "Am")),
+                (f(stem, "i"), f(stem, "oH"), f(stem, "su")),
+                (rep.clone(), f(stem, "O"), f(stem, "aH")),
+            ]);
+            put(&mut cells, 6, 2, vec![f(&rep, "zu"), f(&rep_bare, "zzu")]);
             cells
         }
         Class::Zam => {
@@ -3237,7 +3313,18 @@ pub fn classes_for(stem: &str, linga: Linga) -> Vec<Class> {
                     out.push(Class::Cons);
                 }
             }
-            Linga::F => out.push(Class::Cons),
+            Linga::F => {
+                out.push(Class::Cons);
+                // The feminine ष्-final nouns (तृष्, छदिष्) come in a ड/ट
+                // flavour and three vowel flavours — so all four are
+                // offered and the site's grid decides.
+                if stem.ends_with('z') {
+                    out.push(Class::ZamF);
+                    out.push(Class::ZvF('i'));
+                    out.push(Class::ZvF('I'));
+                    out.push(Class::ZvF('u'));
+                }
+            }
             Linga::N => {
                 // Neuter participles keep गच्छत्/गच्छन् (site @gacchat3);
                 // the neuter of a त-स्वादि stem (आत्मवत् → आत्मवती) and the
