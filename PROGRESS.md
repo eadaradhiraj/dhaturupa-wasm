@@ -1369,3 +1369,14 @@ the family counts in entry (13) are the real ones.
 
 Whole-db parity: **8,334/9,007** exact. Pins: अतिस्त्रि (N).
 `./check.sh --full` ALL CHECKS PASSED (browser 472).
+
+## 2026-10-20 (15) — the neuter च्-final nouns
+
+`AcN` (अर्वाच्; site @arvAc1): the प्रथमा-/द्वितीया-/सम्बोधन-एकवचन
+carry the ग/क pair (अर्वाग्-अर्वाक्), the dual the ई-form (अर्वाची),
+the plural the ञ्चि (अर्वाञ्चि), the भ-endings voice the stem
+(अर्वाग्भ्याम्) and the locative plural the क्षु (अर्वाक्षु). Offered
+beside the Cons class — a bare stem cannot say which family it is.
+
+Whole-db parity: **8,338/9,007** exact; the no-table bucket is down to
+136. Gates green (browser 472).

@@ -136,6 +136,9 @@ pub enum Class {
     /// dvi/plural take the ण-forms (अतिस्त्रिणी) and the cat/paJ/sap carry
     /// both alternants (अतिस्त्रिणे-अतिस्त्रये).
     INu,
+    /// The neuter च्-final nouns (अर्वाच्; site @arvAc1): the ग/क pair in
+    /// the प्रथमा-एकवचन and the ई-forms (अर्वाची, अर्वाञ्चि).
+    AcN,
     /// The anusvāra-स्वादि (अणीयस्; site @aNIyas1): the nominal forms
     /// take the anusvāra (अणीयान्, अणीयांसौ), the rest the स-forms.
     AsAnM,
@@ -242,6 +245,7 @@ impl Class {
             Self::UvF => "uv-f".to_string(),
             Self::UnN => "un-n".to_string(),
             Self::INu => "i-nu".to_string(),
+            Self::AcN => "ac-n".to_string(),
             Self::AsAnM => "asan-m".to_string(),
             Self::AsEM => "ase-m".to_string(),
             Self::AsmM => "asm-m".to_string(),
@@ -1238,6 +1242,34 @@ pub fn decline(stem: &str, linga: Linga, class: &Class) -> Result<Paradigm, &'st
                 (f(p, "asyAm"), f(p, "ayoH"), f(p, "Asu")),
                 (f(p, "e"), f(p, "e"), f(p, "AH")),
             ])
+        }
+        Class::AcN => {
+            // The neuter च्-final nouns (अर्वाच्; site @arvAc1): the
+            // प्रथमा-एकवचन carries the ग/क pair (अर्वाग्-अर्वाक्), the
+            // dual/plural the ई-forms (अर्वाची) and the ञ्चि plural
+            // (अर्वाञ्चि), the भ-endings voice the stem (अर्वाग्भ्याम्) and
+            // the locative plural the क्षु (अर्वाक्षु).
+            if linga != Linga::N || !stem.ends_with('c') || stem.len() < 3 {
+                return Err(NOT_POSSIBLE);
+            }
+            let base = &stem[..stem.len() - 1];
+            let voiced = f(base, "g");
+            let pause = f(base, "k");
+            let mut cells = table(&[
+                (f(stem, "I"), f(stem, "I"), f(base, "Yci")),
+                (f(stem, "I"), f(stem, "I"), f(base, "Yci")),
+                (f(stem, "A"), f(&voiced, "ByAm"), f(&voiced, "BiH")),
+                (f(stem, "e"), f(&voiced, "ByAm"), f(&voiced, "ByaH")),
+                (f(stem, "aH"), f(&voiced, "ByAm"), f(&voiced, "ByaH")),
+                (f(stem, "aH"), f(stem, "oH"), f(stem, "Am")),
+                (f(stem, "i"), f(stem, "oH"), f(base, "kzu")),
+                (f(stem, "I"), f(stem, "I"), f(base, "Yci")),
+            ]);
+            // The प्रथमा-, द्वितीया- and सम्बोधन-एकवचन carry the ग/क pair.
+            put(&mut cells, 0, 0, vec![voiced.clone(), pause.clone()]);
+            put(&mut cells, 1, 0, vec![voiced.clone(), pause.clone()]);
+            put(&mut cells, 7, 0, vec![voiced, pause]);
+            cells
         }
         Class::AccM => {
             // Masculine च्-final nouns (अर्वाच्; site @arvAc2): the
@@ -2838,11 +2870,14 @@ pub fn classes_for(stem: &str, linga: Linga) -> Vec<Class> {
             Linga::F => out.push(Class::Cons),
             Linga::N => {
                 // Neuter participles keep गच्छत्/गच्छन् (site @gacchat3);
-                // the neuter of a त-स्वादि stem (आत्मवत् → आत्मवती) is the
-                // other candidate — a bare stem cannot say which is meant.
+                // the neuter of a त-स्वादि stem (आत्मवत् → आत्मवती) and the
+                // neuter च्-final nouns (अर्वाच् → अर्वाची) are the other
+                // candidates — a bare stem cannot say which is meant.
                 if stem.ends_with('t') || stem.ends_with('d') {
                     out.push(Class::AtN(AtNStyle::Num));
                     out.push(Class::TaN);
+                } else if stem.ends_with('c') {
+                    out.push(Class::AcN);
                 }
             }
         }
