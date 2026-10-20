@@ -1348,3 +1348,17 @@ its own paradigm (the counts are the db entries per family):
 The site grids every listed word, so the portal shows the oracle grid
 regardless; these are the derived-table gaps for unlisted stems of the
 same shapes. The audit is the map: `node web/audit-site-grids.cjs`.
+
+## 2026-10-20 (14) — the neuter i-stem in the ण-form
+
+`INu` (the neuter i-stems in the ण-form — अतिस्त्रिणी, अतिस्त्रिणे-अतिस्त्रये)
+joins the corpus's इ-न flavour (`IN`) as a second candidate: the spelling
+does not say which of the two a stem belongs to. The य/ए-forms drop the
+stem's ि (the sandhi) and build on the stem without it.
+
+The audit's diagnostic now scores each candidate by its number of
+differing cells (the earliest difference was picking the wrong one), so
+the family counts in entry (13) are the real ones.
+
+Whole-db parity: **8,334/9,007** exact. Pins: अतिस्त्रि (N).
+`./check.sh --full` ALL CHECKS PASSED (browser 472).

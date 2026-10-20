@@ -78,9 +78,13 @@ for (const entry of candidates) {
   diverged += 1;
   // Cluster by the engine class and the first differing cell, using the
   // best candidate (the site grid is reproducible from one of them).
-  const best = grids
-    .map((cells) => ({ cells, diff: cells.findIndex((c, i) => c !== want[i]) }))
-    .sort((a, b) => a.diff - b.diff)[0];
+  const scored = grids
+    .map((cells) => ({
+      cells,
+      diff: cells.reduce((n, c, i) => n + (c === want[i] ? 0 : 1), 0),
+    }))
+    .sort((a, b) => a.diff - b.diff);
+  const best = scored[0];
   const cls = JSON.parse(wasm.subanta_table(entry.word, code)).tables[0].class;
   const bad = [];
   for (let i = 0; i < 24; i += 1) {
@@ -89,7 +93,7 @@ for (const entry of candidates) {
   diffs.push({
     word: entry.word,
     id: entry.urlid,
-    why: `${cls} @${VIB[Math.floor(best.diff / 3)]} — ${bad.slice(0, 2).join(' | ')}`,
+    why: `${cls} @${VIB[Math.floor(best.diff === 24 ? 0 : best.cells.findIndex((c, i) => c !== want[i]))]} — ${bad.slice(0, 2).join(' | ')}`,
   });
 }
 

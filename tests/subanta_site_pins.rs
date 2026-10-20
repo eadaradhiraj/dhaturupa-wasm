@@ -227,6 +227,8 @@ fn cons_family_and_participle_pins() {
     // u-stems (अगुरु → अगुरुणे, अगुरूणाम्).
     pin_word_any("अभ्रमु", "S");
     pin_word_any("अगुरु", "N");
+    // The neuter i-stem in the ण-form (अतिस्त्रिणी, अतिस्त्रिणे-अतिस्त्रये).
+    pin_word_any("अतिस्त्रि", "N");
     // Participle regression: गच्छत् keeps the गच्छन्-prathamA shape.
     pin_word("गच्छत्");
     // The वतुप् nominalization (आत्मवान्), its मतुप्/यतुप् siblings

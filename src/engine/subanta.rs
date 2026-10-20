@@ -132,6 +132,10 @@ pub enum Class {
     /// The neuter u-stems (अगुरु; site @aguru2): the ण-forms in the
     /// cat/paJ/zaz/sap (अगुरुणे, अगुरूणाम्).
     UnN,
+    /// The neuter i-stems in the ण-form (अतिस्त्रि; site @atistri3): the
+    /// dvi/plural take the ण-forms (अतिस्त्रिणी) and the cat/paJ/sap carry
+    /// both alternants (अतिस्त्रिणे-अतिस्त्रये).
+    INu,
     /// The anusvāra-स्वादि (अणीयस्; site @aNIyas1): the nominal forms
     /// take the anusvāra (अणीयान्, अणीयांसौ), the rest the स-forms.
     AsAnM,
@@ -237,6 +241,7 @@ impl Class {
             Self::AjjM => "aj-m".to_string(),
             Self::UvF => "uv-f".to_string(),
             Self::UnN => "un-n".to_string(),
+            Self::INu => "i-nu".to_string(),
             Self::AsAnM => "asan-m".to_string(),
             Self::AsEM => "ase-m".to_string(),
             Self::AsmM => "asm-m".to_string(),
@@ -401,6 +406,39 @@ pub fn decline(stem: &str, linga: Linga, class: &Class) -> Result<Paradigm, &'st
                 (f(p, "O"), f(p, "yoH"), f(p, "izu")),
                 (f(p, "e"), f(p, "I"), f(p, "ayaH")),
             ])
+        }
+        Class::INu => {
+            // The neuter i-stems in the ण-form (अतिस्त्रि; site @atistri3):
+            // the dvi/plural take the ण-forms (अतिस्त्रिणी, अतिस्त्रीणि)
+            // and the cat/paJ/sap carry both alternants
+            // (अतिस्त्रिणे-अतिस्त्रये). Distinct from the इ-न neuter with
+            // its नु augment ([`Class::IN`], the corpus's own flavour). The
+            // य/ए-forms drop the stem's ि (the sandhi), so they build on
+            // the stem without it.
+            if linga != Linga::N || !stem.ends_with('i') {
+                return Err(NOT_POSSIBLE);
+            }
+            let p = &stem[..stem.len() - 1];
+            let mut cells = table(&[
+                (stem.to_string(), f(stem, "RI"), f(p, "IRi")),
+                (stem.to_string(), f(stem, "RI"), f(p, "IRi")),
+                (f(stem, "RA"), f(stem, "ByAm"), f(stem, "BiH")),
+                (f(stem, "Re"), f(stem, "ByAm"), f(stem, "ByaH")),
+                (f(stem, "RaH"), f(stem, "ByAm"), f(stem, "ByaH")),
+                (f(stem, "RaH"), f(stem, "yoH"), f(p, "IRAm")),
+                (f(stem, "Ri"), f(p, "ayoH"), f(stem, "zu")),
+                (stem.to_string(), f(stem, "RI"), f(p, "IRi")),
+            ]);
+            // The cat, paJ, zaz and sap carry both alternants.
+            put(&mut cells, 3, 0, vec![f(stem, "Re"), f(p, "aye")]);
+            put(&mut cells, 4, 0, vec![f(stem, "RaH"), f(p, "eH")]);
+            put(&mut cells, 5, 0, vec![f(stem, "RaH"), f(p, "eH")]);
+            put(&mut cells, 6, 0, vec![f(stem, "Ri"), f(p, "O")]);
+            // The genitive and locative duals carry both alternants.
+            put(&mut cells, 5, 1, vec![f(stem, "RoH"), f(stem, "yoH")]);
+            put(&mut cells, 6, 1, vec![f(stem, "RoH"), f(stem, "yoH")]);
+            put(&mut cells, 7, 0, vec![stem.to_string(), f(p, "e")]);
+            cells
         }
         Class::IN => {
             // `i`-stem neuter (`vAri`; site @vAri1): नुम् augment before the
@@ -2706,10 +2744,15 @@ pub fn classes_for(stem: &str, linga: Linga) -> Vec<Class> {
             // but the feminine takes the ण-स्वादि: the त्य-form
             // (अक्षान्त्या) with its paired alternants (अक्षान्तये-अक्षान्त्यै)
             // and the accusative plural as the nominative plural
-            // (अक्षान्तीः) — site @akSAnti1/@gati1.
+            // (अक्षान्तीः) — site @akSAnti1/@gati1. The neuter has two
+            // flavours: the corpus's इ-न augment and the site's ण-forms
+            // (अतिस्त्रिणी) — both are offered.
             Linga::M => out.push(Class::IMF),
             Linga::F => out.push(Class::GatiF),
-            Linga::N => out.push(Class::IN),
+            Linga::N => {
+                out.push(Class::IN);
+                out.push(Class::INu);
+            }
         }
     } else if stem.ends_with('I') {
         if linga == Linga::F {
