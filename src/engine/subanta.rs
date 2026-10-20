@@ -142,6 +142,20 @@ pub enum Class {
     /// The feminine ह्-final nouns of the द/त flavour (उपानह्; site
     /// @upAnah1): the द/त pair (उपानद्-उपानत्).
     HasF,
+    /// The feminine र्-final nouns of the vowel flavours (गिर्; site
+    /// @gir1): the ई-form in the nominative (गीः) — `i` for the ई and
+    /// `u` for the ऊ.
+    RirF(char),
+    /// The feminine र्-final nouns of the plain flavour (द्वार्; site
+    /// @dvAr1): the आ-form in the nominative (द्वाः).
+    RarF,
+    /// The masculine nouns whose nominative is the bare stem (कमल्; site
+    /// @kamal1): `l` for the ल्-final (कमल्) and `R` for the ण्-final
+    /// (सुगण्).
+    BaraM(char),
+    /// The neuter र्-final nouns (वार्; site @vAr1): the ई-form dual
+    /// (वारी).
+    RarN,
     /// The neuter ह्-final nouns (स्वनडुह्; site @svanaDuh1): the द/त
     /// pair (स्वनडुद्-स्वनडुत्) and the ई-form dual.
     HasN,
@@ -290,6 +304,10 @@ impl Class {
             Self::INu => "i-nu".to_string(),
             Self::HasM => "has-m".to_string(),
             Self::HasF => "has-f".to_string(),
+            Self::RirF(v) => format!("rir-f-{v}"),
+            Self::RarF => "rar-f".to_string(),
+            Self::BaraM(c) => format!("bara-m-{c}"),
+            Self::RarN => "rar-n".to_string(),
             Self::HasN => "has-n".to_string(),
             Self::HihF => "hih-f".to_string(),
             Self::DuhF => "duh-f".to_string(),
@@ -685,7 +703,10 @@ pub fn decline(stem: &str, linga: Linga, class: &Class) -> Result<Paradigm, &'st
             if !matches!(linga, Linga::M | Linga::F) || (stem.len() < 3 && !r_chart) {
                 return Err(NOT_POSSIBLE);
             }
-            if stem.ends_with("at") || stem.ends_with("ant") {
+            // The masculine अ-उपधा participles (गच्छत्, भवन्त) keep the
+            // AtM shape; the routing sends them there, and the feminine
+            // numeral family (त्रिंशत्) is the Cons shape.
+            if linga == Linga::M && (stem.ends_with("at") || stem.ends_with("ant")) {
                 return Err(NOT_POSSIBLE);
             }
             // (base length, voiced, middle alternant, voiceless, सु suffix).
@@ -1518,6 +1539,128 @@ pub fn decline(stem: &str, linga: Linga, class: &Class) -> Result<Paradigm, &'st
             put(&mut cells, 1, 0, vec![f(base, "d"), f(base, "t")]);
             put(&mut cells, 7, 0, vec![f(base, "d"), f(base, "t")]);
             put(&mut cells, 6, 2, vec![f(&pause, "su")]);
+            cells
+        }
+        Class::RirF(vowel) => {
+            // The feminine र्-final nouns of the vowel flavours (गिर्; site
+            // @gir1): the nominative and the vocative take the long vowel
+            // with the visarga (गीः), the भ-endings the र-form (गीर्भ्याम्)
+            // and the locative plural the र्षु (गीर्षु).
+            if linga != Linga::F || !stem.ends_with('r') || stem.len() < 3 {
+                return Err(NOT_POSSIBLE);
+            }
+            let base = &stem[..stem.len() - 1];
+            // The र् is dropped and the vowel lengthened (गिर् → गी,
+            // पुर् → पू).
+            let long = match (base.chars().last(), *vowel) {
+                (Some('i'), 'i') => f(&base[..base.len() - 1], "I"),
+                (Some('u'), 'u') => f(&base[..base.len() - 1], "U"),
+                _ => return Err(NOT_POSSIBLE),
+            };
+            let mut cells = table(&[
+                (f(&long, "H"), f(stem, "O"), f(stem, "aH")),
+                (f(stem, "am"), f(stem, "O"), f(stem, "aH")),
+                (f(stem, "A"), f(&long, "rByAm"), f(&long, "rBiH")),
+                (f(stem, "e"), f(&long, "rByAm"), f(&long, "rByaH")),
+                (f(stem, "aH"), f(&long, "rByAm"), f(&long, "rByaH")),
+                (f(stem, "aH"), f(stem, "oH"), f(stem, "Am")),
+                (f(stem, "i"), f(stem, "oH"), f(stem, "su")),
+                (f(&long, "H"), f(stem, "O"), f(stem, "aH")),
+            ]);
+            put(&mut cells, 6, 2, vec![f(&long, "rzu")]);
+            cells
+        }
+        Class::RarF => {
+            // The feminine र्-final nouns of the plain flavour (द्वार्; site
+            // @dvAr1): the nominative takes the आ-form (द्वाः), the
+            // भ-endings the र-form (द्वार्भ्याम्) and the locative plural
+            // the र्षु (द्वार्षु).
+            if linga != Linga::F || !stem.ends_with('r') || stem.len() < 3 {
+                return Err(NOT_POSSIBLE);
+            }
+            let base = &stem[..stem.len() - 1];
+            // The आ-form: the stem's own आ (द्वा) with the visarga.
+            let aa = if base.ends_with('A') {
+                f(base, "H")
+            } else {
+                f(base, "aH")
+            };
+            let mut cells = table(&[
+                (aa.clone(), f(stem, "O"), f(stem, "aH")),
+                (f(stem, "am"), f(stem, "O"), f(stem, "aH")),
+                (f(stem, "A"), f(base, "rByAm"), f(base, "rBiH")),
+                (f(stem, "e"), f(base, "rByAm"), f(base, "rByaH")),
+                (f(stem, "aH"), f(base, "rByAm"), f(base, "rByaH")),
+                (f(stem, "aH"), f(stem, "oH"), f(stem, "Am")),
+                (f(stem, "i"), f(stem, "oH"), f(stem, "su")),
+                (aa, f(stem, "O"), f(stem, "aH")),
+            ]);
+            put(&mut cells, 6, 2, vec![f(base, "rzu")]);
+            cells
+        }
+        Class::RarN => {
+            // The neuter र्-final nouns (वार्; site @vAr1): the nominative
+            // takes the आ-form (वाः), the dual the ई-form (वारी) and the
+            // plural the plain stem (वारि); the भ-endings take the र-form
+            // (वार्भ्याम्) and the locative plural the र्षु (वार्षु).
+            if linga != Linga::N || !stem.ends_with('r') || stem.len() < 3 {
+                return Err(NOT_POSSIBLE);
+            }
+            let base = &stem[..stem.len() - 1];
+            let aa = if base.ends_with('A') {
+                f(base, "H")
+            } else {
+                f(base, "aH")
+            };
+            let mut cells = table(&[
+                (aa.clone(), f(base, "rI"), f(stem, "i")),
+                (aa.clone(), f(base, "rI"), f(stem, "i")),
+                (f(stem, "A"), f(base, "rByAm"), f(base, "rBiH")),
+                (f(stem, "e"), f(base, "rByAm"), f(base, "rByaH")),
+                (f(stem, "aH"), f(base, "rByAm"), f(base, "rByaH")),
+                (f(stem, "aH"), f(stem, "oH"), f(stem, "Am")),
+                (f(stem, "i"), f(stem, "oH"), f(stem, "su")),
+                (aa, f(base, "rI"), f(stem, "i")),
+            ]);
+            put(&mut cells, 6, 2, vec![f(base, "rzu")]);
+            cells
+        }
+        Class::BaraM(final_char) => {
+            // The masculine nouns whose nominative is the bare stem
+            // (कमल्; site @kamal1): the प्रथमा- and सम्बोधन-एकवचन take
+            // the stem itself (कमल्), the भ-endings the final consonant
+            // (कमल्भ्याम्) and the locative plural the षु-form (कमल्षु).
+            // The ण्-final nouns (सुगण्; site @sugaN1) keep three
+            // alternants there (सुगण्सु-सुगण्ट्सु-सुगण्ठ्सु).
+            if linga != Linga::M || stem.len() < 3 {
+                return Err(NOT_POSSIBLE);
+            }
+            let Some(c) = stem.chars().last() else {
+                return Err(NOT_POSSIBLE);
+            };
+            if c != *final_char {
+                return Err(NOT_POSSIBLE);
+            }
+            let base = &stem[..stem.len() - 1];
+            let (voiced, loc) = match c {
+                'l' => (f(base, "l"), vec![f(base, "lzu")]),
+                'R' => (
+                    f(base, "R"),
+                    vec![f(base, "Rsu"), f(base, "Rwsu"), f(base, "RWsu")],
+                ),
+                _ => return Err(NOT_POSSIBLE),
+            };
+            let mut cells = table(&[
+                (stem.to_string(), f(stem, "O"), f(stem, "aH")),
+                (f(stem, "am"), f(stem, "O"), f(stem, "aH")),
+                (f(stem, "A"), f(&voiced, "ByAm"), f(&voiced, "BiH")),
+                (f(stem, "e"), f(&voiced, "ByAm"), f(&voiced, "ByaH")),
+                (f(stem, "aH"), f(&voiced, "ByAm"), f(&voiced, "ByaH")),
+                (f(stem, "aH"), f(stem, "oH"), f(stem, "Am")),
+                (f(stem, "i"), f(stem, "oH"), f(stem, "su")),
+                (stem.to_string(), f(stem, "O"), f(stem, "aH")),
+            ]);
+            put(&mut cells, 6, 2, loc);
             cells
         }
         Class::HasM => {
@@ -3383,6 +3526,9 @@ pub fn classes_for(stem: &str, linga: Linga) -> Vec<Class> {
         || stem.ends_with('S')
         || stem.ends_with('z')
         || stem.ends_with('h')
+        || stem.ends_with('r')
+        || stem.ends_with('l')
+        || stem.ends_with('R')
     {
         match linga {
             Linga::M => {
@@ -3417,6 +3563,13 @@ pub fn classes_for(stem: &str, linga: Linga) -> Vec<Class> {
                     if stem.ends_with("vAh") {
                         out.push(Class::HasAM);
                     }
+                } else if stem.ends_with('l') {
+                    // The masculine ल्-final nouns whose nominative is the
+                    // bare stem (कमल्).
+                    out.push(Class::BaraM('l'));
+                } else if stem.ends_with('R') {
+                    // The masculine ण्-final nouns (सुगण्).
+                    out.push(Class::BaraM('R'));
                 } else if stem.ends_with('z') {
                     // The masculine ष्-final nouns (द्विष्) have two
                     // flavours on the site — the ड/ट pair (द्विड्-द्विट्)
@@ -3447,6 +3600,13 @@ pub fn classes_for(stem: &str, linga: Linga) -> Vec<Class> {
                     out.push(Class::HihF);
                     out.push(Class::DuhF);
                 }
+                // The feminine र्-final nouns (गिर्, द्वार्) come in a
+                // plain flavour and two vowel flavours.
+                if stem.ends_with('r') {
+                    out.push(Class::RarF);
+                    out.push(Class::RirF('i'));
+                    out.push(Class::RirF('u'));
+                }
             }
             Linga::N => {
                 // Neuter participles keep गच्छत्/गच्छन् (site @gacchat3);
@@ -3458,6 +3618,9 @@ pub fn classes_for(stem: &str, linga: Linga) -> Vec<Class> {
                     out.push(Class::TaN);
                 } else if stem.ends_with('c') {
                     out.push(Class::AcN);
+                } else if stem.ends_with('r') {
+                    // The neuter र्-final nouns (वार्).
+                    out.push(Class::RarN);
                 } else if stem.ends_with('h') {
                     // The neuter ह्-final nouns (स्वनडुह्) — the द/त pair
                     // and the ई-form dual.

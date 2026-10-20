@@ -300,6 +300,26 @@ fn ha_final_masks() {
     }
 }
 
+/// The feminine numeral family (त्रिंशत् → त्रिंशद्-त्रिंशत्), the
+/// feminine र्-final nouns (गिर् → गीः, पुर् → पूः, द्वार् → द्वाः), the
+/// neuter र्-final (वार् → वारी) and the bare-nominative nouns (कमल्,
+/// सुगण्).
+#[test]
+fn numeral_and_ra_final_pins() {
+    for word in ["त्रिंशत्", "वेहत्", "संयत्", "चत्वारिंशत्", "पञ्चाशत्"]
+    {
+        pin_word_any(word, "S");
+    }
+    for word in ["गिर्", "अपकारगिर्", "पुर्", "द्वार्"]
+    {
+        pin_word_any(word, "S");
+    }
+    pin_word_any("वार्", "N");
+    for word in ["कमल्", "सुगण्", "सुगाण्"] {
+        pin_word_any(word, "P");
+    }
+}
+
 /// The feminine and neuter ह्-final nouns: the द/त pair (उपानह् →
 /// उपानद्-उपानत्), the ग/क pair (उष्णिह् → उष्णिग्-उष्णिक्), the
 /// धुग्-धुक् pair (कामदुह्) and the neuter ई-form dual (स्वनडुह् →

@@ -1530,3 +1530,30 @@ and ADDITIONS lists the paradigms added after the roadmap (the neuter
 The full release gate (`./check.sh --full`, the exhaustive backfill,
 kṛt, ṭiṅ, kṛt-click, prefixed-kṛt, reverse and coverage audits) is
 green.
+
+## 2026-10-20 (23) — the numeral family, the र्-final nouns, the bare-nominative nouns
+
+Four more families, all in the no-table bucket:
+
+- The feminine numeral family (त्रिंशत्, वेहत्, संयत्, चत्वारिंशत्,
+  पञ्चाशत्) rides the `Cons` class — the class's "at"-guard, written for
+  the masculine अ-उपधा participles, was rejecting them. The guard is now
+  masculine-only; the feminine gets the Cons shape (त्रिंशद्-त्रिंशत्,
+  त्रिंशद्भ्याम्, त्रिंशत्सु).
+- `RirF` (the feminine र्-final vowel flavours; site @gir1): the
+  nominative and the vocative take the long vowel with the visarga
+  (गीः, पूः), the भ-endings the र-form (गीर्भ्याम्) and the locative
+  plural the र्षु (गीर्षु). Covered: गिर्, अपकारगिर्, पुर्.
+- `RarF` (the plain flavour; site @dvAr1): the nominative takes the
+  आ-form (द्वाः). Covered: द्वार्.
+- `RarN` (the neuter; site @vAr1): the nominative is the आ-form (वाः),
+  the dual the ई-form (वारी) and the plural the plain stem (वारि).
+  Covered: वार्.
+- `BaraM` (the bare-nominative nouns; site @kamal1/@sugaN1): the
+  nominative and the vocative take the stem itself (कमल्), the भ-endings
+  the final consonant (कमल्भ्याम्) and the locative plural the षु-form
+  (कमल्षु); the ण्-final nouns keep three alternants there
+  (सुगण्सु-सुगण्ट्सु-सुगण्ठ्सु). Covered: कमल्, सुगण्, सुगाण्.
+
+Whole-db parity: **8,414/9,007** exact; the no-table bucket is down to
+53. Gates green (browser 472).
