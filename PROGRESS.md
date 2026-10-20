@@ -1579,9 +1579,9 @@ Whole-db parity: **8,427/9,007** exact; the no-table bucket is down to
 the औ-form (जनौभ्याम्) and the locative plural the षु-form (जनौषु).
 Covered: जनौ, ग्लौ.
 
-The translit also learned the visarga after a consonant: `kulH` is
-कुलः, not कुल्: — the visarga replaces the consonant's inherent vowel
-(the site writes सुल्वः that way).
+(A translit change that let the visarga follow a consonant directly
+turned out to break the corpus's own `न्तःः` spelling, so it was
+reverted — the AuM class does not need it.)
 
 Whole-db parity: **8,429/9,007** exact; the no-table bucket is down to
 37. Gates green (browser 472).

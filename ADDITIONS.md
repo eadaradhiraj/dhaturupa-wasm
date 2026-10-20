@@ -26,17 +26,24 @@ Every item below is **delivered** — each with its own commit and a green
 | 3.2 | Seṭ/Karma filters | `#list-settva`, `#list-karma` dropdowns |
 | 4.1 | WASM size | release profile + tuned wasm-opt: 1.61MB → 1.03MB |
 
-Beyond the roadmap, the subanta engine now reproduces **8,401 of the
+Beyond the roadmap, the subanta engine now reproduces **8,429 of the
 9,007** grids the site lists (`node web/audit-site-grids.cjs`), and the
 new paradigms read back as well as decline.
 
-The paradigms added after the roadmap: the neuter च्-final nouns
-(`AcN`), the masculine ष्-final nouns in their ड/ट and ग/क flavours
-(`Zam`, `ZagM`), the feminine ष्-final nouns (`ZamF`, `ZvF`), the
-masculine, feminine and neuter ह्-final nouns (`HasM`, `HuhM`, `DuhM`,
-`HasVM`, `HasAM`, `HasF`, `HihF`, `DuhF`, `HasN`), the कृत agent nouns
-(`RFN` for the neuter), the feminine अस्-स्वादि (`AsF`) and the
-वस्-स्वादि (`VasM`, `VasN`).
+The paradigms added after the roadmap:
+
+| family | classes |
+| :--- | :--- |
+| the neuter च्-final nouns | `AcN` |
+| the masculine ष्-final nouns (ड/ट, ग/क) | `Zam`, `ZagM` |
+| the feminine ष्-final nouns (ड/ट, the vowel flavours) | `ZamF`, `ZvF` |
+| the masculine/feminine/neuter ह्-final nouns | `HasM`, `HuhM`, `DuhM`, `HasVM`, `HasAM`, `HasF`, `HihF`, `DuhF`, `HasN` |
+| the कृत agent nouns (the neuter) | `RFN` |
+| the feminine अस्-स्वादि | `AsF` |
+| the वस्-स्वादि | `VasM`, `VasN` |
+| the feminine र्-final nouns | `RirF`, `RarF`, `RarN` |
+| the bare-nominative nouns | `BaraM` |
+| the masculine आ- and औ-stems | `AAM`, `AuM` |
 
 ---
 
