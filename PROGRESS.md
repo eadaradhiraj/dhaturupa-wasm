@@ -1519,3 +1519,14 @@ The remaining ह्-final shapes:
 
 Whole-db parity: **8,401/9,007** exact; the no-table bucket is down to
 66. Gates green (browser 472).
+
+## 2026-10-20 (22) — the docs carry the current numbers
+
+README and ADDITIONS now report the whole-db parity as **8,401/9,007**,
+and ADDITIONS lists the paradigms added after the roadmap (the neuter
+च्-final, the masculine/feminine ष्-final, the ह्-final family, the
+कृत agent nouns, the feminine अस्-स्वादि and the वस्-स्वादि).
+
+The full release gate (`./check.sh --full`, the exhaustive backfill,
+kṛt, ṭiṅ, kṛt-click, prefixed-kṛt, reverse and coverage audits) is
+green.
