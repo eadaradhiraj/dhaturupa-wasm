@@ -1282,3 +1282,30 @@ Whole-db parity: **8,289/9,007** exact. Pins: आत्मवत् (N), अन�
   candidates.
 
 Gates green: `./check.sh` ALL CHECKS PASSED (browser 472).
+
+## 2026-10-20 (11) — the अञ्च/अञ्ज/अनुस्वार families
+
+Three more families from the sweep, all read off the site's own grids:
+
+- **`AccM`** (the masculine च्-final nouns — अर्वाच् @arvAc2): the
+  nominative takes the ङ्-inserted form (अर्वाङ्), the dual/plural the
+  ञ्च-forms (अर्वाञ्चौ, अर्वाञ्चः), the भ-endings voice the stem
+  (अर्वाग्भ्याम्) and the locative plural the क्षु (अर्वाक्षु). The
+  सरित् shape never reached these — the class is separate, and the
+  routing sends masculine च्-final stems to it.
+- **`AjjM`** (the masculine ज्-final nouns — खन्ज् @khanj1): the
+  nominative replaces the न् with the plain stem (खन्) and the
+  dual/plural take the ञ्ज-forms (खञ्जौ, खञ्जः), with the locative
+  plural as the pair खन्सु-खन्त्सु. Offered alongside the निज-स्वादि
+  (`Jvs`) — a bare stem cannot say which family it is.
+- **`AsAnM`/`AsEM`** (the अस्-स्वादि's other two nominal forms): the
+  anusvāra-form (अणीयस् → अणीयान्, अणीयांसौ) and the e-form (अनेहस्
+  → अनेहा). Both offered beside the plain आ-form, since the spelling
+  does not say which the site uses.
+
+One translit fix came with it: a consonant before the anusvāra drops
+its inherent vowel (`kM` is कं, not क्ं) — the SLP1 rule.
+
+Whole-db parity: **8,311/9,007** exact; the no-table bucket is down to
+150. Pins: अर्वाच्, खन्ज्, अणीयस्, अनेहस्. `./check.sh --full` ALL
+CHECKS PASSED (browser 472).

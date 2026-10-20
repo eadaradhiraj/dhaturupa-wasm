@@ -216,6 +216,13 @@ fn cons_family_and_participle_pins() {
     pin_word_any("अधरा", "S");
     // The अस्-family's vocative singular takes the स-form (हे अङ्गिरः).
     pin_word_any("अङ्गिरस्", "P");
+    // The अञ्च-स्वादि (अर्वाच् → अर्वाङ् | अर्वाञ्चौ) and the अञ्ज-स्वादि
+    // (खन्ज् → खन् | खञ्जौ), plus the अस्-family's anusvāra-form (अणीयान्)
+    // and e-form (अनेहा).
+    pin_word_any("अर्वाच्", "P");
+    pin_word_any("खन्ज्", "P");
+    pin_word_any("अणीयस्", "P");
+    pin_word_any("अनेहस्", "P");
     // Participle regression: गच्छत् keeps the गच्छन्-prathamA shape.
     pin_word("गच्छत्");
     // The वतुप् nominalization (आत्मवान्), its मतुप्/यतुप् siblings

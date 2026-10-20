@@ -252,6 +252,11 @@ pub fn slp1_to_deva(text: &str) -> Option<String> {
                     out.push_str(sign);
                     idx += 2;
                 }
+                // The anusvāra takes the consonant's place in the syllable:
+                // `kM` is कं, not क्ं.
+                Some('M') => {
+                    idx += 1;
+                }
                 _ => {
                     out.push(VIRAMA);
                     idx += 1;

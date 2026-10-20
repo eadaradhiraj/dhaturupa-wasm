@@ -120,6 +120,18 @@ pub enum Class {
     /// @Atmavat2): the प्रथमा-/द्वितीया-एकवचन carry the द/त pair
     /// (आत्मवद्-आत्मवत्), the rest the ई-forms (आत्मवती, आत्मवन्ति).
     TaN,
+    /// Masculine च्-final nouns (अर्वाच्; site @arvAc2): the ङ्-inserted
+    /// nominative (अर्वाङ्) and the ञ्च-forms (अर्वाञ्चौ, अर्वाञ्चः).
+    AccM,
+    /// Masculine ज्-final nouns (खन्ज्; site @khanj1): the bare-stem
+    /// nominative (खन्) and the ञ्ज-forms (खञ्जौ, खञ्जः).
+    AjjM,
+    /// The anusvāra-स्वादि (अणीयस्; site @aNIyas1): the nominal forms
+    /// take the anusvāra (अणीयान्, अणीयांसौ), the rest the स-forms.
+    AsAnM,
+    /// The e-form of the अस्-स्वादि (अनेहस्; site @anehas1): the
+    /// nominative is the bare stem (अनेहा).
+    AsEM,
     /// The स्म-ending a-stem masculine (अनेक; site @aneka1): the
     /// nominative plural takes the ए-form, the cat/paJ/sap the स्म-forms.
     AsmM,
@@ -215,6 +227,10 @@ impl Class {
             Self::UUFN => "U-f-nadi".to_string(),
             Self::UUM => "U-m".to_string(),
             Self::TaN => "ta-n".to_string(),
+            Self::AccM => "ac-m".to_string(),
+            Self::AjjM => "aj-m".to_string(),
+            Self::AsAnM => "asan-m".to_string(),
+            Self::AsEM => "ase-m".to_string(),
             Self::AsmM => "asm-m".to_string(),
             Self::AsmN => "asm-n".to_string(),
             Self::AsmF => "asm-f".to_string(),
@@ -1127,6 +1143,119 @@ pub fn decline(stem: &str, linga: Linga, class: &Class) -> Result<Paradigm, &'st
                 (f(p, "asyAm"), f(p, "ayoH"), f(p, "Asu")),
                 (f(p, "e"), f(p, "e"), f(p, "AH")),
             ])
+        }
+        Class::AccM => {
+            // Masculine च्-final nouns (अर्वाच्; site @arvAc2): the
+            // nominative takes the ङ्-inserted form (अर्वाङ्), the
+            // dual/plural the ञ्च-forms (अर्वाञ्चौ, अर्वाञ्चः), the
+            // भ-endings voice the stem (अर्वाग्भ्याम्) and the locative
+            // plural the क्षु (अर्वाक्षु).
+            if linga != Linga::M || !stem.ends_with('c') || stem.len() < 3 {
+                return Err(NOT_POSSIBLE);
+            }
+            let base = &stem[..stem.len() - 1];
+            table(&[
+                (f(base, "N"), f(base, "YcO"), f(base, "YcaH")),
+                (f(base, "Ycam"), f(base, "YcO"), f(stem, "aH")),
+                (f(stem, "A"), f(base, "gByAm"), f(base, "gBiH")),
+                (f(stem, "e"), f(base, "gByAm"), f(base, "gByaH")),
+                (f(stem, "aH"), f(base, "gByAm"), f(base, "gByaH")),
+                (f(stem, "aH"), f(stem, "oH"), f(stem, "Am")),
+                (f(stem, "i"), f(stem, "oH"), f(base, "kzu")),
+                (f(base, "N"), f(base, "YcO"), f(base, "YcaH")),
+            ])
+        }
+        Class::AjjM => {
+            // Masculine ज्-final nouns (खन्ज्; site @khanj1): the
+            // nominative is the bare stem (खन्), the dual/plural the
+            // ञ्ज-forms (खञ्जौ, खञ्जः), the locative plural the pair
+            // खन्सु-खन्त्सु.
+            if linga != Linga::M || !stem.ends_with("nj") || stem.len() < 4 {
+                return Err(NOT_POSSIBLE);
+            }
+            // The ज्-final nouns replace their न् with the ञ्: खन्ज् →
+            // खन् (nominative) and खञ्जौ (dual), so the base drops the
+            // न्ज and the ञ्ज-forms build on what is left.
+            let base = &stem[..stem.len() - 2];
+            let mut cells = table(&[
+                (f(base, "n"), f(base, "YjO"), f(base, "YjaH")),
+                (f(base, "Yjam"), f(base, "YjO"), f(base, "YjaH")),
+                (
+                    f(base, "YjA"),
+                    f(&format!("{base}n"), "ByAm"),
+                    f(&format!("{base}n"), "BiH"),
+                ),
+                (
+                    f(base, "Yje"),
+                    f(&format!("{base}n"), "ByAm"),
+                    f(&format!("{base}n"), "ByaH"),
+                ),
+                (
+                    f(base, "YjaH"),
+                    f(&format!("{base}n"), "ByAm"),
+                    f(&format!("{base}n"), "ByaH"),
+                ),
+                (f(base, "YjaH"), f(base, "YjoH"), f(base, "YjAm")),
+                (f(base, "Yji"), f(base, "YjoH"), f(base, "zu")),
+                (f(base, "n"), f(base, "YjO"), f(base, "YjaH")),
+            ]);
+            // The locative plural carries both alternants (खन्सु-खन्त्सु).
+            put(
+                &mut cells,
+                6,
+                2,
+                vec![f(&format!("{base}n"), "su"), f(base, "ntsu")],
+            );
+            cells
+        }
+        Class::AsAnM => {
+            // The anusvāra-स्वादि (अणीयस्; site @aNIyas1): the nominal
+            // forms take the anusvāra (अणीयान्, अणीयांसौ, अणीयांसः), the
+            // rest the स-forms (अणीयसा, अणीयसे, अणीयसः).
+            if linga != Linga::M || !(stem.ends_with('s') || stem.ends_with('H')) || stem.len() < 2
+            {
+                return Err(NOT_POSSIBLE);
+            }
+            let w = normalize_visarga(stem);
+            let q = &w[..w.len() - 2];
+            let o = format!("{q}o");
+            let mut cells = table(&[
+                (f(q, "An"), f(q, "AMsO"), f(q, "AMsaH")),
+                (f(q, "AMsam"), f(q, "AMsO"), f(q, "asaH")),
+                (f(&w, "A"), f(&o, "ByAm"), f(&o, "BiH")),
+                (f(&w, "e"), f(&o, "ByAm"), f(&o, "ByaH")),
+                (f(&w, "aH"), f(&o, "ByAm"), f(&o, "ByaH")),
+                (f(&w, "aH"), f(&w, "oH"), f(&w, "Am")),
+                (f(&w, "i"), f(&w, "oH"), f(&w, "su")),
+                (f(q, "an"), f(q, "AMsO"), f(q, "AMsaH")),
+            ]);
+            // The locative plural carries both alternants (अनःसु-अनस्सु).
+            put(&mut cells, 6, 2, vec![f(q, "aHsu"), f(&w, "su")]);
+            cells
+        }
+        Class::AsEM => {
+            // The e-form of the अस्-स्वादि (अनेहस्; site @anehas1): the
+            // nominative is the bare stem (अनेहा).
+            if linga != Linga::M || !(stem.ends_with('s') || stem.ends_with('H')) || stem.len() < 2
+            {
+                return Err(NOT_POSSIBLE);
+            }
+            let w = normalize_visarga(stem);
+            let q = &w[..w.len() - 2];
+            let o = format!("{q}o");
+            let mut cells = table(&[
+                (f(q, "A"), f(&w, "O"), f(&w, "aH")),
+                (f(&w, "am"), f(&w, "O"), f(&w, "aH")),
+                (f(&w, "A"), f(&o, "ByAm"), f(&o, "BiH")),
+                (f(&w, "e"), f(&o, "ByAm"), f(&o, "ByaH")),
+                (f(&w, "aH"), f(&o, "ByAm"), f(&o, "ByaH")),
+                (f(&w, "aH"), f(&w, "oH"), f(&w, "Am")),
+                (f(&w, "i"), f(&w, "oH"), f(&w, "su")),
+                (f(q, "aH"), f(&w, "O"), f(&w, "aH")),
+            ]);
+            // The locative plural carries both alternants (अनेहःसु-अनेहस्सु).
+            put(&mut cells, 6, 2, vec![f(q, "aHsu"), f(&w, "su")]);
+            cells
         }
         Class::AsM => {
             if linga != Linga::M || !(stem.ends_with('s') || stem.ends_with('H')) || stem.len() < 2
@@ -2555,7 +2684,15 @@ pub fn classes_for(stem: &str, linga: Linga) -> Vec<Class> {
         }
     } else if stem.ends_with('j') {
         match linga {
-            Linga::M | Linga::F => out.push(Class::Jvs),
+            // The ज्-final nouns split in two: the निज-स्वादि pair
+            // (स्वप्नग्-स्वप्नक्, @svapnaj1) and the ञ्ज-स्वादि
+            // (खन्ज् → खञ्जौ, @khanj1) — a bare stem cannot say which,
+            // so both are offered.
+            Linga::M => {
+                out.push(Class::Jvs);
+                out.push(Class::AjjM);
+            }
+            Linga::F => out.push(Class::Jvs),
             Linga::N => out.push(Class::JvsN),
         }
     } else if stem.ends_with('t')
@@ -2581,6 +2718,10 @@ pub fn classes_for(stem: &str, linga: Linga) -> Vec<Class> {
                     out.push(Class::AtM(AtMStyle::Num));
                 } else if stem.ends_with("at") || stem.ends_with("ant") {
                     out.push(Class::AtM(AtMStyle::Num));
+                } else if stem.ends_with('c') {
+                    // The masculine च्-final nouns (अर्वाच्) are the अञ्च-
+                    // स्वादि family — the सरित् shape does not reach them.
+                    out.push(Class::AccM);
                 } else {
                     out.push(Class::Cons);
                 }
@@ -2607,7 +2748,16 @@ pub fn classes_for(stem: &str, linga: Linga) -> Vec<Class> {
         out.push(Class::UsN);
     } else if stem.ends_with('s') || stem.ends_with('H') {
         match linga {
-            Linga::M => out.push(Class::AsM),
+            // The अस्-स्वादि has three nominal forms the site uses — the
+            // आ-form (अन्तर्मनसः), the anusvāra-form (अणीयान्) and the
+            // e-form (अनेहा). A bare stem cannot say which, so all three
+            // are offered and the site's grid decides for the words it
+            // lists.
+            Linga::M => {
+                out.push(Class::AsM);
+                out.push(Class::AsAnM);
+                out.push(Class::AsEM);
+            }
             Linga::N => out.push(Class::AsN),
             Linga::F => {}
         }

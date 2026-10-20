@@ -6,6 +6,32 @@ The project is a **fast, standalone, offline-first Web/WASM clone of `ashtadhyay
 
 ---
 
+## Status (2026-10-20)
+
+Every item below is **delivered** — each with its own commit and a green
+`./check.sh` (browser self-test, e2e, smoke) plus the exhaustive audits
+(`./check.sh --full`).
+
+| # | Addition | Delivered as |
+| :-: | :--- | :--- |
+| 1.1 | Traditional 3×3 tiṅanta matrix | `renderTingTables` (वचनम् columns, पुरुषः rows) |
+| 1.2 | Subanta grid labels | विभक्तिः row heads + वचनम् column heads |
+| 2.1–2.3 | Consonant-final nouns | `Class::Cons` (सरित्/वाच्/ककुभ् families, ऋ-chart, जश्) |
+| 2.4 | उस्/इस् neuters | `Class::UsN` (आयुष् family) |
+| 2.5 | गो/नौ/रै | word route (verbatim site grids) |
+| 2.6 | प्रणाम-स्वादि | word route (अन्य/इतर/कतर/कतम/उभय/उभ) |
+| 1.3 | Copy Table (Markdown/TSV) | `tablePayload` + one-click copy on every grid |
+| 1.4 | URL hash deep linking | `#search?q=…`, `#word?q=…`, `#dhatu/<id>?fam=&stack=` |
+| 3.1 | English gloss search | `#list-q` falls back to `artha_english` |
+| 3.2 | Seṭ/Karma filters | `#list-settva`, `#list-karma` dropdowns |
+| 4.1 | WASM size | release profile + tuned wasm-opt: 1.61MB → 1.03MB |
+
+Beyond the roadmap, the subanta engine now reproduces **8,289 of the
+9,007** grids the site lists (`node web/audit-site-grids.cjs`), and the
+new paradigms read back as well as decline.
+
+---
+
 ## 1. Web Portal UI / Presentation Improvements
 
 ### 1.1 Traditional 3×3 Matrix for Tiṅanta Conjugation Tables
