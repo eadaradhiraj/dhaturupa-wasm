@@ -1498,3 +1498,24 @@ are offered and the site's grid decides.
 
 Whole-db parity: **8,397/9,007** exact; the no-table bucket is down to
 71. Gates green (browser 472).
+
+## 2026-10-20 (21) — the feminine and neuter ह्-final nouns
+
+The remaining ह्-final shapes:
+
+- `HasF` (the feminine द/त flavour; site @upAnah1): the pair is
+  उपानद्-उपानत्, the भ-endings the द-form (उपानद्भ्याम्) and the
+  locative plural the त्सु (उपानत्सु). Covered: उपानह्.
+- `HihF` (the ग/क flavour; site @uSNih1): the pair is उष्णिग्-उष्णिक्,
+  the भ-endings the ग-form and the locative plural the क्षु
+  (उष्णिक्षु). Covered: उष्णिह्.
+- `DuhF` (the धुग्/धुक् flavour; site @kAmaduh1): the द before the ह्
+  is the ध (कामदु → कामधु), so the pair is कामधुग्-कामधुक्. Covered:
+  कामदुह्.
+- `HasN` (the neuter; site @svanaDuh1): the प्रथमा-/द्वितीया-एकवचन
+  carry the द/त pair (स्वनडुद्-स्वनडुत्), the dual the ई-form
+  (स्वनडुही) and the plural the वृद्धि with the anusvāra (स्वनड्वांहि).
+  Covered: स्वनडुह्.
+
+Whole-db parity: **8,401/9,007** exact; the no-table bucket is down to
+66. Gates green (browser 472).

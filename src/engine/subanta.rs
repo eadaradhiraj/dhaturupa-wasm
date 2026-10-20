@@ -139,6 +139,18 @@ pub enum Class {
     /// The masculine ह्-final nouns of the ड/ट flavour (लिह्; site @lih1):
     /// the ड/ट pair in the प्रथमा-एकवचन (लिड्-लिट्).
     HasM,
+    /// The feminine ह्-final nouns of the द/त flavour (उपानह्; site
+    /// @upAnah1): the द/त pair (उपानद्-उपानत्).
+    HasF,
+    /// The neuter ह्-final nouns (स्वनडुह्; site @svanaDuh1): the द/त
+    /// pair (स्वनडुद्-स्वनडुत्) and the ई-form dual.
+    HasN,
+    /// The feminine ह्-final nouns of the ग/क flavour (उष्णिह्; site
+    /// @uSNih1): the ग/क pair (उष्णिग्-उष्णिक्).
+    HihF,
+    /// The feminine ह्-final nouns of the धुग्/धुक् flavour (कामदुह्; site
+    /// @kAmaduh1): the धुग्-धुक् pair.
+    DuhF,
     /// The masculine ह्-final nouns of the four-alternant flavour (मुह्;
     /// site @muh1): the ड/ग/क/ट quartet (मुड्-मुग्-मुक्-मुट्).
     HuhM,
@@ -277,6 +289,10 @@ impl Class {
             Self::UnN => "un-n".to_string(),
             Self::INu => "i-nu".to_string(),
             Self::HasM => "has-m".to_string(),
+            Self::HasF => "has-f".to_string(),
+            Self::HasN => "has-n".to_string(),
+            Self::HihF => "hih-f".to_string(),
+            Self::DuhF => "duh-f".to_string(),
             Self::HuhM => "huh-m".to_string(),
             Self::HasVM => "has-vm".to_string(),
             Self::HasAM => "has-am".to_string(),
@@ -1426,6 +1442,84 @@ pub fn decline(stem: &str, linga: Linga, class: &Class) -> Result<Paradigm, &'st
             put(&mut cells, 6, 2, vec![f(&alt, "kzu")]);
             cells
         }
+        Class::HasF => {
+            // The feminine ह्-final nouns of the द/त flavour (उपानह्; site
+            // @upAnah1): the प्रथमा-/सम्बोधन-एकवचन carry the द/त pair
+            // (उपानद्-उपानत्), the भ-endings voice the stem (उपानद्भ्याम्)
+            // and the locative plural the त्सु (उपानत्सु).
+            if linga != Linga::F || !stem.ends_with('h') || stem.len() < 3 {
+                return Err(NOT_POSSIBLE);
+            }
+            let base = &stem[..stem.len() - 1];
+            ha_final_cells(
+                stem,
+                vec![f(base, "d"), f(base, "t")],
+                &f(base, "d"),
+                vec![f(base, "tsu")],
+            )
+        }
+        Class::HihF => {
+            // The feminine ह्-final nouns of the ग/क flavour (उष्णिह्; site
+            // @uSNih1): the pair is उष्णिग्-उष्णिक्, the भ-endings the
+            // ग-form (उष्णिग्भ्याम्) and the locative plural the क्षु
+            // (उष्णिक्षु).
+            if linga != Linga::F || !stem.ends_with('h') || stem.len() < 3 {
+                return Err(NOT_POSSIBLE);
+            }
+            let base = &stem[..stem.len() - 1];
+            ha_final_cells(
+                stem,
+                vec![f(base, "g"), f(base, "k")],
+                &f(base, "g"),
+                vec![f(base, "kzu")],
+            )
+        }
+        Class::DuhF => {
+            // The feminine ह्-final nouns of the धुग्/धुक् flavour (कामदुह्;
+            // site @kAmaduh1): the द before the ह् is the ध (कामदु →
+            // कामधु), so the pair is कामधुग्-कामधुक्.
+            if linga != Linga::F || !stem.ends_with('h') || stem.len() < 3 {
+                return Err(NOT_POSSIBLE);
+            }
+            let base = &stem[..stem.len() - 1];
+            let alt = retroflex_cluster(base);
+            ha_final_cells(
+                stem,
+                vec![f(&alt, "g"), f(&alt, "k")],
+                &f(&alt, "g"),
+                vec![f(&alt, "kzu")],
+            )
+        }
+        Class::HasN => {
+            // The neuter ह्-final nouns (स्वनडुह्; site @svanaDuh1): the
+            // प्रथमा-/द्वितीया-एकवचन carry the द/त pair (स्वनडुद्-स्वनडुत्),
+            // the dual the ई-form (स्वनडुही) and the plural the वृद्धि with
+            // the anusvāra (स्वनड्वांहि).
+            if linga != Linga::N || !stem.ends_with('h') || stem.len() < 4 {
+                return Err(NOT_POSSIBLE);
+            }
+            let base = &stem[..stem.len() - 1];
+            let root = &base[..base.len() - 2];
+            // The वृद्धि: the डु becomes the ड्व with the आ.
+            let vrdh = f(root, "qvA");
+            let voiced = f(base, "d");
+            let pause = f(base, "t");
+            let mut cells = table(&[
+                (f(base, "d"), f(base, "hI"), f(&vrdh, "Mhi")),
+                (f(base, "d"), f(base, "hI"), f(&vrdh, "Mhi")),
+                (f(stem, "A"), f(&voiced, "ByAm"), f(&voiced, "BiH")),
+                (f(stem, "e"), f(&voiced, "ByAm"), f(&voiced, "ByaH")),
+                (f(stem, "aH"), f(&voiced, "ByAm"), f(&voiced, "ByaH")),
+                (f(stem, "aH"), f(stem, "oH"), f(stem, "Am")),
+                (f(stem, "i"), f(stem, "oH"), f(stem, "su")),
+                (f(base, "d"), f(base, "hI"), f(&vrdh, "Mhi")),
+            ]);
+            put(&mut cells, 0, 0, vec![f(base, "d"), f(base, "t")]);
+            put(&mut cells, 1, 0, vec![f(base, "d"), f(base, "t")]);
+            put(&mut cells, 7, 0, vec![f(base, "d"), f(base, "t")]);
+            put(&mut cells, 6, 2, vec![f(&pause, "su")]);
+            cells
+        }
         Class::HasM => {
             // The masculine ह्-final nouns of the ड/ट flavour (लिह्; site
             // @lih1): the प्रथमा-/सम्बोधन-एकवचन carry the ड/ट pair
@@ -2057,6 +2151,27 @@ fn site_natva(s: &str, ru_tva: bool) -> String {
 
 fn f(base: &str, ending: &str) -> String {
     format!("{base}{ending}")
+}
+
+/// The ह्-final shape: the plain stem everywhere, except the
+/// प्रथमा-/सम्बोधन-एकवचन (the `pair`), the भ-endings (the `voiced`
+/// consonant) and the locative plural (the `loc` forms), which the
+/// caller supplies.
+fn ha_final_cells(stem: &str, pair: Vec<String>, voiced: &str, loc: Vec<String>) -> Vec<Slot> {
+    let mut cells = table(&[
+        (f(stem, "aH"), f(stem, "O"), f(stem, "aH")),
+        (f(stem, "am"), f(stem, "O"), f(stem, "aH")),
+        (f(stem, "A"), f(voiced, "ByAm"), f(voiced, "BiH")),
+        (f(stem, "e"), f(voiced, "ByAm"), f(voiced, "ByaH")),
+        (f(stem, "aH"), f(voiced, "ByAm"), f(voiced, "ByaH")),
+        (f(stem, "aH"), f(stem, "oH"), f(stem, "Am")),
+        (f(stem, "i"), f(stem, "oH"), f(stem, "su")),
+        (f(stem, "aH"), f(stem, "O"), f(stem, "aH")),
+    ]);
+    put(&mut cells, 0, 0, pair.clone());
+    put(&mut cells, 7, 0, pair);
+    put(&mut cells, 6, 2, loc);
+    cells
 }
 
 /// The retroflex of the consonant cluster that stood before the ह्.
@@ -3324,6 +3439,14 @@ pub fn classes_for(stem: &str, linga: Linga) -> Vec<Class> {
                     out.push(Class::ZvF('I'));
                     out.push(Class::ZvF('u'));
                 }
+                // The feminine ह्-final nouns (उपानह्, उष्णिह्, कामदुह्)
+                // come in three flavours — the द/त pair, the ग/क pair and
+                // the धुग्-धुक् pair.
+                if stem.ends_with('h') {
+                    out.push(Class::HasF);
+                    out.push(Class::HihF);
+                    out.push(Class::DuhF);
+                }
             }
             Linga::N => {
                 // Neuter participles keep गच्छत्/गच्छन् (site @gacchat3);
@@ -3335,6 +3458,10 @@ pub fn classes_for(stem: &str, linga: Linga) -> Vec<Class> {
                     out.push(Class::TaN);
                 } else if stem.ends_with('c') {
                     out.push(Class::AcN);
+                } else if stem.ends_with('h') {
+                    // The neuter ह्-final nouns (स्वनडुह्) — the द/त pair
+                    // and the ई-form dual.
+                    out.push(Class::HasN);
                 }
             }
         }

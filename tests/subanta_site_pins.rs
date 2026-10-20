@@ -300,6 +300,18 @@ fn ha_final_masks() {
     }
 }
 
+/// The feminine and neuter ह्-final nouns: the द/त pair (उपानह् →
+/// उपानद्-उपानत्), the ग/क pair (उष्णिह् → उष्णिग्-उष्णिक्), the
+/// धुग्-धुक् pair (कामदुह्) and the neuter ई-form dual (स्वनडुह् →
+/// स्वनडुही).
+#[test]
+fn ha_final_feminine_pins() {
+    for word in ["उपानह्", "उष्णिह्", "कामदुह्"] {
+        pin_word_any(word, "S");
+    }
+    pin_word_any("स्वनडुह्", "N");
+}
+
 /// The feminine ष्-final nouns: the ड/ट flavour (तृष् → तृड्-तृट्) and
 /// the vowel flavours (छदिष् → छदिः, आशिष् → आशीः, सजुष् → सजूः).
 #[test]
