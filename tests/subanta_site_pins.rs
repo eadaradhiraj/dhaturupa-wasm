@@ -300,6 +300,25 @@ fn ha_final_masks() {
     }
 }
 
+/// The masculine आ-stem nouns (कीलालपा → कीलालपाः): the visarga
+/// nominative, the plain भ-endings and the आसु locative plural.
+#[test]
+fn aa_stem_pins() {
+    for word in [
+        "कीलालपा",
+        "धेनुपा",
+        "मधुपा",
+        "वनपा",
+        "सोमपा",
+        "विश्वपा",
+        "गोपा",
+        "द्वारपा",
+        "धूम्रपा",
+    ] {
+        pin_word_any(word, "P");
+    }
+}
+
 /// The feminine numeral family (त्रिंशत् → त्रिंशद्-त्रिंशत्), the
 /// feminine र्-final nouns (गिर् → गीः, पुर् → पूः, द्वार् → द्वाः), the
 /// neuter र्-final (वार् → वारी) and the bare-nominative nouns (कमल्,

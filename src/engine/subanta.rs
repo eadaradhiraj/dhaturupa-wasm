@@ -80,6 +80,9 @@ pub enum Class {
     AM,
     /// `a`-stem neuter (`vana`).
     AN,
+    /// `A`-stem masculine (कीलालपा; site @kIlAlapA1): the visarga
+    /// nominative (कीलालपाः).
+    AAM,
     /// `A`-stem feminine (`ramA`).
     AAF,
     /// `i`-stem masculine/feminine (`kavi`/`mati`).
@@ -284,6 +287,7 @@ impl Class {
         match self {
             Self::AM => "a-m".to_string(),
             Self::AN => "a-n".to_string(),
+            Self::AAM => "A-m".to_string(),
             Self::AAF => "A-f".to_string(),
             Self::IMF => "i-m/f".to_string(),
             Self::IN => "i-n".to_string(),
@@ -435,6 +439,29 @@ pub fn decline(stem: &str, linga: Linga, class: &Class) -> Result<Paradigm, &'st
             // Panchami eka: the site shows the vṛddhi `-Ad` before `-At`.
             put(&mut cells, 4, 0, vec![f(p, "Ad"), f(p, "At")]);
             cells
+        }
+        Class::AAM => {
+            // The masculine आ-stem nouns (कीलालपा; site @kIlAlapA1): the
+            // nominative and the vocative take the visarga (कीलालपाः), the
+            // instrumental the आ (कीलालपा), the भ-endings the plain stem
+            // (कीलालपाभ्याम्) and the locative plural the आसु
+            // (कीलालपासु).
+            if linga != Linga::M || !stem.ends_with('A') || stem.len() < 3 {
+                return Err(NOT_POSSIBLE);
+            }
+            // The stem's own आ is the base's vowel, so the endings that
+            // carry a matra replace it (कीलालपौ, not कीलालपाऔ).
+            let base = &stem[..stem.len() - 1];
+            table(&[
+                (f(stem, "H"), f(base, "O"), f(stem, "H")),
+                (f(stem, "m"), f(base, "O"), f(base, "aH")),
+                (f(base, "A"), f(stem, "ByAm"), f(stem, "BiH")),
+                (f(base, "e"), f(stem, "ByAm"), f(stem, "ByaH")),
+                (f(base, "aH"), f(stem, "ByAm"), f(stem, "ByaH")),
+                (f(base, "aH"), f(base, "oH"), f(base, "Am")),
+                (f(base, "i"), f(base, "oH"), f(stem, "su")),
+                (f(stem, "H"), f(base, "O"), f(stem, "H")),
+            ])
         }
         Class::AN => {
             if linga != Linga::N || !stem.ends_with('a') {
@@ -3437,6 +3464,11 @@ pub fn classes_for(stem: &str, linga: Linga) -> Vec<Class> {
             // candidate: a bare stem cannot say whether the word is a
             // primary or a compound — the site picks one, we offer both.
             out.push(Class::AsmF);
+        }
+        if linga == Linga::M && !stem.ends_with("An") {
+            // The masculine आ-stem nouns (कीलालपा) — the visarga
+            // nominative (कीलालपाः).
+            out.push(Class::AAM);
         }
     } else if stem.ends_with('i') {
         match linga {

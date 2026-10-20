@@ -1557,3 +1557,17 @@ Four more families, all in the no-table bucket:
 
 Whole-db parity: **8,414/9,007** exact; the no-table bucket is down to
 53. Gates green (browser 472).
+
+## 2026-10-20 (24) — the masculine आ-stem nouns
+
+`AAM` (कीलालपा; site @kIlAlapA1): the masculine आ-stem nouns had no
+class at all — the engine only knew the short-a stem (`rAma`). The new
+class gives the visarga nominative (कीलालपाः), the plain भ-endings
+(कीलालपाभ्याम्) and the आसु locative plural (कीलालपासु); the endings
+that carry a matra replace the stem's own आ (कीलालपौ, not कीलालपाऔ).
+
+Covered: कीलालपा, धेनुपा, मधुपा, वनपा, सोमपा, विश्वपा, गोपा, द्वारपा,
+धूम्रपा.
+
+Whole-db parity: **8,427/9,007** exact; the no-table bucket is down to
+39. Gates green (browser 472).
