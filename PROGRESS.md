@@ -1449,3 +1449,30 @@ also caught सुमनस्/भास्/उषस्, which are the plain �
 
 Whole-db parity: **8,374/9,007** exact; the no-table bucket is down to
 94. Gates green (browser 472).
+
+## 2026-10-20 (19) — the masculine ह्-final nouns
+
+The masculine ह्-final nouns (लिह्, मुह्, दुह्, अनडुह्, विश्ववाह्) come in
+five flavours on the site, and all five are now derived:
+
+- `HasM` (the ड/ट flavour; site @lih1): the प्रथमा-/सम्बोधन-एकवचन
+  carry the ड/ट pair (लिड्-लिट्), the भ-endings voice the stem
+  (लिड्भ्याम्) and the locative plural the ट्सु pair (लिट्सु-लिट्त्सु).
+- `HuhM` (the quartet; site @muh1): मुड्-मुग्-मुक्-मुट् in the
+  nominative, the ड/ग pair in the भ-endings and the ट्सु-क्षु-ट्त्सु
+  triple in the locative plural.
+- `DuhM` (the ग/क pair; site @duh1): धुग्-धुक्, with the द before the
+  ह् written as the ध (दुह् → धुग्).
+- `HasVM` (the वृद्धि; site @anaDuh1): the nominative is the वृद्धि
+  (अनड्वान्), the dual/plural the वृद्धि-forms (अनड्वाहौ, अनड्वाहः),
+  the भ-endings take the ह् → द् (अनडुद्भ्याम्) and the locative
+  plural the ह् → त् (अनडुत्सु).
+- `HasAM` (the औ-form; site @vizvavAh1): the plural slots take the
+  औ-form with the व elided (विश्वौहः, विश्वौहाम्).
+
+The site keeps two stem forms for these words and uses the retroflexed
+one (the स before the ह् → the ष, the द → the ध) only in the cells
+where the ह् itself changes.
+
+Whole-db parity: **8,388/9,007** exact; the no-table bucket is down to
+80. Gates green (browser 472).

@@ -274,6 +274,32 @@ fn as_and_vas_swadi_pins() {
     pin_word_any("विद्वस्", "N");
 }
 
+/// The masculine ह्-final nouns, in the flavours the site grids: the ड/ट
+/// pair (लिह् → लिड्-लिट्), the ड/ग/क/ट quartet (मुह्), the ग/क pair
+/// (दुह् → धुग्-धुक्), the वृद्धि nominative (अनडुह् → अनड्वान्) and
+/// the औ-form (विश्ववाह् → विश्वौहः).
+#[test]
+fn ha_final_masks() {
+    for word in [
+        "लिह्",
+        "तुरासाह्",
+        "दामलिह्",
+        "पुष्पलिह्",
+        "मधुलिह्",
+        "मुह्",
+        "स्निह्",
+        "स्नुह्",
+        "द्रुह्",
+        "दुह्",
+        "गोदुह्",
+        "अनडुह्",
+        "विश्ववाह्",
+        "प्रष्ठवाह्",
+    ] {
+        pin_word_any(word, "P");
+    }
+}
+
 /// The कृत agent nouns (तृ-स्वादि): the masculine ऋ-stem (धातृ → धाता,
 /// site @dhAtR1) and the neuter ण-first pairs (धातृ → धातृणी, @dhAtR2).
 #[test]

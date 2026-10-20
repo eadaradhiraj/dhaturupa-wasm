@@ -136,6 +136,21 @@ pub enum Class {
     /// dvi/plural take the ण-forms (अतिस्त्रिणी) and the cat/paJ/sap carry
     /// both alternants (अतिस्त्रिणे-अतिस्त्रये).
     INu,
+    /// The masculine ह्-final nouns of the ड/ट flavour (लिह्; site @lih1):
+    /// the ड/ट pair in the प्रथमा-एकवचन (लिड्-लिट्).
+    HasM,
+    /// The masculine ह्-final nouns of the four-alternant flavour (मुह्;
+    /// site @muh1): the ड/ग/क/ट quartet (मुड्-मुग्-मुक्-मुट्).
+    HuhM,
+    /// The masculine डु-वृद्धि ह्-final nouns (अनडुह्; site @anaDuh1): the
+    /// वृद्धि nominative (अनड्वान्).
+    HasVM,
+    /// The masculine औ-स्वादि ह्-final nouns (विश्ववाह्; site
+    /// @vizvavAh1): the औ-form in the plural slots (विश्वौहः).
+    HasAM,
+    /// The masculine ह्-final nouns of the two-alternant flavour (दुह्;
+    /// site @duh1): the ग/क pair (धुग्-धुक्).
+    DuhM,
     /// The masculine ष्-final nouns (द्विष्; site @dviS1): the ड/ट pair in
     /// the प्रथमा-एकवचन (द्विड्-द्विट्) and the ट्सु locative plural.
     Zam,
@@ -254,6 +269,11 @@ impl Class {
             Self::UvF => "uv-f".to_string(),
             Self::UnN => "un-n".to_string(),
             Self::INu => "i-nu".to_string(),
+            Self::HasM => "has-m".to_string(),
+            Self::HuhM => "huh-m".to_string(),
+            Self::HasVM => "has-vm".to_string(),
+            Self::HasAM => "has-am".to_string(),
+            Self::DuhM => "duh-m".to_string(),
             Self::Zam => "zam".to_string(),
             Self::ZagM => "zag-m".to_string(),
             Self::AcN => "ac-n".to_string(),
@@ -1255,6 +1275,179 @@ pub fn decline(stem: &str, linga: Linga, class: &Class) -> Result<Paradigm, &'st
                 (f(p, "e"), f(p, "e"), f(p, "AH")),
             ])
         }
+        Class::HasVM => {
+            // The masculine डु-वृद्धि ह्-final nouns (अनडुह्; site @anaDuh1):
+            // the प्रथमा-/द्वितीया-/सम्बोधन-एकवचन and the dual take the
+            // वृद्धि (अनड्वान्, अनड्वाहौ), the भ-endings the उपधा-विवचन
+            // द-form (अनडुद्भ्याम्) and the locative plural the त-form
+            // (अनडुत्सु).
+            if linga != Linga::M || !stem.ends_with("quh") || stem.len() < 5 {
+                return Err(NOT_POSSIBLE);
+            }
+            let base = &stem[..stem.len() - 1];
+            let root = &base[..base.len() - 2];
+            // The वृद्धि: the डु becomes the ड्व with the आ (अनडु →
+            // अनड्वा), and the ह् of the stem stays — except before the
+            // न् of the nominative, where the ह् is elided (अनड्वान्).
+            let vrdh = f(root, "qvAh");
+            let vrdh_short = f(root, "qvA");
+            // The उपधा-विवचन: the ह् before the भ-ending is the द् and
+            // before the स the त् (अनडुद्भ्याम्, अनडुत्सु).
+            let voiced = f(base, "d");
+            let pause = f(base, "t");
+            let mut cells = table(&[
+                (f(&vrdh_short, "n"), f(&vrdh, "O"), f(&vrdh, "aH")),
+                (f(&vrdh, "am"), f(&vrdh, "O"), f(stem, "aH")),
+                (f(stem, "A"), f(&voiced, "ByAm"), f(&voiced, "BiH")),
+                (f(stem, "e"), f(&voiced, "ByAm"), f(&voiced, "ByaH")),
+                (f(stem, "aH"), f(&voiced, "ByAm"), f(&voiced, "ByaH")),
+                (f(stem, "aH"), f(stem, "oH"), f(stem, "Am")),
+                (f(stem, "i"), f(stem, "oH"), f(stem, "su")),
+                (f(root, "qvan"), f(&vrdh, "O"), f(&vrdh, "aH")),
+            ]);
+            put(&mut cells, 6, 2, vec![f(&pause, "su")]);
+            cells
+        }
+        Class::HasAM => {
+            // The masculine औ-स्वादि ह्-final nouns (विश्ववाह्; site
+            // @vizvavAh1): the प्रथमा-/सम्बोधन-एकवचन carry the ड/ट pair
+            // (विश्ववाड्-विश्ववाट्), the plural slots the औ-form
+            // (विश्वौहः, विश्वौहाम्) and the locative plural the ट्सु
+            // pair (विश्ववाट्सु-विश्ववाट्त्सु).
+            if linga != Linga::M || !stem.ends_with('h') || stem.len() < 4 {
+                return Err(NOT_POSSIBLE);
+            }
+            let base = &stem[..stem.len() - 1];
+            if !base.ends_with("vA") {
+                return Err(NOT_POSSIBLE);
+            }
+            // The औ-form: the वा becomes the औ and the व is elided
+            // (विश्ववा → विश्वौ). The vowel before the व is the inherent
+            // one of the preceding consonant (विश्व), so it goes too.
+            let head = &base[..base.len() - 2];
+            let au = format!("{}Oh", &head[..head.len() - 1]);
+            let alt = retroflex_cluster(base);
+            let voiced = f(&alt, "q");
+            let pause = f(&alt, "w");
+            let mut cells = table(&[
+                (f(stem, "aH"), f(stem, "O"), f(stem, "aH")),
+                (f(stem, "am"), f(stem, "O"), f(&au, "aH")),
+                (f(&au, "A"), f(&voiced, "ByAm"), f(&voiced, "BiH")),
+                (f(&au, "e"), f(&voiced, "ByAm"), f(&voiced, "ByaH")),
+                (f(&au, "aH"), f(&voiced, "ByAm"), f(&voiced, "ByaH")),
+                (f(&au, "aH"), f(&au, "oH"), f(&au, "Am")),
+                (f(&au, "i"), f(&au, "oH"), f(stem, "su")),
+                (f(stem, "aH"), f(stem, "O"), f(stem, "aH")),
+            ]);
+            put(&mut cells, 0, 0, vec![voiced.clone(), pause.clone()]);
+            put(&mut cells, 7, 0, vec![voiced.clone(), pause.clone()]);
+            put(&mut cells, 6, 2, vec![f(&alt, "wsu"), f(&alt, "wtsu")]);
+            cells
+        }
+        Class::HuhM => {
+            // The masculine ह्-final nouns of the four-alternant flavour
+            // (मुह्; site @muh1): the प्रथमा-/सम्बोधन-एकवचन carry the
+            // ड/ग/क/ट quartet (मुड्-मुग्-मुक्-मुट्), the भ-endings the
+            // ड/ग pair (मुड्भ्याम्-मुग्भ्याम्) and the locative plural the
+            // ट्सु-क्षु-ट्त्सु triple (मुट्सु-मुक्षु-मुट्त्सु).
+            if linga != Linga::M || !stem.ends_with('h') || stem.len() < 3 {
+                return Err(NOT_POSSIBLE);
+            }
+            let base = &stem[..stem.len() - 1];
+            let alt = retroflex_cluster(base);
+            let mut cells = table(&[
+                (f(stem, "aH"), f(stem, "O"), f(stem, "aH")),
+                (f(stem, "am"), f(stem, "O"), f(stem, "aH")),
+                (f(stem, "A"), f(&alt, "qByAm"), f(&alt, "qBiH")),
+                (f(stem, "e"), f(&alt, "qByAm"), f(&alt, "qByaH")),
+                (f(stem, "aH"), f(&alt, "qByAm"), f(&alt, "qByaH")),
+                (f(stem, "aH"), f(stem, "oH"), f(stem, "Am")),
+                (f(stem, "i"), f(stem, "oH"), f(stem, "su")),
+                (f(stem, "aH"), f(stem, "O"), f(stem, "aH")),
+            ]);
+            put(
+                &mut cells,
+                0,
+                0,
+                vec![f(&alt, "q"), f(&alt, "g"), f(&alt, "k"), f(&alt, "w")],
+            );
+            put(
+                &mut cells,
+                7,
+                0,
+                vec![f(&alt, "q"), f(&alt, "g"), f(&alt, "k"), f(&alt, "w")],
+            );
+            put(&mut cells, 2, 1, vec![f(&alt, "qByAm"), f(&alt, "gByAm")]);
+            put(&mut cells, 2, 2, vec![f(&alt, "qBiH"), f(&alt, "gBiH")]);
+            put(&mut cells, 3, 1, vec![f(&alt, "qByAm"), f(&alt, "gByAm")]);
+            put(&mut cells, 3, 2, vec![f(&alt, "qByaH"), f(&alt, "gByaH")]);
+            put(&mut cells, 4, 1, vec![f(&alt, "qByAm"), f(&alt, "gByAm")]);
+            put(&mut cells, 4, 2, vec![f(&alt, "qByaH"), f(&alt, "gByaH")]);
+            put(
+                &mut cells,
+                6,
+                2,
+                vec![f(&alt, "wsu"), f(&alt, "kzu"), f(&alt, "wtsu")],
+            );
+            cells
+        }
+        Class::DuhM => {
+            // The masculine ह्-final nouns of the two-alternant flavour
+            // (दुह्; site @duh1): the प्रथमा-/सम्बोधन-एकवचन carry the
+            // ग/क pair (धुग्-धुक्), the भ-endings the ग-form (धुग्भ्याम्)
+            // and the locative plural the क्षु (धुक्षु). The द before the
+            // ह् is the ध here (दुह् → धुग्).
+            if linga != Linga::M || !stem.ends_with('h') || stem.len() < 3 {
+                return Err(NOT_POSSIBLE);
+            }
+            let base = &stem[..stem.len() - 1];
+            let alt = retroflex_cluster(base);
+            let mut cells = table(&[
+                (f(stem, "aH"), f(stem, "O"), f(stem, "aH")),
+                (f(stem, "am"), f(stem, "O"), f(stem, "aH")),
+                (f(stem, "A"), f(&alt, "gByAm"), f(&alt, "gBiH")),
+                (f(stem, "e"), f(&alt, "gByAm"), f(&alt, "gByaH")),
+                (f(stem, "aH"), f(&alt, "gByAm"), f(&alt, "gByaH")),
+                (f(stem, "aH"), f(stem, "oH"), f(stem, "Am")),
+                (f(stem, "i"), f(stem, "oH"), f(stem, "su")),
+                (f(stem, "aH"), f(stem, "O"), f(stem, "aH")),
+            ]);
+            put(&mut cells, 0, 0, vec![f(&alt, "g"), f(&alt, "k")]);
+            put(&mut cells, 7, 0, vec![f(&alt, "g"), f(&alt, "k")]);
+            put(&mut cells, 6, 2, vec![f(&alt, "kzu")]);
+            cells
+        }
+        Class::HasM => {
+            // The masculine ह्-final nouns of the ड/ट flavour (लिह्; site
+            // @lih1): the प्रथमा-/सम्बोधन-एकवचन carry the ड/ट pair
+            // (लिड्-लिट्), the भ-endings voice the stem (लिड्भ्याम्) and
+            // the locative plural the ट्सु pair (लिट्सु-लिट्त्सु).
+            if linga != Linga::M || !stem.ends_with('h') || stem.len() < 3 {
+                return Err(NOT_POSSIBLE);
+            }
+            let base = &stem[..stem.len() - 1];
+            // The ड-form carries the षत्व of a स before the ह्
+            // (तुरासाह् → तुराषाड्-तुराषाट्).
+            let alt = retroflex_cluster(base);
+            let voiced = f(&alt, "q");
+            let pause = f(&alt, "w");
+            let mut cells = table(&[
+                (f(stem, "aH"), f(stem, "O"), f(stem, "aH")),
+                (f(stem, "am"), f(stem, "O"), f(stem, "aH")),
+                (f(stem, "A"), f(&voiced, "ByAm"), f(&voiced, "BiH")),
+                (f(stem, "e"), f(&voiced, "ByAm"), f(&voiced, "ByaH")),
+                (f(stem, "aH"), f(&voiced, "ByAm"), f(&voiced, "ByaH")),
+                (f(stem, "aH"), f(stem, "oH"), f(stem, "Am")),
+                (f(stem, "i"), f(stem, "oH"), f(stem, "su")),
+                (f(stem, "aH"), f(stem, "O"), f(stem, "aH")),
+            ]);
+            // The प्रथमा- and सम्बोधन-एकवचन carry the ड/ट pair; the
+            // locative plural the ट्सु pair.
+            put(&mut cells, 0, 0, vec![voiced.clone(), pause.clone()]);
+            put(&mut cells, 7, 0, vec![voiced.clone(), pause.clone()]);
+            put(&mut cells, 6, 2, vec![f(&alt, "wsu"), f(&alt, "wtsu")]);
+            cells
+        }
         Class::ZagM => {
             // The masculine ष्-final nouns of the ग/क flavour (तक्ष् →
             // तग्-तक्, site @takS2): the ष् becomes the ग्/क् pair, the
@@ -1788,6 +1981,54 @@ fn site_natva(s: &str, ru_tva: bool) -> String {
 
 fn f(base: &str, ending: &str) -> String {
     format!("{base}{ending}")
+}
+
+/// The retroflex of the consonant cluster that stood before the ह्.
+///
+/// The site keeps two stem forms for these words and uses the retroflexed
+/// one only in the cells where the ह् itself changes: the स before the
+/// ह् becomes the ष (8.4.40 — तुरासाह् → तुराषाड्) and the द before it
+/// becomes the ध (दुह् → धुग्).
+fn retroflex_cluster(base: &str) -> String {
+    let bytes = base.as_bytes();
+    let is_vowel = |b: u8| {
+        matches!(
+            b,
+            b'a' | b'A' | b'i' | b'I' | b'u' | b'U' | b'e' | b'E' | b'o' | b'O'
+        )
+    };
+    // The last vowel of the base; the cluster before it is the retroflexed
+    // one.
+    let Some(vowel) = bytes.iter().rposition(|b| is_vowel(*b)) else {
+        return base.to_string();
+    };
+    let mut start = vowel;
+    while start > 0 && !is_vowel(bytes[start - 1]) {
+        start -= 1;
+    }
+    if start == vowel {
+        return base.to_string();
+    }
+    // The consonant right before the vowel is the retroflexed one; in a
+    // द्र cluster the द is (द्रुह् → ध्रुह्).
+    let last = vowel - 1;
+    let target = if bytes[last] == b'r' && last > 0 && bytes[last - 1] == b'd' {
+        last - 1
+    } else {
+        last
+    };
+    let retro = match bytes[target] {
+        b's' => Some('z'),
+        b'd' => Some('D'),
+        _ => None,
+    };
+    let Some(repl) = retro else {
+        return base.to_string();
+    };
+    let mut out = base[..target].to_string();
+    out.push(repl);
+    out.push_str(&base[target + 1..]);
+    out
 }
 
 /// The जश्-व्यवस्था, in the narrow form the भ्-final family needs: the
@@ -2950,6 +3191,7 @@ pub fn classes_for(stem: &str, linga: Linga) -> Vec<Class> {
         || stem.ends_with('T')
         || stem.ends_with('S')
         || stem.ends_with('z')
+        || stem.ends_with('h')
     {
         match linga {
             Linga::M => {
@@ -2970,6 +3212,20 @@ pub fn classes_for(stem: &str, linga: Linga) -> Vec<Class> {
                     // The masculine च्-final nouns (अर्वाच्) are the अञ्च-
                     // स्वादि family — the सरित् shape does not reach them.
                     out.push(Class::AccM);
+                } else if stem.ends_with('h') {
+                    // The masculine ह्-final nouns (लिह्) come in three
+                    // flavours on the site — the ड/ट pair (लिड्-लिट्), the
+                    // ड/ग/क/ट quartet (मुड्-मुग्-मुक्-मुट्) and the
+                    // ग/क pair (धुग्-धुक्) — so all three are offered.
+                    out.push(Class::HasM);
+                    out.push(Class::HuhM);
+                    out.push(Class::DuhM);
+                    if stem.ends_with("quh") {
+                        out.push(Class::HasVM);
+                    }
+                    if stem.ends_with("vAh") {
+                        out.push(Class::HasAM);
+                    }
                 } else if stem.ends_with('z') {
                     // The masculine ष्-final nouns (द्विष्) have two
                     // flavours on the site — the ड/ट pair (द्विड्-द्विट्)
