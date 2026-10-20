@@ -1175,3 +1175,27 @@ no-table entries (256 — the neuter ई-स्वादि and the masculine
 Pins: अक्षान्ति, अणि, गति (feminine) and अग्नि (masculine). The
 ण-स्वादि forms also read back (अक्षान्त्या → अक्षान्ति). `./check.sh
 --full` ALL CHECKS PASSED (browser 472).
+
+## 2026-10-20 (7) — the masculine ई- and ऊ-स्वादि
+
+The sweep's "no table" bucket held 85 masculine ई-/ऊ-स्वादि words
+(अमी, अग्रणी, अग्निभू, अतिलक्ष्मी, आमलकी …) — the engine had the
+feminine and neuter ई-स्वादि but no masculine class at all, so those
+words declined to nothing. Two new classes: `IIM` (`I-m`) and `UUM`
+(`U-m`), read off the site: the nominative takes the visarga (अमीः,
+अग्निभूः), the y/v-forms carry the endings (अम्या, अग्रण्यम्,
+अग्निभुवा) and the भ-endings keep the long vowel (अमीभ्याम्,
+अग्निभूभ्याम्). Both also read back (अम्या → अमी, अग्निभुवः →
+अग्निभू).
+
+Two root classes still differ from the site inside this family: the
+ण-car roots (अग्रणी) take the य-formation in the accusative/locative
+(अग्रण्यम्, अग्रण्याम्) and the compounds keep the feminine-style
+cat/paJ (अतिलक्ष्म्यै, अतिलक्ष्म्याः) — the same split the ण-/य-स्वादि
+has on the i-stems.
+
+The two wasm_api pins that asserted a table *position* now pick the
+feminine table by class (the masculine one is on offer too).
+
+Whole-db parity: **8,182/9,007** exact. Pins: अमी, अग्निभू, आमलकी.
+`./check.sh --full` ALL CHECKS PASSED (browser 472).

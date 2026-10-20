@@ -94,6 +94,10 @@ pub enum Class {
     /// `lakzmI`): prathamA-ekavacana takes the visarga (`nadIH`); every
     /// other cell equals [`Class::IIF`] (site शब्द `@lakSmI1`).
     IIFN,
+    /// `I`-stem masculine (`amI`, `agraNI`; site @amI1): the nominative
+    /// takes the visarga (`amIaH`) and the y-forms carry the accusative
+    /// and the other case endings (`amya`, `amyeH`, `amyaH`).
+    IIM,
     /// `u`-stem masculine/feminine (`guru`).
     UMF,
     /// `u`-stem feminine with ङित् endings (`Denu`): `DenvA`, `Denave`/
@@ -108,6 +112,10 @@ pub enum Class {
     /// prathamA-ekavacana takes the visarga (`vaDUH`); every other cell
     /// equals [`Class::UUF`].
     UUFN,
+    /// `U`-stem masculine (`agnibhU`; site @agnibhU1): the nominative takes
+    /// the visarga (`agnibhUaH`) and the v-forms carry the endings
+    /// (`agnibhuvA`, `agnibhuvE`, `agnibhuvAH`).
+    UUM,
     /// `f`-stem masculine (`kartf`); feminine approximated (`NOM/VOC.SG` =
     /// stem, rest masculine — true feminine agents use `-trI`/I-stems).
     RFM,
@@ -187,11 +195,13 @@ impl Class {
             Self::IN => "i-n".to_string(),
             Self::IIF => "I-f".to_string(),
             Self::IIFN => "I-f-nadi".to_string(),
+            Self::IIM => "I-m".to_string(),
             Self::UMF => "u-m/f".to_string(),
             Self::UF => "u-f".to_string(),
             Self::UN => "u-n".to_string(),
             Self::UUF => "U-f".to_string(),
             Self::UUFN => "U-f-nadi".to_string(),
+            Self::UUM => "U-m".to_string(),
             Self::RFM => "f-m/f".to_string(),
             Self::RFN => "f-n".to_string(),
             Self::GatiF => "i-f".to_string(),
@@ -374,6 +384,24 @@ pub fn decline(stem: &str, linga: Linga, class: &Class) -> Result<Paradigm, &'st
             ]);
             put(&mut cells, 7, 0, vec![stem.to_string(), f(p, "e")]);
             cells
+        }
+        Class::IIM => {
+            // `I`-stem masculine (`amI`; site @amI1): the nominative takes
+            // the visarga, the y-forms carry the endings.
+            if linga != Linga::M || !stem.ends_with('I') {
+                return Err(NOT_POSSIBLE);
+            }
+            let p = &stem[..stem.len() - 1];
+            table(&[
+                (f(stem, "H"), f(p, "yO"), f(p, "yaH")),
+                (f(stem, "m"), f(p, "yO"), f(stem, "n")),
+                (f(p, "yA"), f(stem, "ByAm"), f(stem, "BiH")),
+                (f(p, "ye"), f(stem, "ByAm"), f(stem, "ByaH")),
+                (f(p, "yaH"), f(stem, "ByAm"), f(stem, "ByaH")),
+                (f(p, "yaH"), f(p, "yoH"), f(p, "yAm")),
+                (stem.to_string(), f(p, "yoH"), f(stem, "zu")),
+                (f(stem, "H"), f(p, "yO"), f(p, "yaH")),
+            ])
         }
         Class::IIF => {
             if linga != Linga::F || !stem.ends_with('I') {
@@ -611,6 +639,25 @@ pub fn decline(stem: &str, linga: Linga, class: &Class) -> Result<Paradigm, &'st
             put(&mut cells, 6, 1, vec![f(p, "unoH"), f(p, "voH")]);
             put(&mut cells, 7, 0, vec![stem.to_string(), f(p, "o")]);
             cells
+        }
+        Class::UUM => {
+            // `U`-stem masculine (`agnibhU`; site @agnibhU1): the
+            // nominative takes the visarga, the v-forms keep the उ
+            // (`agnibhuvAH`).
+            if linga != Linga::M || !stem.ends_with('U') {
+                return Err(NOT_POSSIBLE);
+            }
+            let p = &stem[..stem.len() - 1];
+            table(&[
+                (f(stem, "H"), f(p, "uvO"), f(p, "uvaH")),
+                (f(p, "uvam"), f(p, "uvO"), f(p, "uvaH")),
+                (f(p, "uvA"), f(stem, "ByAm"), f(stem, "BiH")),
+                (f(p, "uve"), f(stem, "ByAm"), f(stem, "ByaH")),
+                (f(p, "uvaH"), f(stem, "ByAm"), f(stem, "ByaH")),
+                (f(p, "uvaH"), f(p, "uvoH"), f(p, "uvAm")),
+                (f(p, "uvi"), f(p, "uvoH"), f(stem, "zu")),
+                (f(stem, "H"), f(p, "uvO"), f(p, "uvaH")),
+            ])
         }
         Class::UUF => {
             if linga != Linga::F || !stem.ends_with('U') {
@@ -2366,6 +2413,9 @@ pub fn classes_for(stem: &str, linga: Linga) -> Vec<Class> {
             // stem cannot say which is meant, so both tables are offered.
             out.push(Class::IIFN);
             out.push(Class::IIF);
+        } else if linga == Linga::M {
+            // The masculine ई-स्वादि (अमीः, अग्रणीः; site @amI1).
+            out.push(Class::IIM);
         }
     } else if stem.ends_with('u') {
         match linga {
@@ -2376,6 +2426,9 @@ pub fn classes_for(stem: &str, linga: Linga) -> Vec<Class> {
         if linga == Linga::F {
             out.push(Class::UUFN);
             out.push(Class::UUF);
+        } else if linga == Linga::M {
+            // The masculine ऊ-स्वादि (अग्निभूः; site @agnibhU1).
+            out.push(Class::UUM);
         }
     } else if stem.ends_with('f') {
         if linga != Linga::N {
@@ -3743,6 +3796,32 @@ const STRIPS: &[StripRule] = &[
     (Class::GatiF, "yE", "i"),
     (Class::GatiF, "yAH", "i"),
     (Class::GatiF, "yAm", "i"),
+    // Masculine ई- and ऊ-स्वादि (अमीः, अग्निभूः) — the y/v-forms
+    // rebuild the stem, the स-forms keep the long vowel.
+    (Class::IIM, "yO", "I"),
+    (Class::IIM, "yA", "I"),
+    (Class::IIM, "ye", "I"),
+    (Class::IIM, "yaH", "I"),
+    (Class::IIM, "yAm", "I"),
+    (Class::IIM, "yoH", "I"),
+    (Class::IIM, "IByAm", "I"),
+    (Class::IIM, "IBiH", "I"),
+    (Class::IIM, "IByaH", "I"),
+    (Class::IIM, "IH", "I"),
+    (Class::IIM, "Im", "I"),
+    (Class::IIM, "In", "I"),
+    (Class::UUM, "uvO", "U"),
+    (Class::UUM, "uvA", "U"),
+    (Class::UUM, "uve", "U"),
+    (Class::UUM, "uvaH", "U"),
+    (Class::UUM, "uvAm", "U"),
+    (Class::UUM, "uvi", "U"),
+    (Class::UUM, "uvoH", "U"),
+    (Class::UUM, "UByAm", "U"),
+    (Class::UUM, "UBiH", "U"),
+    (Class::UUM, "UByaH", "U"),
+    (Class::UUM, "UH", "U"),
+    (Class::UUM, "uvam", "U"),
     // in-stem neuter (घिनुण् n; @kSamin2).
     (Class::InN, "iRI", "in"),
     (Class::InN, "IRi", "in"),

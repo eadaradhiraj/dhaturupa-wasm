@@ -171,8 +171,13 @@ fn subanta_analyze_nadi_i_stem_pin() {
             && a["vacana"] == "ekavacanam"
     }));
     let tables = payload["tables"].as_array().expect("array");
-    assert_eq!(tables[0]["class"], serde_json::json!("I-f-nadi"));
-    let grid: Vec<String> = tables[0]["cells"]
+    // The masculine ई-स्वादि (`I-m`) now also declines लक्ष्मी, so the
+    // feminine tables are picked by class, not by position.
+    let nadi = tables
+        .iter()
+        .find(|t| t["class"] == serde_json::json!("I-f-nadi"))
+        .expect("the नदीसंज्ञक table");
+    let grid: Vec<String> = nadi["cells"]
         .as_array()
         .expect("cells")
         .iter()
@@ -182,11 +187,11 @@ fn subanta_analyze_nadi_i_stem_pin() {
         grid.join("|"),
         "लक्ष्मीः|लक्ष्म्यौ|लक्ष्म्यः|लक्ष्मीम्|लक्ष्म्यौ|लक्ष्मीः|लक्ष्म्या|लक्ष्मीभ्याम्|लक्ष्मीभिः|लक्ष्म्यै|लक्ष्मीभ्याम्|लक्ष्मीभ्यः|लक्ष्म्याः|लक्ष्मीभ्याम्|लक्ष्मीभ्यः|लक्ष्म्याः|लक्ष्म्योः|लक्ष्मीणाम्|लक्ष्म्याम्|लक्ष्म्योः|लक्ष्मीषु|लक्ष्मि|लक्ष्म्यौ|लक्ष्म्यः"
     );
-    assert_eq!(tables[1]["class"], serde_json::json!("I-f"));
-    assert_eq!(
-        tables[1]["cells"][0]["forms"][0],
-        serde_json::json!("लक्ष्मी")
-    );
+    let krdanta = tables
+        .iter()
+        .find(|t| t["class"] == serde_json::json!("I-f"))
+        .expect("the कृदन्त/उगित् table");
+    assert_eq!(krdanta["cells"][0]["forms"][0], serde_json::json!("लक्ष्मी"));
 
     // The inflected input carries the नदी nominative reading next to the
     // shared accusative-plural cell (both are `लक्ष्मीः` on the site grid).
@@ -203,12 +208,14 @@ fn subanta_analyze_nadi_i_stem_pin() {
     // trigger in the stem).
     let payload = ok(&wasm::subanta_analyze("वधू"));
     let tables = payload["tables"].as_array().expect("array");
-    assert_eq!(tables[0]["class"], serde_json::json!("U-f-nadi"));
-    assert_eq!(tables[0]["cells"][0]["forms"][0], serde_json::json!("वधूः"));
-    assert_eq!(
-        tables[0]["cells"][17]["forms"][0],
-        serde_json::json!("वधूनाम्")
-    );
+    // The masculine ऊ-स्वादि (`U-m`) is also on offer now, so the
+    // feminine table is picked by class, not by position.
+    let nadi = tables
+        .iter()
+        .find(|t| t["class"] == serde_json::json!("U-f-nadi"))
+        .expect("the नदीसंज्ञक table");
+    assert_eq!(nadi["cells"][0]["forms"][0], serde_json::json!("वधूः"));
+    assert_eq!(nadi["cells"][17]["forms"][0], serde_json::json!("वधूनाम्"));
     // No SLP1 anywhere.
     assert!(!serde_json::to_string(&payload)
         .expect("serializes")

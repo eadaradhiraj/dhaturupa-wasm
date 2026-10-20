@@ -204,6 +204,10 @@ fn cons_family_and_participle_pins() {
         pin_word_any(word, "S");
     }
     pin_word_any("अग्नि", "P");
+    // The masculine ई- and ऊ-स्वादि (अमीः, अग्निभूः, आमलकीः).
+    for word in ["अमी", "अग्निभू", "आमलकी"] {
+        pin_word_any(word, "P");
+    }
     // Participle regression: गच्छत् keeps the गच्छन्-prathamA shape.
     pin_word("गच्छत्");
     // The वतुप् nominalization (आत्मवान्), its मतुप्/यतुप् siblings
