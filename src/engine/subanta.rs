@@ -83,6 +83,9 @@ pub enum Class {
     /// `A`-stem masculine (कीलालपा; site @kIlAlapA1): the visarga
     /// nominative (कीलालपाः).
     AAM,
+    /// `O`-stem masculine (जनौ; site @janau1): the औ-form nominative
+    /// (जनौः) and the व-form in the dual/plural (जनावौ).
+    AuM,
     /// `A`-stem feminine (`ramA`).
     AAF,
     /// `i`-stem masculine/feminine (`kavi`/`mati`).
@@ -288,6 +291,7 @@ impl Class {
             Self::AM => "a-m".to_string(),
             Self::AN => "a-n".to_string(),
             Self::AAM => "A-m".to_string(),
+            Self::AuM => "O-m".to_string(),
             Self::AAF => "A-f".to_string(),
             Self::IMF => "i-m/f".to_string(),
             Self::IN => "i-n".to_string(),
@@ -439,6 +443,30 @@ pub fn decline(stem: &str, linga: Linga, class: &Class) -> Result<Paradigm, &'st
             // Panchami eka: the site shows the vṛddhi `-Ad` before `-At`.
             put(&mut cells, 4, 0, vec![f(p, "Ad"), f(p, "At")]);
             cells
+        }
+        Class::AuM => {
+            // The masculine औ-स्वादि nouns (जनौ; site @janau1): the
+            // nominative and the vocative take the औ-form (जनौः), the
+            // dual/plural the व-form (जनावौ, जनावः), the भ-endings the
+            // औ-form (जनौभ्याम्) and the locative plural the षु-form
+            // (जनौषु).
+            if linga != Linga::M || !stem.ends_with('O') || stem.len() < 3 {
+                return Err(NOT_POSSIBLE);
+            }
+            let base = &stem[..stem.len() - 1];
+            // The व-form: the व after the stem's vowel (जनाव).
+            let v_form = f(base, "Av");
+            let au_form = stem.to_string();
+            table(&[
+                (f(&au_form, "H"), f(&v_form, "O"), f(&v_form, "aH")),
+                (f(&v_form, "am"), f(&v_form, "O"), f(&v_form, "aH")),
+                (f(&v_form, "A"), f(&au_form, "ByAm"), f(&au_form, "BiH")),
+                (f(&v_form, "e"), f(&au_form, "ByAm"), f(&au_form, "ByaH")),
+                (f(&v_form, "aH"), f(&au_form, "ByAm"), f(&au_form, "ByaH")),
+                (f(&v_form, "aH"), f(&v_form, "oH"), f(&v_form, "Am")),
+                (f(&v_form, "i"), f(&v_form, "oH"), f(stem, "zu")),
+                (f(&au_form, "H"), f(&v_form, "O"), f(&v_form, "aH")),
+            ])
         }
         Class::AAM => {
             // The masculine आ-stem nouns (कीलालपा; site @kIlAlapA1): the
@@ -3470,6 +3498,9 @@ pub fn classes_for(stem: &str, linga: Linga) -> Vec<Class> {
             // nominative (कीलालपाः).
             out.push(Class::AAM);
         }
+    } else if stem.ends_with('O') && linga == Linga::M {
+        // The masculine औ-स्वादि nouns (जनौ).
+        out.push(Class::AuM);
     } else if stem.ends_with('i') {
         match linga {
             // The masculine i-stem keeps the plain shape (अग्निना, @agni1),

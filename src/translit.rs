@@ -257,6 +257,12 @@ pub fn slp1_to_deva(text: &str) -> Option<String> {
                 Some('M') => {
                     idx += 1;
                 }
+                // The visarga replaces the consonant's inherent vowel:
+                // `kulH` is कुलः, not कुल्:.
+                Some('H') => {
+                    out.push(VISARGA);
+                    idx += 1;
+                }
                 _ => {
                     out.push(VIRAMA);
                     idx += 1;

@@ -1571,3 +1571,17 @@ Covered: कीलालपा, धेनुपा, मधुपा, वनप�
 
 Whole-db parity: **8,427/9,007** exact; the no-table bucket is down to
 39. Gates green (browser 472).
+
+## 2026-10-20 (25) — the masculine औ-स्वादि nouns
+
+`AuM` (जनौ; site @janau1): the nominative and the vocative take the
+औ-form (जनौः), the dual/plural the व-form (जनावौ, जनावः), the भ-endings
+the औ-form (जनौभ्याम्) and the locative plural the षु-form (जनौषु).
+Covered: जनौ, ग्लौ.
+
+The translit also learned the visarga after a consonant: `kulH` is
+कुलः, not कुल्: — the visarga replaces the consonant's inherent vowel
+(the site writes सुल्वः that way).
+
+Whole-db parity: **8,429/9,007** exact; the no-table bucket is down to
+37. Gates green (browser 472).

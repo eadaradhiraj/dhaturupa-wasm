@@ -300,6 +300,15 @@ fn ha_final_masks() {
     }
 }
 
+/// The masculine औ-स्वादि nouns (जनौ → जनौः, जनावौ): the औ-form
+/// nominative and the व-form in the dual/plural.
+#[test]
+fn au_stem_pins() {
+    for word in ["जनौ", "ग्लौ"] {
+        pin_word_any(word, "P");
+    }
+}
+
 /// The masculine आ-stem nouns (कीलालपा → कीलालपाः): the visarga
 /// nominative, the plain भ-endings and the आसु locative plural.
 #[test]
