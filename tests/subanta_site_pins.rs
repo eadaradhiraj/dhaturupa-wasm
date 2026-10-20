@@ -300,6 +300,12 @@ fn ha_final_masks() {
     }
 }
 
+/// The neuter आ-stem nouns (श्रीपा → श्रीपम्, श्रीपे, श्रीपाणि).
+#[test]
+fn aa_stem_neuter_pins() {
+    pin_word_any("श्रीपा", "N");
+}
+
 /// The neuter ऋ-chart nouns (दृश् → दृग्-दृख्-दृक्, दृशी, दृंशि).
 #[test]
 fn rc_chart_neuter_pins() {

@@ -80,6 +80,9 @@ pub enum Class {
     AM,
     /// `a`-stem neuter (`vana`).
     AN,
+    /// `A`-stem neuter (श्रीपा; site @zrIpA1): the णि-form plural
+    /// (श्रीपाणि).
+    AAN,
     /// `A`-stem masculine (कीलालपा; site @kIlAlapA1): the visarga
     /// nominative (कीलालपाः).
     AAM,
@@ -293,6 +296,7 @@ impl Class {
         match self {
             Self::AM => "a-m".to_string(),
             Self::AN => "a-n".to_string(),
+            Self::AAN => "A-n".to_string(),
             Self::AAM => "A-m".to_string(),
             Self::AuM => "O-m".to_string(),
             Self::AAF => "A-f".to_string(),
@@ -494,6 +498,29 @@ pub fn decline(stem: &str, linga: Linga, class: &Class) -> Result<Paradigm, &'st
                 (f(base, "i"), f(base, "oH"), f(stem, "su")),
                 (f(stem, "H"), f(base, "O"), f(stem, "H")),
             ])
+        }
+        Class::AAN => {
+            // The neuter आ-stem nouns (श्रीपा; site @zrIpA1): the
+            // nominative takes the म् (श्रीपम्), the dual the ए (श्रीपे),
+            // the plural the णि (श्रीपाणि) and the instrumental the ए +
+            // the ण (श्रीपेण).
+            if linga != Linga::N || !stem.ends_with('A') || stem.len() < 3 {
+                return Err(NOT_POSSIBLE);
+            }
+            let base = &stem[..stem.len() - 1];
+            let mut cells = table(&[
+                (f(base, "am"), f(base, "e"), f(base, "ARi")),
+                (f(base, "am"), f(base, "e"), f(base, "ARi")),
+                (f(base, "eRa"), f(stem, "ByAm"), f(base, "EH")),
+                (f(base, "Aya"), f(stem, "ByAm"), f(base, "eByaH")),
+                (f(base, "Ad"), f(stem, "ByAm"), f(base, "eByaH")),
+                (f(base, "asya"), f(base, "ayoH"), f(base, "ARAm")),
+                (f(base, "e"), f(base, "ayoH"), f(base, "ezu")),
+                (f(base, "a"), f(base, "e"), f(base, "ARi")),
+            ]);
+            // The पञ्चमी-एकवचन carries both alternants (श्रीपाद्-श्रीपात्).
+            put(&mut cells, 4, 0, vec![f(base, "Ad"), f(base, "At")]);
+            cells
         }
         Class::AN => {
             if linga != Linga::N || !stem.ends_with('a') {
@@ -3532,6 +3559,11 @@ pub fn classes_for(stem: &str, linga: Linga) -> Vec<Class> {
             // The masculine आ-stem nouns (कीलालपा) — the visarga
             // nominative (कीलालपाः).
             out.push(Class::AAM);
+        }
+        if linga == Linga::N && !stem.ends_with("An") {
+            // The neuter आ-stem nouns (श्रीपा) — the णि-form plural
+            // (श्रीपाणि).
+            out.push(Class::AAN);
         }
     } else if stem.ends_with('O') && linga == Linga::M {
         // The masculine औ-स्वादि nouns (जनौ).

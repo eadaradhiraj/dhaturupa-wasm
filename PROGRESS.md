@@ -1595,3 +1595,13 @@ the stem (दृग्भ्याम्) and the locative plural the क्ष�
 
 Whole-db parity: **8,432/9,007** exact; the no-table bucket is down to
 33. Gates green (browser 472).
+
+## 2026-10-20 (27) — the neuter आ-stem nouns
+
+`AAN` (श्रीपा; site @zrIpA1): the neuter आ-stem nouns take the म् in
+the nominative (श्रीपम्), the ए in the dual (श्रीपे), the णि in the
+plural (श्रीपाणि), the ए + the ण in the instrumental (श्रीपेण) and the
+ऐ-form in the instrumental plural (श्रीपैः).
+
+Whole-db parity: **8,433/9,007** exact; the no-table bucket is down to
+31. Gates green (browser 472).
