@@ -1425,3 +1425,27 @@ neuters it was written for are untouched).
 
 Whole-db parity: **8,366/9,007** exact; the no-table bucket is down to
 101. Gates green (browser 472).
+
+## 2026-10-20 (18) — the feminine अस्-स्वादि and the वस्-स्वादि
+
+Two more families that the engine already had the shapes for but never
+routed:
+
+- `AsF` (the feminine अस्-स्वादि; site @sadas2): the same shape as the
+  masculine — the प्रथमा-एकवचन has the आ-form (सदाः), the भ-endings
+  the ओ-form (सदोभ्याम्), the locative plural the अनःसु-अनस्सु pair
+  and the vocative singular the स-form (हे सदः). Covered: सदस्,
+  सुमनस्, त्रिस्रोतस्, दृष्टरजस्.
+- `VasM`/`VasN` (the वस्-स्वादि; site @vidvas1/@vidvas2): the
+  nominative is the वान् (विद्वान्), the dual/plural the वांस्
+  (विद्वांसौ, विद्वांसः), the weak slots the वुष्-forms (विदुषा,
+  विदुषः, विदुषाम्), the भ-endings the वद्भ्याम् and the locative
+  plural the वत्सु. The neuter (@vidvas2) keeps the द्/त् pair
+  (विद्वद्-विद्वत्) and the यण् weak dual (विदुषी). Covered:
+  विद्वस् (m+n), सेदिवस्, बभूवस्.
+
+The classes' guards were tightened to the `vas` affix — `ends_with("as")`
+also caught सुमनस्/भास्/उषस्, which are the plain अस्-family.
+
+Whole-db parity: **8,374/9,007** exact; the no-table bucket is down to
+94. Gates green (browser 472).

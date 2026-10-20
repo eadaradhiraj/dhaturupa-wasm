@@ -260,6 +260,20 @@ fn pronominal_word_pins() {
     }
 }
 
+/// The feminine अस्-स्वादि (सदस् → सदाः, site @sadas2) and the
+/// वस्-स्वादि (विद्वस् → विद्वान्/विद्वांसः, site @vidvas1/@vidvas2).
+#[test]
+fn as_and_vas_swadi_pins() {
+    for word in ["सदस्", "सुमनस्", "त्रिस्रोतस्", "दृष्टरजस्"]
+    {
+        pin_word_any(word, "S");
+    }
+    for word in ["विद्वस्", "सेदिवस्", "बभूवस्"] {
+        pin_word_any(word, "P");
+    }
+    pin_word_any("विद्वस्", "N");
+}
+
 /// The कृत agent nouns (तृ-स्वादि): the masculine ऋ-stem (धातृ → धाता,
 /// site @dhAtR1) and the neuter ण-first pairs (धातृ → धातृणी, @dhAtR2).
 #[test]

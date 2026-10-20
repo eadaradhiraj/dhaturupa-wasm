@@ -145,6 +145,9 @@ pub enum Class {
     /// The neuter च्-final nouns (अर्वाच्; site @arvAc1): the ग/क pair in
     /// the प्रथमा-एकवचन and the ई-forms (अर्वाची, अर्वाञ्चि).
     AcN,
+    /// The feminine अस्-स्वादि (सदस् → सदाः; site @sadas2): the same
+    /// shape as the masculine, with the आ-form in the nominative.
+    AsF,
     /// The anusvāra-स्वादि (अणीयस्; site @aNIyas1): the nominal forms
     /// take the anusvāra (अणीयान्, अणीयांसौ), the rest the स-forms.
     AsAnM,
@@ -274,6 +277,7 @@ impl Class {
             Self::InF => "in-f".to_string(),
             Self::InN => "in-n".to_string(),
             Self::AsN => "as-n".to_string(),
+            Self::AsF => "as-f".to_string(),
             Self::AsM => "as-m".to_string(),
             Self::Cons => "cons".to_string(),
             Self::UsN => "us-n".to_string(),
@@ -1463,9 +1467,16 @@ pub fn decline(stem: &str, linga: Linga, class: &Class) -> Result<Paradigm, &'st
             put(&mut cells, 6, 2, vec![f(q, "aHsu"), f(&w, "su")]);
             cells
         }
-        Class::AsM => {
-            if linga != Linga::M || !(stem.ends_with('s') || stem.ends_with('H')) || stem.len() < 2
-            {
+        Class::AsM | Class::AsF => {
+            // The अस्-स्वादि in the masculine (सुमनसः, site @sumanas1) and
+            // the feminine (सदाः, site @sadas2) — the same shape: the
+            // प्रथमा-एकवचन has the आ-form, the भ-endings the ओ-form
+            // (सदोभ्याम्), and the vocative singular the स-form (हे सदः).
+            let ok_linga = match class {
+                Class::AsM => linga == Linga::M,
+                _ => linga == Linga::F,
+            };
+            if !ok_linga || !(stem.ends_with('s') || stem.ends_with('H')) || stem.len() < 2 {
                 return Err(NOT_POSSIBLE);
             }
             let w = normalize_visarga(stem);
@@ -1489,7 +1500,7 @@ pub fn decline(stem: &str, linga: Linga, class: &Class) -> Result<Paradigm, &'st
             cells
         }
         Class::VasM => {
-            if linga != Linga::M || !stem.ends_with("as") || stem.len() < 3 {
+            if linga != Linga::M || !stem.ends_with("vas") || stem.len() < 4 {
                 return Err(NOT_POSSIBLE);
             }
             let p = &stem[..stem.len() - 2];
@@ -1512,7 +1523,7 @@ pub fn decline(stem: &str, linga: Linga, class: &Class) -> Result<Paradigm, &'st
         Class::VasN => {
             // क्वसु neuter (site @vidvas2): `-vat` nominative, यण् weak dual,
             // `-vAMs` plural.
-            if linga != Linga::N || !stem.ends_with("as") || stem.len() < 3 {
+            if linga != Linga::N || !stem.ends_with("vas") || stem.len() < 4 {
                 return Err(NOT_POSSIBLE);
             }
             let core = &stem[..stem.len() - 2];
@@ -2995,9 +3006,23 @@ pub fn classes_for(stem: &str, linga: Linga) -> Vec<Class> {
                 out.push(Class::AsM);
                 out.push(Class::AsAnM);
                 out.push(Class::AsEM);
+                // The वस्-स्वादि (विद्वस्; site @vidvas1) — the वान्
+                // nominative, the वांस् dual/plural and the वुष् weak
+                // forms. A bare stem cannot say which family it is.
+                if stem.ends_with("vas") {
+                    out.push(Class::VasM);
+                }
             }
-            Linga::N => out.push(Class::AsN),
-            Linga::F => {}
+            Linga::N => {
+                out.push(Class::AsN);
+                // The क्वसु neuter (विद्वस्; site @vidvas2).
+                if stem.ends_with("vas") {
+                    out.push(Class::VasN);
+                }
+            }
+            // The feminine अस्-स्वादि (सदस् → सदाः) rides the same shape
+            // as the masculine.
+            Linga::F => out.push(Class::AsF),
         }
     }
     out
