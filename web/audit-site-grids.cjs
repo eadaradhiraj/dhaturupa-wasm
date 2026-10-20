@@ -5,6 +5,7 @@
 //
 //   node web/audit-site-grids.cjs            # all 9,007 entries
 //   node web/audit-site-grids.cjs cons       # only the consonant-final ones
+//   node web/audit-site-grids.cjs --words    # list every diverged word
 //
 // The portal shows the site's grid for every listed word (the शब्द
 // oracle wins), so a divergence here means the derived table is wrong
@@ -113,10 +114,12 @@ for (const d of diffs) {
   groups.get(k).push(d);
 }
 const order = [...groups.entries()].sort((a, b) => b[1].length - a[1].length);
+const showAll = process.argv.includes('--words');
 for (const [k, list] of order) {
   console.log(`\n${k}: ${list.length}`);
-  for (const d of list.slice(0, 6)) {
+  const shown = showAll ? list : list.slice(0, 6);
+  for (const d of shown) {
     console.log(`  ${d.word} ${d.id} — ${d.why}`);
   }
-  if (list.length > 6) console.log(`  … ${list.length - 6} more`);
+  if (!showAll && list.length > 6) console.log(`  … ${list.length - 6} more`);
 }
