@@ -1335,7 +1335,8 @@ its own paradigm (the counts are the db entries per family):
 
 | family | entries | shape |
 | :--- | ---: | :--- |
-| neuter ञ्च/ष/ङ्/ऋ + अव्यय | 148 | no table at all (the neuter ई-स्वादि, the ष-स्वादि, the ङ्-स्वादि) |
+| no table at all | 150 | stems the engine does not cover: the masculine ष-/ह-final (22 + 14), the neuter च-/ऋ-final (14 + 13), the feminine ष-/स-/त-/र-/ह-final, and ~60 one-off families |
+| sparse site grids | 17 | the site leaves most cells empty (अक्षत, गृह, चतुर्) — no derived table can match |
 | a-stem | 68 | the anusvāra+स्म combination (अधर) and the compounds the site grids sparsely (अक्षत) |
 | सम्-अधिक-रूप | 23 | अतित्वम्, अतिमाम् — the अधिक-रूप with its अति-/प्रति-/उप-/अभि- prefixes |
 | neuter t-final | 23 | the neuter ई-स्वादि (आत्मवती — the neuter of the वत family) |
@@ -1348,6 +1349,12 @@ its own paradigm (the counts are the db entries per family):
 The site grids every listed word, so the portal shows the oracle grid
 regardless; these are the derived-table gaps for unlisted stems of the
 same shapes. The audit is the map: `node web/audit-site-grids.cjs`.
+
+(A note on the db's linga markers: `P`/`S`/`N` are masculine/feminine/
+neuter and `A` means *any gender* — only two entries carry it, the
+as pronouns अस्मद्/युष्मद्. Nothing in the dump is marked
+indeclinable, so "no table" above means the engine declines that stem
+in no gender at all.)
 
 ## 2026-10-20 (14) — the neuter i-stem in the ण-form
 
