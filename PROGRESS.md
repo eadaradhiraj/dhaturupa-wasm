@@ -1199,3 +1199,36 @@ feminine table by class (the masculine one is on offer too).
 
 Whole-db parity: **8,182/9,007** exact. Pins: अमी, अग्निभू, आमलकी.
 `./check.sh --full` ALL CHECKS PASSED (browser 472).
+
+## 2026-10-20 (8) — where the subanta parity now stands
+
+Whole-db parity: **8,182/9,007** listed words reproduce the site's grid
+from the engine's own tables (was 7,817 when the sweep started — +365
+this round: the थ्/श् finals, the वतुप्/मतुप्/यतुप् family, the
+ण-स्वादि for the feminine i-stems, the masculine ई-/ऊ-स्वादि, the
+अस्-family's locative-plural pair).
+
+What is left, with the shape worked out (the next candidates, largest
+first — each needs its own class and pins):
+
+- **a-stem स्म-endings** (~70; अनेक, अन्तर, उत्तर): the cat/paJ/sap take
+  the स्म-forms (अनेकस्मै, अनेकस्माद्-अनेकस्मात्, अनेकस्मिन्) and the
+  masculine pr-bahu/zaz-bahu the ए-forms (अनेके, अनेकेषाम्). The
+  condition is the *primary* a-stem with a consonant-final root — the
+  engine cannot tell a primary from a compound (कीलालपा keeps the plain
+  cat), so the स्म-variant has to be offered as a second candidate.
+- **anusvāra-स्वादि** (~44; अणीयस्, अन्तर्मनस्, अधर): the anusvāra
+  shapes (अणीयान्, अणीयांसौ) — a family of its own.
+- **ञ्च-स्वादि** (~25 + the masculine च्-final ~38): अर्वाच् → अर्वाङ्
+  | अर्वाञ्चौ | अर्वाञ्चः, खन्ज् → खञ्जः — the ङ्- and ञ्च-inserted
+  forms.
+- **neuter ई-स्वादि** (~45): आत्मवत्, इयत् — the neuter of the वत
+  family (आत्मवती, आत्मवन्ति).
+- **सम्-अधिक-रूप** (23): अत्यस्मद् → अतित्वम्, अतियुष्मद् → अतित्वाम्
+  — the अधिक-रूप with its अति-/प्रति-/उप-/अभि- prefixes.
+- **u-stems** (~67) and **numerals** (14; the site grids the compounds
+  sparsely, so the derived full grid cannot match).
+
+Every one of them is a shape the site grids; the शब्द oracle already
+shows the site's grid for the listed words, so these fixes are about
+the *derived* tables (unlisted words) and the reverse analysis.
