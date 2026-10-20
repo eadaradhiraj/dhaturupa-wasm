@@ -76,43 +76,43 @@ for (const entry of candidates) {
     continue;
   }
   diverged += 1;
-  const best = grids[0];
+  // Cluster by the engine class and the first differing cell, using the
+  // best candidate (the site grid is reproducible from one of them).
+  const best = grids
+    .map((cells) => ({ cells, diff: cells.findIndex((c, i) => c !== want[i]) }))
+    .sort((a, b) => a.diff - b.diff)[0];
+  const cls = JSON.parse(wasm.subanta_table(entry.word, code)).tables[0].class;
   const bad = [];
   for (let i = 0; i < 24; i += 1) {
-    if (best[i] !== want[i]) bad.push(`${i}: got '${best[i]}' want '${want[i]}'`);
+    if (best.cells[i] !== want[i]) bad.push(`${i}: got '${best.cells[i]}' want '${want[i]}'`);
   }
-  diffs.push({ word: entry.word, id: entry.urlid, why: bad.slice(0, 2).join(' | ') });
+  diffs.push({
+    word: entry.word,
+    id: entry.urlid,
+    why: `${cls} @${VIB[Math.floor(best.diff / 3)]} — ${bad.slice(0, 2).join(' | ')}`,
+  });
 }
 
 console.log(`exact: ${exact}  diverged: ${diverged}  no table: ${noTable}`);
 
 // Group the misses by paradigm family so the actionable ones stand out.
-function family(word) {
-  if (/वत्$/.test(word)) return 'वत्-नामधातु';
-  if (/मद्$/.test(word)) return 'सम्-अधिक-रूप';
-  if (/[चञ]्च?्$/.test(word)) return 'ञ्च-स्वादि';
-  if (/[तट]्$/.test(word)) return 'त्-final';
-  if (/द्$/.test(word)) return 'द्-final';
-  if (/ध्$/.test(word)) return 'ध्-final';
-  if (/भ्$/.test(word)) return 'भ्-final';
-  if (/त्$/.test(word)) return 'वत्-family';
-  if (/[ािीुूृ]/.test(word)) return 'a/i/ī/u/ū/ṛ-final';
-  if (/अ$|क$|घ$|च$|ज$|ट$|ड$|ण$|त$|द$|न$|प$|ब$|म$|य$|र$|ल$|व$|श$|स$|ह$/.test(word)) {
-    return 'consonant-final (other)';
-  }
-  return 'a-stem';
+function family(d) {
+  // The engine class and the first differing case name the family: the
+  // engine's own class label plus the cell it first gets wrong.
+  const m = /^([\w-]+) @(\w+)/.exec(d.why);
+  return m ? `${m[1]} @${m[2]}` : d.why;
 }
 const groups = new Map();
 for (const d of diffs) {
-  const k = family(d.word);
+  const k = family(d);
   if (!groups.has(k)) groups.set(k, []);
   groups.get(k).push(d);
 }
 const order = [...groups.entries()].sort((a, b) => b[1].length - a[1].length);
 for (const [k, list] of order) {
   console.log(`\n${k}: ${list.length}`);
-  for (const d of list.slice(0, 8)) {
+  for (const d of list.slice(0, 6)) {
     console.log(`  ${d.word} ${d.id} — ${d.why}`);
   }
-  if (list.length > 8) console.log(`  … ${list.length - 8} more`);
+  if (list.length > 6) console.log(`  … ${list.length - 6} more`);
 }

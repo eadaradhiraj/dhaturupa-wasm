@@ -1232,3 +1232,26 @@ first — each needs its own class and pins):
 Every one of them is a shape the site grids; the शब्द oracle already
 shows the site's grid for the listed words, so these fixes are about
 the *derived* tables (unlisted words) and the reverse analysis.
+
+## 2026-10-20 (9) — the neuter ई-स्वादि and the स्म-ending a-stems
+
+Three more families from the sweep's list:
+
+- **`TaN`** (the neuter of a त-स्वादि stem — आत्मवत्, आयुष्मत्, site
+  @Atmavat2): the प्रथमा-/द्वितीया-एकवचन carry the द/त pair
+  (आत्मवद्-आत्मवत्) and the rest the ई-forms (आत्मवती, आत्मवन्ति,
+  आत्मवता, आत्मवते, आत्मवति). The neuter participle (AtM's twin
+  AtN) stays the other candidate — a bare stem cannot say which is
+  meant.
+- **`AsmM`/`AsmN`/`AsmF`** (the स्म-ending a-stems — अनेक, अधरा): the
+  cat/paJ/sap take the स्म-forms (अनेकस्मै, अनेकस्माद्-अनेकस्मात्,
+  अनेकस्मिन्), the masculine nominative plural and genitive plural the
+  ए-forms (अनेके, अनेकेषाम्) and the feminine the स-form (अधरस्यै,
+  अधरस्याः, अधरस्याम् — the य carries the vowel, `asyE`). Offered as
+  a second candidate: a bare stem cannot say whether the word is a
+  primary (अनेक) or a compound (कीलालपा, which keeps the plain cat).
+- The अस्-family's **vocative singular** takes the स-form (हे अङ्गिरः)
+  where the nominative has the आ-form (अङ्गिराः) — site @aGgiras1.
+
+Whole-db parity: **8,289/9,007** exact. Pins: आत्मवत् (N), अनेक (P/N),
+अधरा (S), अङ्गिरस् (P). Gates green (browser 472).

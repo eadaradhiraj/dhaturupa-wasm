@@ -116,6 +116,18 @@ pub enum Class {
     /// the visarga (`agnibhUaH`) and the v-forms carry the endings
     /// (`agnibhuvA`, `agnibhuvE`, `agnibhuvAH`).
     UUM,
+    /// The neuter of a त-स्वादि stem (आत्मवत्, आयुष्मत्; site
+    /// @Atmavat2): the प्रथमा-/द्वितीया-एकवचन carry the द/त pair
+    /// (आत्मवद्-आत्मवत्), the rest the ई-forms (आत्मवती, आत्मवन्ति).
+    TaN,
+    /// The स्म-ending a-stem masculine (अनेक; site @aneka1): the
+    /// nominative plural takes the ए-form, the cat/paJ/sap the स्म-forms.
+    AsmM,
+    /// The स्म-ending a-stem neuter (अनेक; site @aneka2).
+    AsmN,
+    /// The स्म-ending a-stem feminine (अधरा; site @adharA1): the cat/paJ
+    /// take the स-form (अधरस्यै, अधरस्याः).
+    AsmF,
     /// `f`-stem masculine (`kartf`); feminine approximated (`NOM/VOC.SG` =
     /// stem, rest masculine — true feminine agents use `-trI`/I-stems).
     RFM,
@@ -202,6 +214,10 @@ impl Class {
             Self::UUF => "U-f".to_string(),
             Self::UUFN => "U-f-nadi".to_string(),
             Self::UUM => "U-m".to_string(),
+            Self::TaN => "ta-n".to_string(),
+            Self::AsmM => "asm-m".to_string(),
+            Self::AsmN => "asm-n".to_string(),
+            Self::AsmF => "asm-f".to_string(),
             Self::RFM => "f-m/f".to_string(),
             Self::RFN => "f-n".to_string(),
             Self::GatiF => "i-f".to_string(),
@@ -1025,6 +1041,93 @@ pub fn decline(stem: &str, linga: Linga, class: &Class) -> Result<Paradigm, &'st
             put(&mut cells, 6, 2, vec![f(q, "aHsu"), f(&w, "su")]);
             cells
         }
+        Class::TaN => {
+            // The neuter of a त-स्वादि stem (आत्मवत्, आयुष्मत्; site
+            // @Atmavat2/@AyuSmat2): the प्रथमा-/द्वितीया-एकवचन carry the
+            // द/त pair (आत्मवद्-आत्मवत्) and the rest the ई-forms
+            // (आत्मवती, आत्मवन्ति, आत्मवता, आत्मवते, आत्मवति).
+            if linga != Linga::N || !stem.ends_with('t') || stem.len() < 4 {
+                return Err(NOT_POSSIBLE);
+            }
+            let base = &stem[..stem.len() - 1];
+            let voiced = f(base, "d");
+            let mut cells = table(&[
+                (f(stem, "I"), f(stem, "I"), f(base, "nti")),
+                (f(stem, "I"), f(stem, "I"), f(base, "nti")),
+                (f(stem, "A"), f(&voiced, "ByAm"), f(&voiced, "BiH")),
+                (f(stem, "e"), f(&voiced, "ByAm"), f(&voiced, "ByaH")),
+                (f(stem, "aH"), f(&voiced, "ByAm"), f(&voiced, "ByaH")),
+                (f(stem, "aH"), f(stem, "oH"), f(stem, "Am")),
+                (f(stem, "i"), f(stem, "oH"), f(stem, "su")),
+                (f(stem, "I"), f(stem, "I"), f(base, "nti")),
+            ]);
+            // The प्रथमा- and द्वितीया-एकवचन carry the द/त pair.
+            put(&mut cells, 0, 0, vec![voiced.clone(), stem.to_string()]);
+            put(&mut cells, 1, 0, vec![voiced.clone(), stem.to_string()]);
+            put(&mut cells, 7, 0, vec![voiced, stem.to_string()]);
+            cells
+        }
+        Class::AsmM => {
+            // The स्म-ending a-stem masculine (अनेक; site @aneka1): the
+            // nominative plural takes the ए-form (अनेके), the cat/paJ/sap
+            // the स्म-forms (अनेकस्मै, अनेकस्माद्-अनेकस्मात्, अनेकस्मिन्).
+            if linga != Linga::M || !stem.ends_with('a') {
+                return Err(NOT_POSSIBLE);
+            }
+            let p = &stem[..stem.len() - 1];
+            let mut cells = table(&[
+                (f(p, "aH"), f(p, "O"), f(p, "e")),
+                (f(p, "am"), f(p, "O"), f(p, "An")),
+                (f(p, "ena"), f(p, "AByAm"), f(p, "EH")),
+                (f(p, "asmE"), f(p, "AByAm"), f(p, "eByaH")),
+                (f(p, "asmAd"), f(p, "AByAm"), f(p, "eByaH")),
+                (f(p, "asya"), f(p, "ayoH"), f(p, "ezAm")),
+                (f(p, "asmin"), f(p, "ayoH"), f(p, "ezu")),
+                (stem.to_string(), f(p, "O"), f(p, "e")),
+            ]);
+            // The ablative singular carries both स्म-forms.
+            put(&mut cells, 4, 0, vec![f(p, "asmAd"), f(p, "asmAt")]);
+            cells
+        }
+        Class::AsmN => {
+            // The स्म-ending a-stem neuter (अनेक; site @aneka2).
+            if linga != Linga::N || !stem.ends_with('a') {
+                return Err(NOT_POSSIBLE);
+            }
+            let p = &stem[..stem.len() - 1];
+            let mut cells = table(&[
+                (f(p, "am"), f(p, "e"), f(p, "Ani")),
+                (f(p, "am"), f(p, "e"), f(p, "Ani")),
+                (f(p, "ena"), f(p, "AByAm"), f(p, "EH")),
+                (f(p, "asmE"), f(p, "AByAm"), f(p, "eByaH")),
+                (f(p, "asmAd"), f(p, "AByAm"), f(p, "eByaH")),
+                (f(p, "asya"), f(p, "ayoH"), f(p, "ezAm")),
+                (f(p, "asmin"), f(p, "ayoH"), f(p, "ezu")),
+                (stem.to_string(), f(p, "e"), f(p, "Ani")),
+            ]);
+            // The ablative singular carries both स्म-forms.
+            put(&mut cells, 4, 0, vec![f(p, "asmAd"), f(p, "asmAt")]);
+            cells
+        }
+        Class::AsmF => {
+            // The स्म-ending a-stem feminine (अधरा; site @adharA1): the
+            // cat/paJ/sap take the स-form (अधरस्यै, अधरस्याः, अधरस्याम्),
+            // spelled with the य carrying the vowel (`asyE`).
+            if linga != Linga::F || !stem.ends_with('A') {
+                return Err(NOT_POSSIBLE);
+            }
+            let p = &stem[..stem.len() - 1];
+            table(&[
+                (stem.to_string(), f(p, "e"), f(p, "AH")),
+                (f(p, "Am"), f(p, "e"), f(p, "AH")),
+                (f(p, "ayA"), f(p, "AByAm"), f(p, "ABiH")),
+                (f(p, "asyE"), f(p, "AByAm"), f(p, "AByaH")),
+                (f(p, "asyAH"), f(p, "AByAm"), f(p, "AByaH")),
+                (f(p, "asyAH"), f(p, "ayoH"), f(p, "AsAm")),
+                (f(p, "asyAm"), f(p, "ayoH"), f(p, "Asu")),
+                (f(p, "e"), f(p, "e"), f(p, "AH")),
+            ])
+        }
         Class::AsM => {
             if linga != Linga::M || !(stem.ends_with('s') || stem.ends_with('H')) || stem.len() < 2
             {
@@ -1041,7 +1144,9 @@ pub fn decline(stem: &str, linga: Linga, class: &Class) -> Result<Paradigm, &'st
                 (f(&w, "aH"), f(&o, "ByAm"), f(&o, "ByaH")),
                 (f(&w, "aH"), f(&w, "oH"), f(&w, "Am")),
                 (f(&w, "i"), f(&w, "oH"), f(&w, "su")),
-                (f(q, "AH"), f(&w, "O"), f(&w, "aH")),
+                // The vocative singular takes the स-form (हे अङ्गिरः) where
+                // the nominative has the आ-form (अङ्गिराः) — site @aGgiras1.
+                (f(q, "aH"), f(&w, "O"), f(&w, "aH")),
             ]);
             // The locative plural carries both alternants (अनःसु-अनस्सु,
             // site @anas1): the visarga form and the doubled स् form.
@@ -2359,8 +2464,18 @@ pub fn classes_for(stem: &str, linga: Linga) -> Vec<Class> {
     let mut out = Vec::new();
     if stem.ends_with('a') && !stem.ends_with("an") {
         match linga {
-            Linga::M => out.push(Class::AM),
-            Linga::N => out.push(Class::AN),
+            Linga::M => {
+                out.push(Class::AM);
+                // The स्म-ending variant (अनेक → अनेकस्मै) is the other
+                // candidate: a bare stem cannot say whether the word is a
+                // primary (अनेक) or a compound (कीलालपा, which keeps the
+                // plain cat) — the site picks one, we offer both.
+                out.push(Class::AsmM);
+            }
+            Linga::N => {
+                out.push(Class::AN);
+                out.push(Class::AsmN);
+            }
             Linga::F => {}
         }
     } else if let Some(p) = stem.strip_suffix("an") {
@@ -2394,6 +2509,10 @@ pub fn classes_for(stem: &str, linga: Linga) -> Vec<Class> {
     } else if stem.ends_with('A') {
         if linga == Linga::F {
             out.push(Class::AAF);
+            // The स्म-ending variant (अधरा → अधरस्यै) is the other
+            // candidate: a bare stem cannot say whether the word is a
+            // primary or a compound — the site picks one, we offer both.
+            out.push(Class::AsmF);
         }
     } else if stem.ends_with('i') {
         match linga {
@@ -2469,9 +2588,11 @@ pub fn classes_for(stem: &str, linga: Linga) -> Vec<Class> {
             Linga::F => out.push(Class::Cons),
             Linga::N => {
                 // Neuter participles keep गच्छत्/गच्छन् (site @gacchat3);
-                // no neuter noun grids for भ्/च् finals.
+                // the neuter of a त-स्वादि stem (आत्मवत् → आत्मवती) is the
+                // other candidate — a bare stem cannot say which is meant.
                 if stem.ends_with('t') || stem.ends_with('d') {
                     out.push(Class::AtN(AtNStyle::Num));
+                    out.push(Class::TaN);
                 }
             }
         }

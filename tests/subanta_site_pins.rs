@@ -208,6 +208,14 @@ fn cons_family_and_participle_pins() {
     for word in ["अमी", "अग्निभू", "आमलकी"] {
         pin_word_any(word, "P");
     }
+    // The neuter ई-स्वादि of the वत family (आत्मवती, आत्मवन्ति) and the
+    // स्म-ending a-stems (अनेकस्मै, अनेकस्माद्-अनेकस्मात्; अधरस्यै).
+    pin_word_any("आत्मवत्", "N");
+    pin_word_any("अनेक", "P");
+    pin_word_any("अनेक", "N");
+    pin_word_any("अधरा", "S");
+    // The अस्-family's vocative singular takes the स-form (हे अङ्गिरः).
+    pin_word_any("अङ्गिरस्", "P");
     // Participle regression: गच्छत् keeps the गच्छन्-prathamA shape.
     pin_word("गच्छत्");
     // The वतुप् nominalization (आत्मवान्), its मतुप्/यतुप् siblings
