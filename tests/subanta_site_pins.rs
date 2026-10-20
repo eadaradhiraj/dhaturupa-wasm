@@ -300,6 +300,12 @@ fn ha_final_masks() {
     }
 }
 
+/// The neuter ऋ-chart nouns (दृश् → दृग्-दृख्-दृक्, दृशी, दृंशि).
+#[test]
+fn rc_chart_neuter_pins() {
+    pin_word_any("दृश्", "N");
+}
+
 /// The masculine औ-स्वादि nouns (जनौ → जनौः, जनावौ): the औ-form
 /// nominative and the व-form in the dual/plural.
 #[test]

@@ -186,6 +186,9 @@ pub enum Class {
     /// The masculine ष्-final nouns (द्विष्; site @dviS1): the ड/ट pair in
     /// the प्रथमा-एकवचन (द्विड्-द्विट्) and the ट्सु locative plural.
     Zam,
+    /// The neuter ऋ-chart nouns (दृश्; site @dRz3): the ई-form dual
+    /// (दृशी) and the ंशि-form plural (दृंशि).
+    RcN,
     /// The feminine ष्-final nouns of the ड/ट flavour (तृष्; site @tRS1):
     /// the ड/ट pair (तृड्-तृट्).
     ZamF,
@@ -324,6 +327,7 @@ impl Class {
             Self::HasAM => "has-am".to_string(),
             Self::DuhM => "duh-m".to_string(),
             Self::Zam => "zam".to_string(),
+            Self::RcN => "rc-n".to_string(),
             Self::ZamF => "zam-f".to_string(),
             Self::ZvF(v) => format!("zv-f-{v}"),
             Self::ZagM => "zag-m".to_string(),
@@ -1784,6 +1788,37 @@ pub fn decline(stem: &str, linga: Linga, class: &Class) -> Result<Paradigm, &'st
             // The प्रथमा- and सम्बोधन-एकवचन carry the ग/क pair.
             put(&mut cells, 0, 0, vec![voiced.clone(), pause.clone()]);
             put(&mut cells, 7, 0, vec![voiced, pause]);
+            cells
+        }
+        Class::RcN => {
+            // The neuter ऋ-chart nouns (दृश्; site @dRz3): the
+            // प्रथमा-/द्वितीया-एकवचन carry the ऋ-chart's pair
+            // (दृग्-दृख्-दृक्), the dual the ई-form (दृशी) and the
+            // plural the ंशि-form (दृंशि); the भ-endings voice the stem
+            // (दृग्भ्याम्) and the locative plural the क्षु (दृक्षु).
+            if linga != Linga::N || !stem.ends_with('S') || stem.len() < 3 {
+                return Err(NOT_POSSIBLE);
+            }
+            let base = &stem[..stem.len() - 1];
+            let voiced = f(base, "g");
+            let middle = f(base, "K");
+            let pause = f(base, "k");
+            let plural = f(base, "MSi");
+            let mut cells = table(&[
+                (f(stem, "A"), f(stem, "I"), plural.clone()),
+                (f(stem, "A"), f(stem, "I"), plural.clone()),
+                (f(stem, "A"), f(&voiced, "ByAm"), f(&voiced, "BiH")),
+                (f(stem, "e"), f(&voiced, "ByAm"), f(&voiced, "ByaH")),
+                (f(stem, "aH"), f(&voiced, "ByAm"), f(&voiced, "ByaH")),
+                (f(stem, "aH"), f(stem, "oH"), f(stem, "Am")),
+                (f(stem, "i"), f(stem, "oH"), f(stem, "su")),
+                (f(stem, "A"), f(stem, "I"), plural.clone()),
+            ]);
+            let pair = vec![voiced, middle, pause];
+            put(&mut cells, 0, 0, pair.clone());
+            put(&mut cells, 1, 0, pair.clone());
+            put(&mut cells, 7, 0, pair);
+            put(&mut cells, 6, 2, vec![f(base, "kzu")]);
             cells
         }
         Class::ZamF => {
@@ -3681,6 +3716,9 @@ pub fn classes_for(stem: &str, linga: Linga) -> Vec<Class> {
                     out.push(Class::TaN);
                 } else if stem.ends_with('c') {
                     out.push(Class::AcN);
+                } else if stem.ends_with('S') {
+                    // The neuter ऋ-chart nouns (दृश्).
+                    out.push(Class::RcN);
                 } else if stem.ends_with('r') {
                     // The neuter र्-final nouns (वार्).
                     out.push(Class::RarN);

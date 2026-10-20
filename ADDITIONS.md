@@ -26,7 +26,7 @@ Every item below is **delivered** — each with its own commit and a green
 | 3.2 | Seṭ/Karma filters | `#list-settva`, `#list-karma` dropdowns |
 | 4.1 | WASM size | release profile + tuned wasm-opt: 1.61MB → 1.03MB |
 
-Beyond the roadmap, the subanta engine now reproduces **8,429 of the
+Beyond the roadmap, the subanta engine now reproduces **8,432 of the
 9,007** grids the site lists (`node web/audit-site-grids.cjs`), and the
 new paradigms read back as well as decline.
 
@@ -43,6 +43,7 @@ The paradigms added after the roadmap:
 | the वस्-स्वादि | `VasM`, `VasN` |
 | the feminine र्-final nouns | `RirF`, `RarF`, `RarN` |
 | the bare-nominative nouns | `BaraM` |
+| the neuter ऋ-chart nouns | `RcN` |
 | the masculine आ- and औ-stems | `AAM`, `AuM` |
 
 ---

@@ -1585,3 +1585,13 @@ reverted — the AuM class does not need it.)
 
 Whole-db parity: **8,429/9,007** exact; the no-table bucket is down to
 37. Gates green (browser 472).
+
+## 2026-10-20 (26) — the neuter ऋ-chart nouns
+
+`RcN` (दृश्; site @dRz3): the neuter ऋ-chart nouns take the ऋ-chart's
+pair in the प्रथमा-/द्वितीया-एकवचन (दृग्-दृख्-दृक्), the ई-form in the
+dual (दृशी) and the ंशि-form in the plural (दृंशि); the भ-endings voice
+the stem (दृग्भ्याम्) and the locative plural the क्षु (दृक्षु).
+
+Whole-db parity: **8,432/9,007** exact; the no-table bucket is down to
+33. Gates green (browser 472).
