@@ -223,6 +223,10 @@ fn cons_family_and_participle_pins() {
     pin_word_any("खन्ज्", "P");
     pin_word_any("अणीयस्", "P");
     pin_word_any("अनेहस्", "P");
+    // The व-स्वादि feminine u-stems (अभ्रमु → अभ्रम्वा) and the neuter
+    // u-stems (अगुरु → अगुरुणे, अगुरूणाम्).
+    pin_word_any("अभ्रमु", "S");
+    pin_word_any("अगुरु", "N");
     // Participle regression: गच्छत् keeps the गच्छन्-prathamA shape.
     pin_word("गच्छत्");
     // The वतुप् nominalization (आत्मवान्), its मतुप्/यतुप् siblings

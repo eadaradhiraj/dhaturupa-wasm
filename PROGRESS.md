@@ -1309,3 +1309,20 @@ its inherent vowel (`kM` is कं, not क्ं) — the SLP1 rule.
 Whole-db parity: **8,311/9,007** exact; the no-table bucket is down to
 150. Pins: अर्वाच्, खन्ज्, अणीयस्, अनेहस्. `./check.sh --full` ALL
 CHECKS PASSED (browser 472).
+
+## 2026-10-20 (12) — the u-stem व-स्वादि and ण-स्वादि
+
+The last of the big sweep families: the feminine u-stems take the
+व-forms (अभ्रमु → अभ्रम्वा, the cat/paJ/sap carrying both alternants
+अभ्रमवे-अभ्रम्वै) and the neuter u-stems the ण-forms (अगुरु →
+अगुरुणे, अगुरूणाम्, अगुरुषु). Two new classes (`UvF`, `UnN`),
+offered beside the plain shapes — the spelling does not say which family
+a stem belongs to.
+
+The sandhi is spelled out in SLP1 rather than left to the translit: the
+stem's उ takes the व (व), the ऊ (ऊ) or the ण (ण), and the म of the
+stem keeps or drops its virama as the site's own grid does
+(अभ्रमवः vs अभ्रम्वा).
+
+Whole-db parity: **8,333/9,007** exact (92.2%). Pins: अभ्रमु, अगुरु.
+`./check.sh --full` ALL CHECKS PASSED (browser 472).

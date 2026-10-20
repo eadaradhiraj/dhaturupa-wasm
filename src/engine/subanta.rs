@@ -126,6 +126,12 @@ pub enum Class {
     /// Masculine ज्-final nouns (खन्ज्; site @khanj1): the bare-stem
     /// nominative (खन्) and the ञ्ज-forms (खञ्जौ, खञ्जः).
     AjjM,
+    /// The व-स्वादि feminine u-stems (अभ्रमु; site @abhramuh1): the
+    /// व-forms (अभ्रम्वा) and the paired alternants (अभ्रमवे-अभ्रम्वै).
+    UvF,
+    /// The neuter u-stems (अगुरु; site @aguru2): the ण-forms in the
+    /// cat/paJ/zaz/sap (अगुरुणे, अगुरूणाम्).
+    UnN,
     /// The anusvāra-स्वादि (अणीयस्; site @aNIyas1): the nominal forms
     /// take the anusvāra (अणीयान्, अणीयांसौ), the rest the स-forms.
     AsAnM,
@@ -229,6 +235,8 @@ impl Class {
             Self::TaN => "ta-n".to_string(),
             Self::AccM => "ac-m".to_string(),
             Self::AjjM => "aj-m".to_string(),
+            Self::UvF => "uv-f".to_string(),
+            Self::UnN => "un-n".to_string(),
             Self::AsAnM => "asan-m".to_string(),
             Self::AsEM => "ase-m".to_string(),
             Self::AsmM => "asm-m".to_string(),
@@ -468,6 +476,55 @@ pub fn decline(stem: &str, linga: Linga, class: &Class) -> Result<Paradigm, &'st
                 (f(p, "yAm"), f(p, "yoH"), f(p, "Izu")),
                 (f(p, "i"), f(p, "yO"), f(p, "yaH")),
             ])
+        }
+        Class::UvF => {
+            // The व-स्वादि feminine u-stems (अभ्रमु; site @abhramuh1): the
+            // instrumental and the case endings take the व-forms
+            // (अभ्रम्वा) and the cat/paJ/sap carry both alternants
+            // (अभ्रमवे-अभ्रम्वै). The sandhi is spelled out: the उ of the
+            // stem takes the व (व) or the ऊ (ऊ).
+            if linga != Linga::F || !stem.ends_with('u') {
+                return Err(NOT_POSSIBLE);
+            }
+            let u = &stem[..stem.len() - 1];
+            let mut cells = table(&[
+                (f(stem, "H"), f(u, "U"), f(u, "avaH")),
+                (f(stem, "m"), f(u, "U"), f(u, "UH")),
+                (f(u, "vA"), f(stem, "ByAm"), f(stem, "BiH")),
+                (f(u, "ave"), f(stem, "ByAm"), f(stem, "ByaH")),
+                (f(u, "oH"), f(stem, "ByAm"), f(stem, "ByaH")),
+                (f(u, "oH"), f(u, "voH"), f(u, "URAm")),
+                (f(u, "O"), f(u, "voH"), f(stem, "zu")),
+                (f(u, "o"), f(u, "U"), f(u, "avaH")),
+            ]);
+            // The cat, paJ, zaz and sap carry both alternants.
+            put(&mut cells, 3, 0, vec![f(u, "ave"), f(u, "vE")]);
+            put(&mut cells, 4, 0, vec![f(u, "oH"), f(u, "vAH")]);
+            put(&mut cells, 5, 0, vec![f(u, "oH"), f(u, "vAH")]);
+            put(&mut cells, 6, 0, vec![f(u, "O"), f(u, "vAm")]);
+            cells
+        }
+        Class::UnN => {
+            // The neuter u-stems (अगुरु; site @aguru2): the cat/paJ/zaz/sap
+            // take the ण-forms (अगुरुणे, अगुरूणाम्) — the उ of the stem
+            // sandhis into ऊ before the ण.
+            if linga != Linga::N || !stem.ends_with('u') {
+                return Err(NOT_POSSIBLE);
+            }
+            let u = &stem[..stem.len() - 1];
+            let mut cells = table(&[
+                (stem.to_string(), f(stem, "RI"), f(u, "URi")),
+                (stem.to_string(), f(stem, "RI"), f(u, "URi")),
+                (f(stem, "RA"), f(stem, "ByAm"), f(stem, "BiH")),
+                (f(stem, "Re"), f(stem, "ByAm"), f(stem, "ByaH")),
+                (f(stem, "RaH"), f(stem, "ByAm"), f(stem, "ByaH")),
+                (f(stem, "RaH"), f(stem, "RoH"), f(u, "URAm")),
+                (f(stem, "Ri"), f(stem, "RoH"), f(stem, "zu")),
+                (stem.to_string(), f(stem, "RI"), f(u, "URi")),
+            ]);
+            // The vocative carries the stem and its ए-form.
+            put(&mut cells, 7, 0, vec![stem.to_string(), f(u, "o")]);
+            cells
         }
         Class::UMF => {
             if linga == Linga::N || !stem.ends_with('u') {
@@ -2667,8 +2724,17 @@ pub fn classes_for(stem: &str, linga: Linga) -> Vec<Class> {
         }
     } else if stem.ends_with('u') {
         match linga {
-            Linga::M | Linga::F => out.push(Class::UMF),
-            Linga::N => out.push(Class::UN),
+            Linga::M => out.push(Class::UMF),
+            // The feminine u-stems take the व-forms (अभ्रम्वा); the neuter
+            // the ण-forms (अगुरुणे) — the plain shapes stay candidates.
+            Linga::F => {
+                out.push(Class::UMF);
+                out.push(Class::UvF);
+            }
+            Linga::N => {
+                out.push(Class::UN);
+                out.push(Class::UnN);
+            }
         }
     } else if stem.ends_with('U') {
         if linga == Linga::F {
