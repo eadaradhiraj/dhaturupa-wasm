@@ -1605,3 +1605,27 @@ plural (श्रीपाणि), the ए + the ण in the instrumental (श्
 
 Whole-db parity: **8,433/9,007** exact; the no-table bucket is down to
 31. Gates green (browser 472).
+
+## 2026-10-21 (28) — the a-stems with the optional वृद्धि-forms
+
+The site lists the वृद्धि-forms beside the plain ones in some slots of
+the a-stem masculine, and the words differ in which slots they appear
+in. `AMo(AOpt)` covers the four flavours:
+
+- `E` (site @ardha1): the nominative and vocative plurals carry the
+  आ- and ए-forms (अर्धाः-अर्धे). Covered: अर्ध, अल्प, द्वय, द्वितय, प्रथम.
+- `EN` (site @carama1): the same plus the ए + the ण in the instrumental
+  (चरमेण) and the ण-form in the genitive plural (चरमाणाम्). Covered:
+  चरम, पूर्वपर, वर्णाश्रमेतर.
+- `ENSm` (site @apara1): the same plus the स्म-forms in the cat, the
+  ablative and the locative (अपरस्मै,
+  अपराद्-अपरस्माद्-अपरस्मात्-अपरात्, अपरे-अपरस्मिन्) and the ए-form in
+  the genitive plural (अपरेषाम्). Covered: अपर, अवर, अन्तर, उत्तर,
+  पर, पूर्व, अधर.
+- `Sm` (site @nema1): the स्म-forms with the plain instrumental
+  (नेमस्मै, नेमेन). Covered: नेम.
+
+The plain `AM` and the `AsmM` (अनेक → अनेकस्मै) are untouched, so the
+a-stems keep both readings as candidates and the site's grid decides.
+
+Whole-db parity: **8,450/9,007** exact. Gates green (browser 472).

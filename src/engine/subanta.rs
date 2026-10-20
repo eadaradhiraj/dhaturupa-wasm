@@ -58,6 +58,38 @@ pub enum AtMStyle {
     Abhyasta,
 }
 
+/// The optional-form flavours of the a-stem masculine: the site lists
+/// the वृद्धि-forms beside the plain ones in some slots, and the words
+/// differ in which slots they appear in.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub enum AOpt {
+    /// The ए-form as an alternant in the nominative plural (अर्धाः-अर्धे;
+    /// site @ardha1).
+    E,
+    /// The same plus the ए + the ण in the instrumental (चरमेण; site
+    /// @carama1).
+    EN,
+    /// The same plus the स्म-forms in the cat/paJ/sap (अपरस्मै; site
+    /// @apara1).
+    ENSm,
+    /// The स्म-forms with the plain instrumental (नेमस्मै, नेमेन; site
+    /// @nema1).
+    Sm,
+}
+
+impl AOpt {
+    /// The class label of this flavour.
+    #[must_use]
+    pub fn label(self) -> &'static str {
+        match self {
+            Self::E => "e",
+            Self::EN => "en",
+            Self::ENSm => "en-sm",
+            Self::Sm => "sm",
+        }
+    }
+}
+
 /// Style of the neuter `t`-stem (शतृ neuter and वत्-stems).
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum AtNStyle {
@@ -78,6 +110,9 @@ pub enum AtNStyle {
 pub enum Class {
     /// `a`-stem masculine (`rAma`).
     AM,
+    /// `a`-stem masculine with the site's optional वृद्धि-forms (अर्ध;
+    /// site @ardha1): the nominative plural carries अर्धाः-अर्धे.
+    AMo(AOpt),
     /// `a`-stem neuter (`vana`).
     AN,
     /// `A`-stem neuter (श्रीपा; site @zrIpA1): the णि-form plural
@@ -295,6 +330,7 @@ impl Class {
     pub fn label(&self) -> String {
         match self {
             Self::AM => "a-m".to_string(),
+            Self::AMo(opt) => format!("a-m-{}", opt.label()),
             Self::AN => "a-n".to_string(),
             Self::AAN => "A-n".to_string(),
             Self::AAM => "A-m".to_string(),
@@ -433,6 +469,68 @@ pub fn decline(stem: &str, linga: Linga, class: &Class) -> Result<Paradigm, &'st
         return Err(NOT_POSSIBLE);
     }
     let cells = match class {
+        Class::AMo(opt) => {
+            // The a-stem masculine with the site's optional वृद्धि-forms
+            // (अर्ध; site @ardha1): the nominative and vocative plurals
+            // carry the आ- and ए-forms (अर्धाः-अर्धे), the instrumental
+            // may take the ए + the ण (चरमेण) and the cat/paJ/sap the
+            // स्म-forms (अपरस्मै, अपराद्-अपरस्माद्-अपरस्मात्-अपरात्,
+            // अपरे-अपरस्मिन्).
+            if linga != Linga::M || !stem.ends_with('a') {
+                return Err(NOT_POSSIBLE);
+            }
+            let p = &stem[..stem.len() - 1];
+            let mut cells = table(&[
+                (f(p, "aH"), f(p, "O"), f(p, "AH")),
+                (f(p, "am"), f(p, "O"), f(p, "An")),
+                (f(p, "ena"), f(p, "AByAm"), f(p, "EH")),
+                (f(p, "Aya"), f(p, "AByAm"), f(p, "eByaH")),
+                (f(p, "At"), f(p, "AByAm"), f(p, "eByaH")),
+                (f(p, "asya"), f(p, "ayoH"), f(p, "AnAm")),
+                (f(p, "e"), f(p, "ayoH"), f(p, "ezu")),
+                (stem.to_string(), f(p, "O"), f(p, "AH")),
+            ]);
+            // The पञ्चमी-एकवचन carries both alternants.
+            put(&mut cells, 4, 0, vec![f(p, "Ad"), f(p, "At")]);
+            // The nominative and vocative plurals carry the ए-form too.
+            put(&mut cells, 0, 2, vec![f(p, "AH"), f(p, "e")]);
+            put(&mut cells, 7, 2, vec![f(p, "AH"), f(p, "e")]);
+            match opt {
+                AOpt::E => {}
+                AOpt::EN => {
+                    // The instrumental takes the ए + the ण (चरमेण) and the
+                    // genitive plural the ण-form (चरमाणाम्).
+                    cells[6].forms = vec![f(p, "eRa")];
+                    cells[17].forms = vec![f(p, "ARAm")];
+                }
+                AOpt::ENSm => {
+                    // The instrumental takes the ए + the ण, the cat the
+                    // स्म-form, the ablative the four alternants, the
+                    // locative the ए- and स्म-forms and the genitive plural
+                    // the ए-form (अपरेषाम्).
+                    cells[6].forms = vec![f(p, "eRa")];
+                    cells[9].forms = vec![f(p, "asmE")];
+                    put(
+                        &mut cells,
+                        4,
+                        0,
+                        vec![f(p, "Ad"), f(p, "asmAd"), f(p, "asmAt"), f(p, "At")],
+                    );
+                    put(&mut cells, 6, 0, vec![f(p, "e"), f(p, "asmin")]);
+                    cells[17].forms = vec![f(p, "ezAm")];
+                }
+                AOpt::Sm => {
+                    // The cat takes the स्म-form, the ablative the two
+                    // स्म-alternants, the locative the स्म-form and the
+                    // genitive plural the ए-form (नेमेषाम्).
+                    cells[9].forms = vec![f(p, "asmE")];
+                    put(&mut cells, 4, 0, vec![f(p, "asmAd"), f(p, "asmAt")]);
+                    cells[18].forms = vec![f(p, "asmin")];
+                    cells[17].forms = vec![f(p, "ezAm")];
+                }
+            }
+            cells
+        }
         Class::AM => {
             if linga != Linga::M || !stem.ends_with('a') {
                 return Err(NOT_POSSIBLE);
@@ -3512,6 +3610,13 @@ pub fn classes_for(stem: &str, linga: Linga) -> Vec<Class> {
                 // primary (अनेक) or a compound (कीलालपा, which keeps the
                 // plain cat) — the site picks one, we offer both.
                 out.push(Class::AsmM);
+                // The same stems also carry the ए-form as an alternant
+                // (अर्धाः-अर्धे) and the ए- plus स्म-forms (अपराः-अपरे,
+                // अपरस्मै) — the site's grid decides which.
+                out.push(Class::AMo(AOpt::E));
+                out.push(Class::AMo(AOpt::EN));
+                out.push(Class::AMo(AOpt::ENSm));
+                out.push(Class::AMo(AOpt::Sm));
             }
             Linga::N => {
                 out.push(Class::AN);

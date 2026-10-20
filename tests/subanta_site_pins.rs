@@ -300,6 +300,26 @@ fn ha_final_masks() {
     }
 }
 
+/// The a-stem masculine with the site's optional वृद्धि-forms: the
+/// ए-form as an alternant in the nominative plural (अर्धाः-अर्धे), the
+/// ए + the ण in the instrumental (चरमेण) and the स्म-forms
+/// (अपरस्मै).
+#[test]
+fn a_stem_optional_forms_pins() {
+    for word in ["अर्ध", "अल्प", "द्वय", "द्वितय", "प्रथम"]
+    {
+        pin_word_any(word, "P");
+    }
+    for word in ["चरम", "पूर्वपर", "वर्णाश्रमेतर"] {
+        pin_word_any(word, "P");
+    }
+    for word in ["अपर", "अवर", "अन्तर", "उत्तर", "पर", "पूर्व", "अधर"]
+    {
+        pin_word_any(word, "P");
+    }
+    pin_word_any("नेम", "P");
+}
+
 /// The neuter आ-stem nouns (श्रीपा → श्रीपम्, श्रीपे, श्रीपाणि).
 #[test]
 fn aa_stem_neuter_pins() {
