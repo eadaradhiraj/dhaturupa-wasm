@@ -1696,7 +1696,10 @@ fn natva_cells(cells: Vec<Slot>, stem: &str, linga: Linga, class: &Class) -> Vec
             | Class::UUFN
             | Class::GatiF
     );
-    let neuter_n_affix = linga == Linga::N && !matches!(class, Class::AtN(_));
+    // The neuter agent nouns (धातृ → धातृणी) are not इगन्त: the site
+    // keeps the dental (क्षन्तृ → क्षन्तॄणि), so the णत्व trigger that
+    // sits inside the क्ष conjunct must not fire on them.
+    let neuter_n_affix = linga == Linga::N && !matches!(class, Class::AtN(_) | Class::RFN);
     cells
         .into_iter()
         .enumerate()
@@ -2899,7 +2902,11 @@ pub fn classes_for(stem: &str, linga: Linga) -> Vec<Class> {
             out.push(Class::UUM);
         }
     } else if stem.ends_with('f') {
-        if linga != Linga::N {
+        if linga == Linga::N {
+            // The neuter agent nouns (धातृ → धातृणी, site @dhAtR2) take
+            // the ण-first optional pairs.
+            out.push(Class::RFN);
+        } else {
             out.push(Class::RFM);
         }
     } else if stem.ends_with('j') {

@@ -1408,3 +1408,20 @@ The remaining ष-final shapes are the ऋ/इ-स्वादि (चिकी�
 the उ-स्वादि (स्थिरायुष् → स्थिरायुः), the ण-inserted (दोष् → दोष्णः)
 and two sparse site grids (परमषष्, षष् leave the प्रथमा-एकवचन
 empty), so no derived table can match them.
+
+## 2026-10-20 (17) — the कृत agent nouns (तृ-स्वादि)
+
+The `RFN` class (the neuter agent nouns — धातृ → धातृणी, site
+@dhAtR2) was written but never routed: the neuter ऋ-final stems fell
+through the routing and got no table at all. The neuter now takes the
+ण-first optional pairs (धातृणी / धातॄणि, धातृणा-धात्रा,
+धातृणः-धातुः, …) and the whole कृत agent-noun family is covered in
+both genders — 13 words, 26 db entries.
+
+One spelling detail: the site keeps the dental in क्षन्तॄणि, so the
+णत्व trigger that sits inside the क्ष conjunct must not fire on the
+agent nouns — the neuter bahu natva step now skips `RFN` (the इगन्त
+neuters it was written for are untouched).
+
+Whole-db parity: **8,366/9,007** exact; the no-table bucket is down to
+101. Gates green (browser 472).

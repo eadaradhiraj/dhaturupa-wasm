@@ -260,6 +260,30 @@ fn pronominal_word_pins() {
     }
 }
 
+/// The कृत agent nouns (तृ-स्वादि): the masculine ऋ-stem (धातृ → धाता,
+/// site @dhAtR1) and the neuter ण-first pairs (धातृ → धातृणी, @dhAtR2).
+#[test]
+fn agent_noun_pins() {
+    for word in [
+        "अतिवक्तृ",
+        "अलङ्कर्तृ",
+        "आशंसितृ",
+        "उत्पतितृ",
+        "कमितृ",
+        "कामयितृ",
+        "क्षन्तृ",
+        "क्षमितृ",
+        "ग्रहीतृ",
+        "जागरितृ",
+        "ज्ञातृ",
+        "धातृ",
+        "भवितृ",
+    ] {
+        pin_word_any(word, "P");
+        pin_word_any(word, "N");
+    }
+}
+
 /// The masculine ष्-final nouns, in the two flavours the site grids:
 /// the ड/ट pair (द्विष् → द्विड्-द्विट्, @dviS1) and the ग/क pair
 /// (तक्ष् → तग्-तक्, @takS2). A few words carry both grids
