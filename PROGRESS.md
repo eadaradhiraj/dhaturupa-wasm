@@ -1326,3 +1326,25 @@ stem keeps or drops its virama as the site's own grid does
 
 Whole-db parity: **8,333/9,007** exact (92.2%). Pins: अभ्रमु, अगुरु.
 `./check.sh --full` ALL CHECKS PASSED (browser 472).
+
+## 2026-10-20 (13) — the parity map after the long tail
+
+Whole-db parity: **8,333/9,007** (92.2%) — the engine reproduces the
+site's grid for every listed word except these long-tail families, each
+its own paradigm (the counts are the db entries per family):
+
+| family | entries | shape |
+| :--- | ---: | :--- |
+| neuter ञ्च/ष/ङ्/ऋ + अव्यय | 148 | no table at all (the neuter ई-स्वादि, the ष-स्वादि, the ङ्-स्वादि) |
+| a-stem | 68 | the anusvāra+स्म combination (अधर) and the compounds the site grids sparsely (अक्षत) |
+| सम्-अधिक-रूप | 23 | अतित्वम्, अतिमाम् — the अधिक-रूप with its अति-/प्रति-/उप-/अभि- prefixes |
+| neuter t-final | 23 | the neuter ई-स्वादि (आत्मवती — the neuter of the वत family) |
+| neuter u-stem | 22 | the remaining neuter u-stems (the ण-forms with the plain base) |
+| neuter i-stem | 18 | the इ-स्वादि neuters (the नु augment) |
+| अस्-family | 14 | the remaining अस्-स्वादि shapes |
+| masculine च्-final | 22 | the remaining अञ्च shapes (the ङ्-inserted plural) |
+| अन्/इन्/अत् families | 30 | the remaining drop/elide variants |
+
+The site grids every listed word, so the portal shows the oracle grid
+regardless; these are the derived-table gaps for unlisted stems of the
+same shapes. The audit is the map: `node web/audit-site-grids.cjs`.
