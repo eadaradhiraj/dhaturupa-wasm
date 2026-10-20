@@ -136,6 +136,12 @@ pub enum Class {
     /// dvi/plural take the ण-forms (अतिस्त्रिणी) and the cat/paJ/sap carry
     /// both alternants (अतिस्त्रिणे-अतिस्त्रये).
     INu,
+    /// The masculine ष्-final nouns (द्विष्; site @dviS1): the ड/ट pair in
+    /// the प्रथमा-एकवचन (द्विड्-द्विट्) and the ट्सु locative plural.
+    Zam,
+    /// The masculine ष्-final nouns of the ग/क flavour (तक्ष्; site
+    /// @takS2): the ग्/क् pair (तग्-तक्) and the क्षु locative plural.
+    ZagM,
     /// The neuter च्-final nouns (अर्वाच्; site @arvAc1): the ग/क pair in
     /// the प्रथमा-एकवचन and the ई-forms (अर्वाची, अर्वाञ्चि).
     AcN,
@@ -245,6 +251,8 @@ impl Class {
             Self::UvF => "uv-f".to_string(),
             Self::UnN => "un-n".to_string(),
             Self::INu => "i-nu".to_string(),
+            Self::Zam => "zam".to_string(),
+            Self::ZagM => "zag-m".to_string(),
             Self::AcN => "ac-n".to_string(),
             Self::AsAnM => "asan-m".to_string(),
             Self::AsEM => "ase-m".to_string(),
@@ -1242,6 +1250,77 @@ pub fn decline(stem: &str, linga: Linga, class: &Class) -> Result<Paradigm, &'st
                 (f(p, "asyAm"), f(p, "ayoH"), f(p, "Asu")),
                 (f(p, "e"), f(p, "e"), f(p, "AH")),
             ])
+        }
+        Class::ZagM => {
+            // The masculine ष्-final nouns of the ग/क flavour (तक्ष् →
+            // तग्-तक्, site @takS2): the ष् becomes the ग्/क् pair, the
+            // भ-endings voice the stem (तग्भ्याम्) and the locative plural
+            // the क्षु (तक्षु). A क्ष cluster gives up its ष् to the pair
+            // (तक्ष् → तक्, तग्); a plain ष् takes the क् (दधृष् →
+            // दधृक्, दधृग्).
+            if linga != Linga::M || !stem.ends_with('z') || stem.len() < 3 {
+                return Err(NOT_POSSIBLE);
+            }
+            let base = &stem[..stem.len() - 1];
+            let (voiced, pause) = match base.strip_suffix('k') {
+                Some(reduced) => (f(reduced, "g"), base.to_string()),
+                None => (f(base, "g"), f(base, "k")),
+            };
+            // The locative plural reuses the pause consonant: तक्षु,
+            // दधृक्षु.
+            let loc_plural = if base.ends_with('k') {
+                f(base, "zu")
+            } else {
+                f(base, "kzu")
+            };
+            let mut cells = table(&[
+                (f(stem, "aH"), f(stem, "O"), f(stem, "aH")),
+                (f(stem, "am"), f(stem, "O"), f(stem, "aH")),
+                (f(stem, "A"), f(&voiced, "ByAm"), f(&voiced, "BiH")),
+                (f(stem, "e"), f(&voiced, "ByAm"), f(&voiced, "ByaH")),
+                (f(stem, "aH"), f(&voiced, "ByAm"), f(&voiced, "ByaH")),
+                (f(stem, "aH"), f(stem, "oH"), f(stem, "Am")),
+                (f(stem, "i"), f(stem, "oH"), loc_plural),
+                (f(stem, "aH"), f(stem, "O"), f(stem, "aH")),
+            ]);
+            // The प्रथमा- and सम्बोधन-एकवचन carry the ग/क pair.
+            put(&mut cells, 0, 0, vec![voiced.clone(), pause.clone()]);
+            put(&mut cells, 7, 0, vec![voiced, pause]);
+            cells
+        }
+        Class::Zam => {
+            // The masculine ष्-final nouns (द्विष्; site @dviS1): the
+            // प्रथमा-एकवचन carries the ड/ट pair (द्विड्-द्विट्), the
+            // भ-endings voice the stem (द्विड्भ्याम्) and the locative
+            // plural the ट्सु pair (द्विट्सु-द्विट्त्सु). The site's
+            // ण-inserted flavour (दोष् → दोष्णः) is a different shape.
+            if linga != Linga::M || !stem.ends_with('z') || stem.len() < 3 {
+                return Err(NOT_POSSIBLE);
+            }
+            // The ष् becomes the ड्/ट् pair; a क्ष cluster reduces with it
+            // (तक्ष् → तड्-तट्, द्विष् → द्विड्-द्विट्).
+            let mut base = &stem[..stem.len() - 1];
+            if let Some(stripped) = base.strip_suffix('k') {
+                base = stripped;
+            }
+            let voiced = f(base, "q");
+            let pause = f(base, "w");
+            let mut cells = table(&[
+                (f(stem, "aH"), f(stem, "O"), f(stem, "aH")),
+                (f(stem, "am"), f(stem, "O"), f(stem, "aH")),
+                (f(stem, "A"), f(&voiced, "ByAm"), f(&voiced, "BiH")),
+                (f(stem, "e"), f(&voiced, "ByAm"), f(&voiced, "ByaH")),
+                (f(stem, "aH"), f(&voiced, "ByAm"), f(&voiced, "ByaH")),
+                (f(stem, "aH"), f(stem, "oH"), f(stem, "Am")),
+                (f(stem, "i"), f(stem, "oH"), f(stem, "su")),
+                (f(stem, "aH"), f(stem, "O"), f(stem, "aH")),
+            ]);
+            // The प्रथमा- and सम्बोधन-एकवचन carry the ड/ट pair; the
+            // locative plural carries the ट्सु pair.
+            put(&mut cells, 0, 0, vec![voiced.clone(), pause.clone()]);
+            put(&mut cells, 7, 0, vec![voiced, pause]);
+            put(&mut cells, 6, 2, vec![f(base, "wsu"), f(base, "wtsu")]);
+            cells
         }
         Class::AcN => {
             // The neuter च्-final nouns (अर्वाच्; site @arvAc1): the
@@ -2836,6 +2915,15 @@ pub fn classes_for(stem: &str, linga: Linga) -> Vec<Class> {
             Linga::F => out.push(Class::Jvs),
             Linga::N => out.push(Class::JvsN),
         }
+    } else if (stem.ends_with("us")
+        || stem.ends_with("is")
+        || stem.ends_with("uz")
+        || stem.ends_with("iz"))
+        && linga == Linga::N
+    {
+        // उस्/इस्-स्वादि neuters (आयुष्, हविस्, धनुस्); the `uz`/`iz`
+        // spellings are the षत्व forms (आयुष् = Ayuz). Neuter only.
+        out.push(Class::UsN);
     } else if stem.ends_with('t')
         || stem.ends_with('d')
         || stem.ends_with('D')
@@ -2843,6 +2931,7 @@ pub fn classes_for(stem: &str, linga: Linga) -> Vec<Class> {
         || stem.ends_with('c')
         || stem.ends_with('T')
         || stem.ends_with('S')
+        || stem.ends_with('z')
     {
         match linga {
             Linga::M => {
@@ -2863,6 +2952,13 @@ pub fn classes_for(stem: &str, linga: Linga) -> Vec<Class> {
                     // The masculine च्-final nouns (अर्वाच्) are the अञ्च-
                     // स्वादि family — the सरित् shape does not reach them.
                     out.push(Class::AccM);
+                } else if stem.ends_with('z') {
+                    // The masculine ष्-final nouns (द्विष्) have two
+                    // flavours on the site — the ड/ट pair (द्विड्-द्विट्)
+                    // and the ग/क pair (तग्-तक्) — so both candidates are
+                    // offered and the site's grid decides.
+                    out.push(Class::Zam);
+                    out.push(Class::ZagM);
                 } else {
                     out.push(Class::Cons);
                 }
@@ -2881,15 +2977,6 @@ pub fn classes_for(stem: &str, linga: Linga) -> Vec<Class> {
                 }
             }
         }
-    } else if (stem.ends_with("us")
-        || stem.ends_with("is")
-        || stem.ends_with("uz")
-        || stem.ends_with("iz"))
-        && linga == Linga::N
-    {
-        // उस्/इस्-स्वादि neuters (आयुष्, हविस्, धनुस्); the `uz`/`iz`
-        // spellings are the षत्व forms (आयुष् = Ayuz). Neuter only.
-        out.push(Class::UsN);
     } else if stem.ends_with('s') || stem.ends_with('H') {
         match linga {
             // The अस्-स्वादि has three nominal forms the site uses — the

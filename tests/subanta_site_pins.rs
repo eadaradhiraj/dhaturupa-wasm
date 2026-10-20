@@ -260,6 +260,30 @@ fn pronominal_word_pins() {
     }
 }
 
+/// The masculine ष्-final nouns, in the two flavours the site grids:
+/// the ड/ट pair (द्विष् → द्विड्-द्विट्, @dviS1) and the ग/क pair
+/// (तक्ष् → तग्-तक्, @takS2). A few words carry both grids
+/// (तक्ष् @takS1/@takS2, गोरक्ष् @gorakS1/@gorakS2), so the engine
+/// offers both candidates and the site's grid decides.
+#[test]
+fn sha_final_masks() {
+    for word in [
+        "द्विष्",
+        "गोविष्",
+        "प्रियषष्",
+        "मृगद्विष्",
+        "रत्नमुष्",
+        "सुरद्विष्",
+        "विविक्ष्",
+    ] {
+        pin_word_any(word, "P");
+    }
+    for word in ["तक्ष्", "गोरक्ष्", "दधृष्", "दिधक्ष्", "पिपक्ष्", "विवक्ष्"]
+    {
+        pin_word_any(word, "P");
+    }
+}
+
 /// उस्/इस्-स्वादि neuters (ADDITIONS 2.4): आयुष् against its vendored db
 /// grid (`@AyuS1`), and the pattern-derived हविस्/धनुस् grids the site
 /// does not list — the contract says derived engine tables must cover

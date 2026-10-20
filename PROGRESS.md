@@ -1380,3 +1380,31 @@ beside the Cons class — a bare stem cannot say which family it is.
 
 Whole-db parity: **8,338/9,007** exact; the no-table bucket is down to
 136. Gates green (browser 472).
+
+## 2026-10-20 (16) — the masculine ष्-final nouns
+
+The ष्-final masculine nouns (द्विष्, तक्ष्) come in two flavours on the
+site, and both are now derived:
+
+- `Zam` (the ड/ट flavour; site @dviS1): the प्रथमा-/सम्बोधन-एकवचन
+  carry the ड/ट pair (द्विड्-द्विट्), the भ-endings voice the stem
+  (द्विड्भ्याम्) and the locative plural the ट्सु pair (द्विट्सु-द्विट्त्सु).
+  A क्ष cluster reduces with the pair — तक्ष् → तड्-तट् — while a plain
+  ष् keeps what precedes it (द्विष् → द्विड्-द्विट्).
+- `ZagM` (the ग/क flavour; site @takS2): the pair is तग्-तक्, the
+  भ-endings voice the stem (तग्भ्याम्) and the locative plural the क्षु
+  (तक्षु). Here the क्ष cluster hands its ष् to the pair (तक्ष् → तक्),
+  while a plain ष् takes the क् (दधृष् → दधृक्).
+
+A bare stem cannot say which flavour is meant, so both are offered and
+the site's grid decides — the portal shows the oracle grid for every
+listed word, and the derived tables serve the unlisted stems of the
+same shapes.
+
+Whole-db parity: **8,353/9,007** exact; the no-table bucket is down to
+114. Gates green (browser 472).
+
+The remaining ष-final shapes are the ऋ/इ-स्वादि (चिकीर्ष् → चिकीः),
+the उ-स्वादि (स्थिरायुष् → स्थिरायुः), the ण-inserted (दोष् → दोष्णः)
+and two sparse site grids (परमषष्, षष् leave the प्रथमा-एकवचन
+empty), so no derived table can match them.
