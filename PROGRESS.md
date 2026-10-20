@@ -1255,3 +1255,30 @@ Three more families from the sweep's list:
 
 Whole-db parity: **8,289/9,007** exact. Pins: आत्मवत् (N), अनेक (P/N),
 अधरा (S), अङ्गिरस् (P). Gates green (browser 472).
+
+## 2026-10-20 (10) — read-back rules for the new classes, and two UX fixes
+
+- **Read-back rules** for the classes added today: the neuter ई-स्वादि
+  (TaN) uses the तुप् suffix in the rule (`vatI`/`matI`/`yatI`/`itI`)
+  and sits at the top of the strip table — the neuter participle
+  (AtN) declines the same forms, so the तुप् rules must claim the slot
+  first, and the specific suffix keeps them off a plain `-t` stem
+  (विदत् keeps the participle reading). The स्म-ending a-stems read
+  back through their स्म-forms (अनेकस्मै → अनेक). Two TaN cells
+  (the accusative plural and the भ-endings) still lose their slot to
+  a competing neuter-participle reading — the analyser's dedupe keys
+  on (stem, gender, case), not on the class.
+- **A known word's grid is the site's own**, so the strip pass no
+  longer claims its slots: अन्य/इतर/कतर/कतम/उभय (the स्म-ending
+  a-stems the site grids explicitly) keep the `known word` reading
+  instead of an engine guess.
+- **Word view**: the derived table now renders only when the शब्द
+  oracle has no grid, so an inflected input no longer flashes a junk
+  derived table (सरितः → the अस्-family shape) before the site's grid
+  replaces it.
+- **Search fallback**: the base-word readings are filtered to the
+  stems the corpus lists (the site's answer), with the first few as
+  the fallback for unlisted words — instead of 24 mostly-junk
+  candidates.
+
+Gates green: `./check.sh` ALL CHECKS PASSED (browser 472).

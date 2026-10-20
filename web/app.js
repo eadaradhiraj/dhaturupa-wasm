@@ -732,6 +732,18 @@ async function runFormSearch() {
       try {
         const res = ok(subanta_analyze(q), 'word');
         readings = res.analyses || [];
+        // The analyzer offers every plausible candidate; the corpus knows
+        // which base words really exist, so keep the readings the शब्दपाठः
+        // lists (सरित् for सरिद्भ्याम्) and fall back to the first few
+        // when the corpus has none (an unlisted word).
+        await ensureShabda().catch(() => {});
+        if (alive() && shabdaIndex) {
+          const listed = readings.filter((a) => siteTables(shabdaIndex, a.stem).length > 0);
+          if (listed.length > 0) readings = listed;
+          else readings = readings.slice(0, 6);
+        } else if (readings.length > 6) {
+          readings = readings.slice(0, 6);
+        }
       } catch {
         readings = [];
       }
@@ -792,16 +804,16 @@ async function runWordForm() {
     };
     setNote(res.tables.length, false);
     el('word-readings').innerHTML = renderWordReadings(res.analyses);
-    el('word-tables').innerHTML = renderWordTables(res.tables);
-    addCopyButtons(el('word-tables'));
     // The vendored शब्दपाठः is the oracle for every word it lists: once it
     // has loaded (lazily, first run), swap the site's own grids in place.
-    // The derived tables above stand for words the corpus does not list
-    // (foreign names, fresh stems).
+    // The derived tables stand for words the corpus does not list (foreign
+    // names, fresh stems) — so they are rendered only when the oracle has
+    // no grid, which also keeps a junk derived table (an inflected input
+    // shaped like a participle) from flashing before the swap.
     ensureShabda().then(() => {
-      if (!alive() || !shabdaIndex) return;
-      let site = siteTables(shabdaIndex, res.word);
-      if (site.length === 0) {
+      if (!alive()) return;
+      let site = shabdaIndex ? siteTables(shabdaIndex, res.word) : [];
+      if (site.length === 0 && shabdaIndex) {
         // An inflected form resolves to its base word: the site's शब्द
         // search shows that word's grid, so try the reading stems (the
         // oracle is keyed by citation — सरिद्भ्याम् → सरित्).
@@ -810,7 +822,14 @@ async function runWordForm() {
           if (site.length > 0) break;
         }
       }
-      if (site.length === 0) return;
+      if (site.length === 0) {
+        // The corpus does not list this word: the derived tables stand in
+        // (foreign names, fresh stems).
+        setNote(res.tables.length, false);
+        el('word-tables').innerHTML = renderWordTables(res.tables);
+        addCopyButtons(el('word-tables'));
+        return;
+      }
       setNote(site.length, true);
       el('word-tables').innerHTML = renderWordTables(site);
       addCopyButtons(el('word-tables'));
