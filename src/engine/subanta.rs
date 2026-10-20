@@ -2350,7 +2350,13 @@ pub fn classes_for(stem: &str, linga: Linga) -> Vec<Class> {
         }
     } else if stem.ends_with('i') {
         match linga {
-            Linga::M | Linga::F => out.push(Class::IMF),
+            // The masculine i-stem keeps the plain shape (अग्निना, @agni1),
+            // but the feminine takes the ण-स्वादि: the त्य-form
+            // (अक्षान्त्या) with its paired alternants (अक्षान्तये-अक्षान्त्यै)
+            // and the accusative plural as the nominative plural
+            // (अक्षान्तीः) — site @akSAnti1/@gati1.
+            Linga::M => out.push(Class::IMF),
+            Linga::F => out.push(Class::GatiF),
             Linga::N => out.push(Class::IN),
         }
     } else if stem.ends_with('I') {

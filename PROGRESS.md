@@ -1151,3 +1151,27 @@ paradigm — the next candidates, in that order of size.
 
 Pins: अनस् (the locative-plural pair). `./check.sh --full` ALL CHECKS
 PASSED (browser 472).
+
+## 2026-10-20 (6) — the ण-स्वादि for the feminine i-stems
+
+The sweep's largest cluster: the feminine i-stems take the ण-स्वादि on
+the site — the त्य-form (अक्षान्त्या) with its paired alternants
+(अक्षान्तये-अक्षान्त्यै, अक्षान्तेः-अक्षान्त्याः, अक्षान्तौ-अक्षान्त्याम्)
+and the accusative plural as the nominative plural (अक्षान्तीः), while
+the masculine keeps the plain shape (अग्निना, अग्नीन्). `Class::GatiF`
+already *was* that paradigm (the क्तिन् कृत् path uses it) but the
+manual route sent every i-stem to the plain `IMF`, so the shape was
+only reachable through the corpus. The routing now sends feminine
+i-stems to `GatiF` and the masculine stays on `IMF` — the corpus's
+कृत् cells (the plain feminine) are untouched.
+
+Whole-db parity: **8,159/9,007** exact (was 7,893; +266). The
+remaining misses are now: the a-stem's स्म-endings (~113), the u-stems
+(~67), the anusvāra-स्वादि (~44), the neuter ई-स्वादि (~45), the
+ञ्च-स्वादि (~25), the सम्-अधिक-रूप (23), the numerals (14) and the
+no-table entries (256 — the neuter ई-स्वादि and the masculine
+ञ्च-स्वादि mostly).
+
+Pins: अक्षान्ति, अणि, गति (feminine) and अग्नि (masculine). The
+ण-स्वादि forms also read back (अक्षान्त्या → अक्षान्ति). `./check.sh
+--full` ALL CHECKS PASSED (browser 472).

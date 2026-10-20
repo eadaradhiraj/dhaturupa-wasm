@@ -197,6 +197,13 @@ fn cons_family_and_participle_pins() {
     // The अस्-family's locative plural carries both alternants
     // (अनःसु-अनस्सु, site @anas1).
     pin_word_any("अनस्", "N");
+    // The feminine i-stems take the ण-स्वादि: the त्य-form with its
+    // paired alternants (site @akSAnti1/@gati1) — the masculine keeps the
+    // plain shape (अग्निना, @agni1).
+    for word in ["अक्षान्ति", "अणि", "गति"] {
+        pin_word_any(word, "S");
+    }
+    pin_word_any("अग्नि", "P");
     // Participle regression: गच्छत् keeps the गच्छन्-prathamA shape.
     pin_word("गच्छत्");
     // The वतुप् nominalization (आत्मवान्), its मतुप्/यतुप् siblings
