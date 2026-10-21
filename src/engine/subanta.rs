@@ -594,6 +594,9 @@ pub enum Class {
     /// The स्म-ending a-stem feminine (अधरा; site @adharA1): the cat/paJ
     /// take the स-form (अधरस्यै, अधरस्याः).
     AsmF,
+    /// The ऋ-स्वादि masculine/feminine with the आ-form in the nominative
+    /// (माता, मातरौ; site @mAtR1/@pitR1).
+    RFA,
     /// `f`-stem masculine (`kartf`); feminine approximated (`NOM/VOC.SG` =
     /// stem, rest masculine — true feminine agents use `-trI`/I-stems).
     RFM,
@@ -763,6 +766,7 @@ impl Class {
             Self::AsmN => "asm-n".to_string(),
             Self::AsmF => "asm-f".to_string(),
             Self::RFM => "f-m/f".to_string(),
+            Self::RFA => "rf-a".to_string(),
             Self::RFN => "f-n".to_string(),
             Self::GatiF => "i-f".to_string(),
             Self::AtM(AtMStyle::Num) => "at-m".to_string(),
@@ -2087,6 +2091,44 @@ pub fn decline(stem: &str, linga: Linga, class: &Class) -> Result<Paradigm, &'st
                 (f(p, "vAH"), f(p, "voH"), f(p, "UnAm")),
                 (f(p, "vAm"), f(p, "voH"), f(p, "Uzu")),
                 (f(p, "u"), f(p, "vO"), f(p, "vaH")),
+            ])
+        }
+        Class::RFA => {
+            // The ऋ-स्वादि masculine/feminine (मातृ, पितृ; site @mAtR1/
+            // @pitR1): the nominative takes the आ-form (माता, हे मातः),
+            // the dual and plural the र-form (मातरौ, मातरः), the
+            // accusative plural the ऋ-वृद्धि (पितॄन्, मातॄः), the
+            // ablative and genitive singular the उ-form (मातुः), the
+            // genitive plural the णाम् (मातॄणाम्) and the instrumental
+            // the र-form (मात्रा).
+            if !matches!(linga, Linga::M | Linga::F) || !stem.ends_with('f') || stem.len() < 3 {
+                return Err(NOT_POSSIBLE);
+            }
+            // The root without the ऋ (मात्, पित्).
+            let mut root = stem[..stem.len() - 1].to_string();
+            if root.ends_with('a') {
+                root.pop();
+            }
+            // The strong stem keeps the root's own vowel (मातर-) and the
+            // weak stem closes it (मात्र-).
+            let strong = format!("{root}ar");
+            let weak = format!("{root}r");
+            // The accusative plural: the masculine takes the ऋ-वृद्धि + न्
+            // (पितॄन्), the feminine the ऋ-वृद्धि + the visarga (मातॄः).
+            let acc_pl = if linga == Linga::M {
+                f(&root, "Fn")
+            } else {
+                f(&root, "FH")
+            };
+            table(&[
+                (f(&root, "A"), f(&strong, "O"), f(&strong, "aH")),
+                (f(&strong, "am"), f(&strong, "O"), acc_pl),
+                (f(&weak, "A"), f(stem, "ByAm"), f(stem, "BiH")),
+                (f(&weak, "e"), f(stem, "ByAm"), f(stem, "ByaH")),
+                (f(&root, "uH"), f(stem, "ByAm"), f(stem, "ByaH")),
+                (f(&root, "uH"), f(&weak, "oH"), f(&root, "FRAm")),
+                (f(&strong, "i"), f(&weak, "oH"), f(stem, "zu")),
+                (f(&root, "H"), f(&strong, "O"), f(&strong, "aH")),
             ])
         }
         Class::RFM => {
@@ -5700,6 +5742,9 @@ pub fn classes_for(stem: &str, linga: Linga) -> Vec<Class> {
             out.push(Class::RFN);
         } else {
             out.push(Class::RFM);
+            // The ऋ-स्वादि with the आ-form in the nominative (माता) —
+            // the site's grid decides.
+            out.push(Class::RFA);
         }
     } else if stem.ends_with('j') {
         match linga {

@@ -858,3 +858,16 @@ fn j_final_dada_flavor_pins() {
         pin_word_any(word, "P");
     }
 }
+
+/// The ऋ-स्वादि masculine/feminine with the आ-form in the nominative
+/// (माता, मातरौ; site @mAtR1/@pitR1): the nominative takes the आ-form,
+/// the dual and plural the र-form and the accusative plural the ऋ-वृद्धि
+/// (पितॄन्, मातॄः).
+#[test]
+fn r_swadi_pins() {
+    for word in ["मातृ", "पितृ", "देवृ", "भ्रातृ", "दुहितृ", "ननन्दृ", "ननान्दृ", "यातृ"]
+    {
+        pin_word_any(word, "P");
+    }
+    pin_word_any("मातृ", "S");
+}

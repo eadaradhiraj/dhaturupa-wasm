@@ -2067,3 +2067,36 @@ still needs its own class (the सर्वधातुकारी writes the r
 weak form halves it). Blocked, no derived table reaches them: the ह्न
 family (अष्टाह्न…) and the sparse site grids (अक्षत, गृह, चतुर्, अप् —
 the site's cells are empty).
+
+## 2026-10-21 (48) — the ज्-final ड/ट flavour, the ऋ-स्वादि and the visarga
+
+`JasM` (राज्; site @rAj1 and its kin) gives the masculine ज्-final nouns
+the ड/ट flavour the masculine ष्-final nouns already have: the nominative
+carries the ड/ट pair (राड्-राट्), the भ-endings the ड-form (राड्भ्याम्)
+and the locative plural the ट्सु pair (राट्सु-राट्त्सु).
+
+`RFA` (मातृ, पितृ; site @mAtR1/@pitR1) covers the ऋ-स्वादि: the
+nominative takes the आ-form (माता, हे मातः), the dual and plural the
+र-form (मातरौ, मातरः), the accusative plural the ऋ-वृद्धि (पितॄन्,
+मातॄः), the ablative and genitive singular the उ-form (मातुः), the
+genitive plural the णाम् (मातॄणाम्) and the instrumental the र-form
+(मात्रा). The strong stem keeps the root's own vowel (मातर-) and the
+weak stem closes it (मात्र-).
+
+The visarga now takes the consonant's place in the syllable, like the
+anusvāra: `pitH` is पितः, not पित्ः. The site writes the plain
+visarga after a halant, and the engine was adding the halant of its own.
+
+The audit compares only the cells the site lists: a few शब्दपाठः entries
+leave cells empty (38 words carry only the plural column, 13 only the
+dual, 29 no vocative), and an empty cell carries no information about
+the word — the engine is compared on the listed cells, and it
+reproduces every one of them. (Blanking the derived tables instead
+would cost the portal its reverse-analysis of those words, so the audit
+is the right place for it.)
+
+Covered: राज्, देवेज्, परिमृज्, परिव्राज्, परेतराज्, यक्षराज्, यमराज्,
+सम्राज्, स्वाराज्, विभ्राज्; मातृ, पितृ, देवृ, भ्रातृ, दुहितृ, ननन्दृ,
+ननान्दृ, यातृ.
+
+Whole-db parity: **8,808/9,007** exact.
