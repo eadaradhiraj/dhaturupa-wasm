@@ -1693,3 +1693,16 @@ Covered: जलमुच्, पयोमुच्, सत्यवाच्, �
 विशालत्वच्, वारिमुच्, सुवृश्च्.
 
 Whole-db parity: **8,513/9,007** exact. Gates green (browser 472).
+
+## 2026-10-21 (33) — the masculine at-participles with the द/त pair
+
+`AtM2` (चकासत्; site @cakAsat1): the at-participles come in a pair
+flavour besides the गच्छन् one the `AtM` class covers — the प्रथमा-
+and सम्बोधन-एकवचन carry the द/त pair (चकासद्-चकासत्), the भ-endings
+voice the stem (चकासद्भ्याम्) and the rest keeps the plain stem
+(चकासतौ, चकासता, चकासत्सु).
+
+Covered: चकासत्, जक्षत्, जाग्रत्, ददत्, दरिद्रत्, पुरीतत्, पृषत्,
+वाहद्विषत्, शासत्.
+
+Whole-db parity: **8,522/9,007** exact. Gates green (browser 472).

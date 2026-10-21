@@ -338,6 +338,25 @@ fn c_final_masculine_pair_pins() {
     pin_word_any("सुवृश्च्", "P");
 }
 
+/// The masculine at-participles with the द/त pair (चकासत् →
+/// चकासद्-चकासत्).
+#[test]
+fn at_participle_pair_pins() {
+    for word in [
+        "चकासत्",
+        "जक्षत्",
+        "जाग्रत्",
+        "ददत्",
+        "दरिद्रत्",
+        "पुरीतत्",
+        "पृषत्",
+        "वाहद्विषत्",
+        "शासत्",
+    ] {
+        pin_word_any(word, "P");
+    }
+}
+
 /// The neuter द्-final nouns (उद्भिद् → उद्भिद्-उद्भित्, उद्भिदी,
 /// उद्भिन्दि) and the ऋ-chart nouns with two alternants (दिश् →
 /// दिग्-दिक्).

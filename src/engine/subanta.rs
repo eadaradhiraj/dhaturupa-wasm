@@ -290,6 +290,9 @@ pub enum Class {
     GatiF,
     /// `t`-stem masculine (`Bavat` weak; `Bavan` strong nom).
     AtM(AtMStyle),
+    /// The masculine at-participles with the द/त pair (चकासत्; site
+    /// @cakAsat1): the nominative carries चकासद्-चकासत्.
+    AtM2,
     /// `t`-stem neuter (`Bavat`/`Bavad`, `viyat`/`tudat` styles).
     AtN(AtNStyle),
     /// `an`-stem masculine (`rAjan`).
@@ -416,6 +419,7 @@ impl Class {
             Self::RFN => "f-n".to_string(),
             Self::GatiF => "i-f".to_string(),
             Self::AtM(AtMStyle::Num) => "at-m".to_string(),
+            Self::AtM2 => "at-m-2".to_string(),
             Self::AtM(AtMStyle::Abhyasta) => "at-m-abhyasta".to_string(),
             Self::AtN(AtNStyle::Num) => "at-n".to_string(),
             Self::AtN(AtNStyle::WeakDual) => "at-n-viyat".to_string(),
@@ -1306,6 +1310,30 @@ pub fn decline(stem: &str, linga: Linga, class: &Class) -> Result<Paradigm, &'st
             put(&mut cells, 4, 0, vec![f(p, "eH"), f(p, "yAH")]);
             put(&mut cells, 5, 0, vec![f(p, "eH"), f(p, "yAH")]);
             put(&mut cells, 6, 0, vec![f(p, "O"), f(p, "yAm")]);
+            cells
+        }
+        Class::AtM2 => {
+            // The masculine at-participles with the द/त pair (चकासत्; site
+            // @cakAsat1): the प्रथमा- and सम्बोधन-एकवचन carry the pair
+            // (चकासद्-चकासत्) and the rest keeps the plain stem
+            // (चकासतौ, चकासता, चकासद्भ्याम्, चकासत्सु).
+            if linga != Linga::M || !stem.ends_with('t') || stem.len() < 3 {
+                return Err(NOT_POSSIBLE);
+            }
+            let w = normalize_dental(stem);
+            let d = format!("{}d", &w[..w.len() - 1]);
+            let mut cells = table(&[
+                (w.clone(), f(&w, "O"), f(&w, "aH")),
+                (f(&w, "am"), f(&w, "O"), f(&w, "aH")),
+                (f(&w, "A"), f(&d, "ByAm"), f(&d, "BiH")),
+                (f(&w, "e"), f(&d, "ByAm"), f(&d, "ByaH")),
+                (f(&w, "aH"), f(&d, "ByAm"), f(&d, "ByaH")),
+                (f(&w, "aH"), f(&w, "oH"), f(&w, "Am")),
+                (f(&w, "i"), f(&w, "oH"), f(&w, "su")),
+                (w.clone(), f(&w, "O"), f(&w, "aH")),
+            ]);
+            put(&mut cells, 0, 0, vec![d.clone(), w.clone()]);
+            put(&mut cells, 7, 0, vec![d, w]);
             cells
         }
         Class::AtM(style) => {
@@ -4042,6 +4070,9 @@ pub fn classes_for(stem: &str, linga: Linga) -> Vec<Class> {
                     out.push(Class::AtM(AtMStyle::Num));
                 } else if stem.ends_with("at") || stem.ends_with("ant") {
                     out.push(Class::AtM(AtMStyle::Num));
+                    // The same stems also come in a द/त-pair flavour
+                    // (चकासद्-चकासत्) — the site's grid decides.
+                    out.push(Class::AtM2);
                 } else if stem.ends_with('c') {
                     // The masculine च्-final nouns (अर्वाच्) are the अञ्च-
                     // स्वादि family — the सरित् shape does not reach them.
