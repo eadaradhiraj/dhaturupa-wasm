@@ -1350,7 +1350,7 @@ pub fn decline(stem: &str, linga: Linga, class: &Class) -> Result<Paradigm, &'st
                     f(x, "Un"),
                     f(x, "uBiH"),
                     f(x, "uByaH"),
-                    f(x, "URAm"),
+                    f(x, "UnAm"),
                     f(x, "uzu"),
                 ),
                 _ => (
@@ -1362,21 +1362,20 @@ pub fn decline(stem: &str, linga: Linga, class: &Class) -> Result<Paradigm, &'st
                     f(x, "ezu"),
                 ),
             };
-            let mut cells = if stem.ends_with('i') {
+            let mut cells = if let Some(p) = stem.strip_suffix('i') {
                 // The i-stem singular (औडुलोमिः, हे औडुलोमे).
                 table(&[
-                    (f(stem, "H"), f(stem, "I"), f(stem, "aH")),
-                    (f(stem, "am"), f(stem, "I"), f(stem, "aH")),
-                    (f(stem, "inA"), f(stem, "ByAm"), f(stem, "BiH")),
-                    (f(stem, "aye"), f(stem, "ByAm"), f(stem, "ByaH")),
-                    (f(stem, "eH"), f(stem, "ByAm"), f(stem, "ByaH")),
-                    (f(stem, "eH"), f(stem, "yoH"), f(stem, "InAm")),
-                    (f(stem, "O"), f(stem, "yoH"), f(stem, "izu")),
-                    (f(stem, "e"), f(stem, "I"), f(stem, "aH")),
+                    (f(p, "iH"), f(p, "I"), f(p, "ayaH")),
+                    (f(p, "im"), f(p, "I"), f(p, "In")),
+                    (f(p, "inA"), f(p, "iByAm"), f(p, "iBiH")),
+                    (f(p, "aye"), f(p, "iByAm"), f(p, "iByaH")),
+                    (f(p, "eH"), f(p, "iByAm"), f(p, "iByaH")),
+                    (f(p, "eH"), f(p, "yoH"), f(p, "InAm")),
+                    (f(p, "O"), f(p, "yoH"), f(p, "izu")),
+                    (f(p, "e"), f(p, "I"), f(p, "ayaH")),
                 ])
-            } else {
+            } else if let Some(p) = stem.strip_suffix('a') {
                 // The a-stem singular (आगस्त्यः, आगस्त्येन).
-                let p = stem.strip_suffix('a').unwrap_or(stem);
                 table(&[
                     (f(p, "aH"), f(p, "O"), f(p, "AH")),
                     (f(p, "am"), f(p, "O"), f(p, "An")),
@@ -1385,8 +1384,10 @@ pub fn decline(stem: &str, linga: Linga, class: &Class) -> Result<Paradigm, &'st
                     (f(p, "At"), f(p, "AByAm"), f(p, "eByaH")),
                     (f(p, "asya"), f(p, "ayoH"), f(p, "AnAm")),
                     (f(p, "e"), f(p, "ayoH"), f(p, "ezu")),
-                    (f(p, "aH"), f(p, "O"), f(p, "AH")),
+                    (stem.to_string(), f(p, "O"), f(p, "AH")),
                 ])
+            } else {
+                return Err(NOT_POSSIBLE);
             };
             put(&mut cells, 0, 2, vec![nom.clone()]);
             put(&mut cells, 1, 2, vec![acc]);
@@ -1395,13 +1396,10 @@ pub fn decline(stem: &str, linga: Linga, class: &Class) -> Result<Paradigm, &'st
             put(&mut cells, 4, 2, vec![dat]);
             put(&mut cells, 5, 2, vec![gen]);
             put(&mut cells, 6, 2, vec![loc]);
-            // The vocative singular is the bare stem (हे आगस्त्य) and the
-            // vocative plural the reduced one (हे अगस्तयः).
-            put(&mut cells, 7, 0, vec![stem.to_string()]);
             put(&mut cells, 7, 2, vec![nom]);
-            // The ablative singular carries the वृद्धि pair
-            // (आगस्त्याद्-आगस्त्यात्).
             if let Some(p) = stem.strip_suffix('a') {
+                // The ablative singular carries the वृद्धि pair
+                // (आगस्त्याद्-आगस्त्यात्).
                 put(&mut cells, 4, 0, vec![f(p, "Ad"), f(p, "At")]);
             }
             cells
@@ -4156,7 +4154,10 @@ fn natva_cells(cells: Vec<Slot>, stem: &str, linga: Linga, class: &Class) -> Vec
     // instr-sg (a/i/u-stems) and नाम् gen-pl (a/ā/i/ī/u/ū-stems). अदन्त/अत्
     // stems must not voice their strong नुम् (`gacCanti`, `kzuBnatA` stay
     // dental: @pacat1/@viyat1/@tudat1/@dadat2 never run the step).
-    let instr_in = matches!(class, Class::AM | Class::AN | Class::IMF | Class::UMF);
+    let instr_in = matches!(
+        class,
+        Class::AM | Class::AN | Class::IMF | Class::UMF | Class::OPlur(_, _)
+    );
     let genpl_nam = matches!(
         class,
         Class::AM
@@ -4172,6 +4173,7 @@ fn natva_cells(cells: Vec<Slot>, stem: &str, linga: Linga, class: &Class) -> Vec
             | Class::UUF
             | Class::UUFN
             | Class::GatiF
+            | Class::OPlur(_, _)
     );
     // The neuter agent nouns (धातृ → धातृणी) are not इगन्त: the site
     // keeps the dental (क्षन्तृ → क्षन्तॄणि), so the णत्व trigger that
@@ -5691,7 +5693,7 @@ const O_PLURALS: &[(&str, &str, char)] = &[
     ("gArgya", "garg", 'a'),
     ("gOtama", "gotam", 'a'),
     ("pAYcAla", "paYcAl", 'a'),
-    ("bAsteya", "vast", 'i'),
+    ("bAsteya", "bast", 'i'),
     ("BArgava", "Bfg", 'u'),
     ("mEtreya", "mitray", 'u'),
     ("yAska", "yask", 'a'),

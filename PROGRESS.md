@@ -2135,10 +2135,14 @@ and the plural takes the compound's reduced stem (अगस्त, कुत्�
 भृग) with the endings of the a-stem masculine (कुत्साः), the इ-स्वादि
 masculine (अगस्तयः) or the उ-स्वादि masculine (भृगवः).
 
-Covered: आगस्त्य, कौण्डिन्य, कौत्स, गौतम, पाञ्चाल, यास्क, वासिष्ठ
-(the rest of the family — आत्रेय, खारपायण, गार्ग्य, बास्तेय, भार्गव,
-मैत्रेय, औडुलोमि, पान्नागारि, शारलोमि, सादामत्ति — still differ in a
-cell or two: the ण-form of the genitive plural or the singular's
-instrumental).
+The ण-form of the genitive plural and of the instrumental singular is
+the site's own नत्व step, so `OPlur` runs it: the न of नाम् and of इन
+voices when the stem carries the trigger to its left (खरपाणाम्,
+अत्रीणाम्, गार्ग्येण, भार्गवेण, पान्नागारिणा) and stays dental where the
+letter in between blocks it (अगस्तीनाम्, कुत्सानाम्, आगस्त्येन).
 
-Whole-db parity: **8,842/9,007** exact.
+Covered: आगस्त्य, आत्रेय, कौण्डिन्य, कौत्स, खारपायण, गार्ग्य, गौतम,
+पाञ्चाल, बास्तेय, भार्गव, मैत्रेय, यास्क, वासिष्ठ, औडुलोमि, पान्नागारि,
+शारलोमि, सादामत्ति.
+
+Whole-db parity: **8,852/9,007** exact.
