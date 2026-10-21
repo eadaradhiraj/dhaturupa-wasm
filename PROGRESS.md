@@ -1706,3 +1706,16 @@ Covered: चकासत्, जक्षत्, जाग्रत्, दद�
 वाहद्विषत्, शासत्.
 
 Whole-db parity: **8,522/9,007** exact. Gates green (browser 472).
+
+## 2026-10-21 (34) — the श्-final nouns of the ड/ट flavour
+
+`Sam` (विश्; site @viz1): the श्-final nouns come in a ड/ट flavour beside
+the three-alternant one the `Cons` class covers — the प्रथमा-/सम्बोधन-
+एकवचन carry the ड/ट pair (विड्-विट्), the भ-endings voice the stem
+(विड्भ्याम्) and the locative plural the ट्सु pair (विट्सु-विट्त्सु); the
+rest keeps the plain stem (विशौ, विशः). The `Rc2` class (the two-alternant
+ऋ-chart, दिग्-दिक्) now reaches the feminine stems too.
+
+Covered: विश् (masculine and feminine), विपाश्, दिश्.
+
+Whole-db parity: **8,526/9,007** exact. Gates green (browser 472).

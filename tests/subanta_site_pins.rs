@@ -366,10 +366,17 @@ fn dad_final_and_two_alternant_pins() {
     {
         pin_word_any(word, "N");
     }
-    for word in ["दिश्", "मर्मस्पृश्", "घृतस्पृश्", "जलस्पृश्"]
+    for word in ["मर्मस्पृश्", "घृतस्पृश्", "जलस्पृश्"]
     {
         pin_word_any(word, "P");
     }
+    // The ऋ-chart nouns with two alternants (दिश् → दिग्-दिक्) are
+    // feminine, and the श्-final nouns come in a ड/ट flavour too
+    // (विश् → विड्-विट्).
+    for word in ["दिश्", "विपाश्", "विश्"] {
+        pin_word_any(word, "S");
+    }
+    pin_word_any("विश्", "P");
 }
 
 /// The neuter of the वतुप् stems (अहङ्कारवत् → अहङ्कारवद्-अहङ्कारवत्,

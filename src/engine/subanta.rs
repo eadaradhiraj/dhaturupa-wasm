@@ -249,6 +249,9 @@ pub enum Class {
     /// The ऋ-chart nouns with two alternants (दिश्; site @diz1): the ग/क
     /// pair (दिग्-दिक्).
     Rc2,
+    /// The श्-final nouns of the ड/ट flavour (विश्; site @viz1): the
+    /// nominative carries विड्-विट्.
+    Sam,
     /// The feminine ष्-final nouns of the ड/ट flavour (तृष्; site @tRS1):
     /// the ड/ट pair (तृड्-तृट्).
     ZamF,
@@ -406,6 +409,7 @@ impl Class {
                 }
             }
             Self::Rc2 => "rc-2".to_string(),
+            Self::Sam => "sam".to_string(),
             Self::ZamF => "zam-f".to_string(),
             Self::ZvF(v) => format!("zv-f-{v}"),
             Self::ZagM => "zag-m".to_string(),
@@ -2150,6 +2154,33 @@ pub fn decline(stem: &str, linga: Linga, class: &Class) -> Result<Paradigm, &'st
             put(&mut cells, 1, 0, pair.clone());
             put(&mut cells, 7, 0, pair);
             put(&mut cells, 6, 2, vec![f(base, "tsu")]);
+            cells
+        }
+        Class::Sam => {
+            // The श्-final nouns of the ड/ट flavour (विश्; site @viz1): the
+            // प्रथमा-/सम्बोधन-एकवचन carry the ड/ट pair (विड्-विट्), the
+            // भ-endings voice the stem (विड्भ्याम्) and the locative plural
+            // the ट्सु pair (विट्सु-विट्त्सु); the rest keeps the plain
+            // stem (विशौ, विशः).
+            if !matches!(linga, Linga::M | Linga::F) || !stem.ends_with('S') || stem.len() < 3 {
+                return Err(NOT_POSSIBLE);
+            }
+            let base = &stem[..stem.len() - 1];
+            let voiced = f(base, "q");
+            let pause = f(base, "w");
+            let mut cells = table(&[
+                (f(stem, "aH"), f(stem, "O"), f(stem, "aH")),
+                (f(stem, "am"), f(stem, "O"), f(stem, "aH")),
+                (f(stem, "A"), f(&voiced, "ByAm"), f(&voiced, "BiH")),
+                (f(stem, "e"), f(&voiced, "ByAm"), f(&voiced, "ByaH")),
+                (f(stem, "aH"), f(&voiced, "ByAm"), f(&voiced, "ByaH")),
+                (f(stem, "aH"), f(stem, "oH"), f(stem, "Am")),
+                (f(stem, "i"), f(stem, "oH"), f(stem, "su")),
+                (f(stem, "aH"), f(stem, "O"), f(stem, "aH")),
+            ]);
+            put(&mut cells, 0, 0, vec![voiced.clone(), pause.clone()]);
+            put(&mut cells, 7, 0, vec![voiced.clone(), pause.clone()]);
+            put(&mut cells, 6, 2, vec![f(base, "wsu"), f(base, "wtsu")]);
             cells
         }
         Class::Rc2 => {
@@ -4087,6 +4118,8 @@ pub fn classes_for(stem: &str, linga: Linga) -> Vec<Class> {
                     // its three-alternant pair as the other candidate.
                     out.push(Class::Rc2);
                     out.push(Class::Cons);
+                    // The ड/ट flavour (विड्-विट्) is a third candidate.
+                    out.push(Class::Sam);
                 } else if stem.ends_with('h') {
                     // The masculine ह्-final nouns (लिह्) come in three
                     // flavours on the site — the ड/ट pair (लिड्-लिट्), the
@@ -4121,6 +4154,13 @@ pub fn classes_for(stem: &str, linga: Linga) -> Vec<Class> {
             }
             Linga::F => {
                 out.push(Class::Cons);
+                // The श्-final nouns come in a two-alternant flavour
+                // (दिग्-दिक्) and a ड/ट flavour (विड्-विट्) — the site's
+                // grid decides.
+                if stem.ends_with('S') {
+                    out.push(Class::Rc2);
+                    out.push(Class::Sam);
+                }
                 // The feminine ष्-final nouns (तृष्, छदिष्) come in a ड/ट
                 // flavour and three vowel flavours — so all four are
                 // offered and the site's grid decides.
