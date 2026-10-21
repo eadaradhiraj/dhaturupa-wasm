@@ -894,3 +894,11 @@ fn hna_final_pins() {
         pin_word_any(word, "P");
     }
 }
+
+/// The अ-स्वादि masculine (गुप्; site @gup1): the nominative carries the
+/// जश् pause pair (गुब्-गुप्), the भ-endings the voiced form and the
+/// locative plural the सु-form.
+#[test]
+fn a_swadi_masculine_pins() {
+    pin_word_any("गुप्", "P");
+}

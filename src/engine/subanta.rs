@@ -463,6 +463,10 @@ pub enum Class {
     /// The neuter u-stems (अगुरु; site @aguru2): the ण-forms in the
     /// cat/paJ/zaz/sap (अगुरुणे, अगुरूणाम्).
     UnN,
+    /// The अ-स्वादि masculine/feminine (गुप्, अप्; site @gup1/@ap1):
+    /// the masculine nominative carries the जश् pause pair (गुब्-गुप्),
+    /// the feminine the आ-form (आपः).
+    ApM,
     /// The neuter i-stems in the ण-form (अतिस्त्रि; site @atistri3): the
     /// dvi/plural take the ण-forms (अतिस्त्रिणी) and the cat/paJ/sap carry
     /// both alternants (अतिस्त्रिणे-अतिस्त्रये).
@@ -727,6 +731,7 @@ impl Class {
             Self::UvF => "uv-f".to_string(),
             Self::UvFd => "uv-f-d".to_string(),
             Self::UnN => "un-n".to_string(),
+            Self::ApM => "ap-m".to_string(),
             Self::INu => "i-nu".to_string(),
             Self::INv => "i-nv".to_string(),
             Self::HasM => "has-m".to_string(),
@@ -1314,6 +1319,40 @@ pub fn decline(stem: &str, linga: Linga, class: &Class) -> Result<Paradigm, &'st
                 (f(p, "O"), f(p, "yoH"), f(p, "izu")),
                 (f(p, "e"), f(p, "I"), f(p, "ayaH")),
             ])
+        }
+        Class::ApM => {
+            // The अ-स्वादि masculine/feminine (गुप्, अप्; site @gup1/@ap1):
+            // the masculine nominative carries the जश् pause pair
+            // (गुब्-गुप्) and the feminine the आ-form (आपः); the भ-endings
+            // voice the stem (गुब्भ्याम्, अद्भिः) and the locative plural
+            // takes the षु-form (गुप्सु, अप्सु).
+            if !matches!(linga, Linga::M | Linga::F) || !stem.ends_with('p') || stem.len() < 2 {
+                return Err(NOT_POSSIBLE);
+            }
+            let base = &stem[..stem.len() - 1];
+            let voiced = f(base, "b");
+            let plain = stem.to_string();
+            let fem = if linga == Linga::F {
+                // the आ-form (आपः)
+                format!("A{}", &stem[1..])
+            } else {
+                plain.clone()
+            };
+            let mut cells = table(&[
+                (f(&fem, "aH"), f(&plain, "O"), f(&plain, "aH")),
+                (f(&fem, "am"), f(&plain, "O"), f(&plain, "aH")),
+                (f(&plain, "A"), f(&voiced, "ByAm"), f(&voiced, "BiH")),
+                (f(&plain, "e"), f(&voiced, "ByAm"), f(&voiced, "ByaH")),
+                (f(&plain, "aH"), f(&voiced, "ByAm"), f(&voiced, "ByaH")),
+                (f(&plain, "aH"), f(&plain, "oH"), f(&plain, "Am")),
+                (f(&plain, "i"), f(&plain, "oH"), f(&plain, "su")),
+                (f(&fem, "aH"), f(&plain, "O"), f(&plain, "aH")),
+            ]);
+            if linga == Linga::M {
+                put(&mut cells, 0, 0, vec![voiced.clone(), plain.clone()]);
+                put(&mut cells, 7, 0, vec![voiced, plain]);
+            }
+            cells
         }
         Class::INu => {
             // The neuter i-stems in the ण-form (अतिस्त्रि; site @atistri3):
@@ -5798,6 +5837,10 @@ pub fn classes_for(stem: &str, linga: Linga) -> Vec<Class> {
             // the site's grid decides.
             out.push(Class::RFA);
         }
+    } else if stem.ends_with('p') && matches!(linga, Linga::M | Linga::F) {
+        // The अ-स्वादि masculine/feminine (गुप्, अप्) — the site's grid
+        // decides.
+        out.push(Class::ApM);
     } else if stem.ends_with('j') {
         match linga {
             // The ज्-final nouns split in two: the निज-स्वादि pair

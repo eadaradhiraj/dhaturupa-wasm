@@ -2123,4 +2123,10 @@ form, the ण-form and the form with the ह's halant dropped.
 Covered: अष्टाह्न, चतुरह्न, त्र्यह्न, दशाह्न, द्व्यह्न, नवाह्न, पञ्चाह्न,
 मध्याह्न, व्यह्न, षडह्न, सप्ताह्न, सायाह्न.
 
-Whole-db parity: **8,834/9,007** exact.
+`ApM` (गुप्; site @gup1) covers the अ-स्वादि: the masculine nominative
+carries the जश् pause pair (गुब्-गुप्), the भ-endings the voiced form
+(गुब्भ्याम्) and the locative plural the सु-form (गुप्सु).
+
+Covered: गुप्.
+
+Whole-db parity: **8,835/9,007** exact.
