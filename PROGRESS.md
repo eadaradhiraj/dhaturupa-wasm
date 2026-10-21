@@ -2102,8 +2102,12 @@ the masculine अन्-stems: the dual and plural take the ण-सर्वध�
 the भ-endings and the locative plural the plain stem (अर्यमभ्याम्,
 अर्यमसु).
 
+The known-word tables now take the site's ablative pair (सर्वस्माद्-
+सर्वस्मात्) — a cell may carry several alternants, separated by `/`.
+
 Covered: राज्, देवेज्, परिमृज्, परिव्राज्, परेतराज्, यक्षराज्, यमराज्,
 सम्राज्, स्वाराज्, विभ्राज्; मातृ, पितृ, देवृ, भ्रातृ, दुहितृ, ननन्दृ,
-ननान्दृ, यातृ; अर्यमन्, तमिस्रहन्.
+ननान्दृ, यातृ; अर्यमन्, तमिस्रहन्; सर्व, अदस्, इदम्, एक, एतद्, किम्,
+तद्, यद्.
 
-Whole-db parity: **8,810/9,007** exact.
+Whole-db parity: **8,818/9,007** exact.
