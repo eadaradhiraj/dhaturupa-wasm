@@ -1857,9 +1857,10 @@ after the ई-/इ-vowels (जयश्रीणाम्) but not after the ऊ
 
 The `StrongN` flavour keeps the dental genitive plural alternant
 (धियाम्-धीनाम्; site @dhI1) where the `Strong` one takes the retroflex
-(जयश्रियाम्-जयश्रीणाम्).
+(जयश्रियाम्-जयश्रीणाम्), and the `Vva` flavour writes the व्व-forms of
+the feminine ऊ-stems (खलप्वम्; site @khalapU2).
 
 Covered: जयश्री, धनश्री, भद्रश्री, विजयश्री, श्री, सुश्री, कुलस्त्री,
 वारस्त्री, धी, भी, भू, धू, जू, पू, भ्रू, पर्यन्तभू.
 
-Whole-db parity: **8,658/9,007** exact.
+Whole-db parity: **8,665/9,007** exact.

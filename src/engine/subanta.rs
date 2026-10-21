@@ -221,6 +221,8 @@ pub enum NV2Opt {
     /// The `Strong` pairs with the dental genitive plural alternant
     /// (धियाम्-धीनाम्; site @dhI1).
     StrongN,
+    /// The व्व-forms of the feminine ऊ-stems (खलप्वम्; site @khalapU2).
+    Vva,
 }
 
 impl NV2Opt {
@@ -232,6 +234,7 @@ impl NV2Opt {
             Self::Strong => "strong",
             Self::Solo => "solo",
             Self::StrongN => "strongn",
+            Self::Vva => "vva",
         }
     }
 }
@@ -1242,7 +1245,13 @@ pub fn decline(stem: &str, linga: Linga, class: &Class) -> Result<Paradigm, &'st
             let (strong, voc) = if let Some(p) = stem.strip_suffix('I') {
                 (format!("{p}iy"), format!("{p}i"))
             } else if let Some(p) = stem.strip_suffix('U') {
-                (format!("{p}uv"), format!("{p}u"))
+                // The उव-forms (धुवौ) or the व्व-forms (खलप्वौ).
+                let strong = if matches!(opt, NV2Opt::Vva) {
+                    format!("{p}v")
+                } else {
+                    format!("{p}uv")
+                };
+                (strong, format!("{p}u"))
             } else if let Some(p) = stem.strip_suffix('i') {
                 (format!("{stem}y"), format!("{p}e"))
             } else {
@@ -1294,7 +1303,7 @@ pub fn decline(stem: &str, linga: Linga, class: &Class) -> Result<Paradigm, &'st
                     put(&mut cells, 6, 0, vec![f(&strong, "i"), f(&strong, "Am")]);
                     put(&mut cells, 7, 0, vec![f(stem, "H")]);
                 }
-                NV2Opt::Solo => {
+                NV2Opt::Solo | NV2Opt::Vva => {
                     put(&mut cells, 7, 0, vec![f(stem, "H")]);
                 }
             }
@@ -4913,7 +4922,9 @@ pub fn classes_for(stem: &str, linga: Linga) -> Vec<Class> {
             // The उव-flavour of the site (धुवौ).
             out.push(Class::NV2(NV2Opt::Eka));
             out.push(Class::NV2(NV2Opt::Strong));
+            out.push(Class::NV2(NV2Opt::StrongN));
             out.push(Class::NV2(NV2Opt::Solo));
+            out.push(Class::NV2(NV2Opt::Vva));
         } else if linga == Linga::M {
             // The masculine ऊ-स्वादि (अग्निभूः; site @agnibhU1) and
             // its व्व-form flavour (उल्ल्वौ; site @ullU1).
