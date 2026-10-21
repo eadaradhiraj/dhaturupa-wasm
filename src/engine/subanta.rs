@@ -205,6 +205,37 @@ impl AAFSOpt {
     }
 }
 
+/// The flavours of the नदीसंज्ञक feminine ई- and ऊ-स्वादि stems: the
+/// site writes the िय-/उव-forms with the alternant pairs in some
+/// cells.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub enum NV2Opt {
+    /// The pairs in the accusative singular and plural (कुलस्त्रियम्-
+    /// कुलस्त्रीम्; site @kulastrI1).
+    Eka,
+    /// The pairs in the dative, ablative, genitive and locative
+    /// (जयश्रिये-जयश्रियै; site @jayazrI1).
+    Strong,
+    /// The plain forms (पर्यन्तभुवौ; site @paryantabhU1).
+    Solo,
+    /// The `Strong` pairs with the dental genitive plural alternant
+    /// (धियाम्-धीनाम्; site @dhI1).
+    StrongN,
+}
+
+impl NV2Opt {
+    /// The class label of this flavour.
+    #[must_use]
+    pub fn label(self) -> &'static str {
+        match self {
+            Self::Eka => "eka",
+            Self::Strong => "strong",
+            Self::Solo => "solo",
+            Self::StrongN => "strongn",
+        }
+    }
+}
+
 /// The optional-form flavours of the neuter a-stem: the site's grids
 /// differ in the nominative, the ablative and the instrumental.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
@@ -293,6 +324,9 @@ pub enum Class {
     AuM,
     /// `A`-stem feminine (`ramA`).
     AAF,
+    /// The नदीसंज्ञक feminine ई- and ऊ-स्वादि stems in the िय-/उव-
+    /// flavours (धी, धू; site @dhI1/@dhU1).
+    NV2(NV2Opt),
     /// The feminine a-stems with the स्य-augment pairs (उत्तरपश्चिमा;
     /// site @uttarapazcimA1) or the bare vocative (हे अक्क).
     AAFS(AAFSOpt),
@@ -544,6 +578,7 @@ impl Class {
             Self::AcM2(pair) => format!("ac-m-{pair}"),
             Self::AuM => "O-m".to_string(),
             Self::AAF => "A-f".to_string(),
+            Self::NV2(o) => format!("nadi-{}", o.label()),
             Self::AAFS(o) => format!("A-f-{}", o.label()),
             Self::IMF => "i-m/f".to_string(),
             Self::IN => "i-n".to_string(),
@@ -1194,6 +1229,76 @@ pub fn decline(stem: &str, linga: Linga, class: &Class) -> Result<Paradigm, &'st
                 }
                 cells
             }
+        }
+        Class::NV2(opt) => {
+            // The नदीसंज्ञक feminine ई- and ऊ-स्वादि stems (धी, धू; site
+            // @dhI1/@dhU1): the site writes the िय- and उव-forms in the
+            // strong cells (धियौ, धुवौ) and, word by word, the
+            // alternant pairs beside them (जयश्रिये-जयश्रियै,
+            // कुलस्त्रियम्-कुलस्त्रीम्).
+            if linga != Linga::F {
+                return Err(NOT_POSSIBLE);
+            }
+            let (strong, voc) = if let Some(p) = stem.strip_suffix('I') {
+                (format!("{p}iy"), format!("{p}i"))
+            } else if let Some(p) = stem.strip_suffix('U') {
+                (format!("{p}uv"), format!("{p}u"))
+            } else if let Some(p) = stem.strip_suffix('i') {
+                (format!("{stem}y"), format!("{p}e"))
+            } else {
+                return Err(NOT_POSSIBLE);
+            };
+            // The genitive plural alternant: the णत्व after the ई-/इ-
+            // vowels (जयश्रीणाम्) but not after the ऊ (धूनाम्).
+            let gen = if stem.ends_with('U') {
+                f(stem, "nAm")
+            } else {
+                f(stem, "RAm")
+            };
+            let mut cells = table(&[
+                (f(stem, "H"), f(&strong, "O"), f(&strong, "aH")),
+                (f(&strong, "am"), f(&strong, "O"), f(&strong, "aH")),
+                (f(&strong, "A"), f(stem, "ByAm"), f(stem, "BiH")),
+                (f(&strong, "e"), f(stem, "ByAm"), f(stem, "ByaH")),
+                (f(&strong, "aH"), f(stem, "ByAm"), f(stem, "ByaH")),
+                (f(&strong, "aH"), f(&strong, "oH"), f(&strong, "Am")),
+                (f(&strong, "i"), f(&strong, "oH"), f(stem, "zu")),
+                (voc.clone(), f(&strong, "O"), f(&strong, "aH")),
+            ]);
+            match opt {
+                NV2Opt::Eka => {
+                    // The pairs in the accusative singular and plural;
+                    // the vocative drops the ending (हे कुलस्त्रि).
+                    put(&mut cells, 0, 0, vec![stem.to_string()]);
+                    put(&mut cells, 1, 0, vec![f(&strong, "am"), f(stem, "m")]);
+                    put(&mut cells, 1, 2, vec![f(&strong, "aH"), f(stem, "H")]);
+                    put(&mut cells, 3, 0, vec![f(&strong, "E")]);
+                    put(&mut cells, 4, 0, vec![f(&strong, "AH")]);
+                    put(&mut cells, 5, 0, vec![f(&strong, "AH")]);
+                    put(&mut cells, 5, 2, vec![gen]);
+                    put(&mut cells, 6, 0, vec![f(&strong, "Am")]);
+                    put(&mut cells, 7, 0, vec![voc]);
+                }
+                NV2Opt::Strong | NV2Opt::StrongN => {
+                    // The pairs in the dative, ablative, genitive and
+                    // locative.
+                    put(&mut cells, 3, 0, vec![f(&strong, "e"), f(&strong, "E")]);
+                    put(&mut cells, 4, 0, vec![f(&strong, "aH"), f(&strong, "AH")]);
+                    put(&mut cells, 5, 0, vec![f(&strong, "aH"), f(&strong, "AH")]);
+                    let gen = if matches!(opt, NV2Opt::StrongN) {
+                        f(stem, "nAm")
+                    } else {
+                        gen
+                    };
+                    put(&mut cells, 5, 2, vec![f(&strong, "Am"), gen]);
+                    put(&mut cells, 6, 0, vec![f(&strong, "i"), f(&strong, "Am")]);
+                    put(&mut cells, 7, 0, vec![f(stem, "H")]);
+                }
+                NV2Opt::Solo => {
+                    put(&mut cells, 7, 0, vec![f(stem, "H")]);
+                }
+            }
+            cells
         }
         Class::IIF => {
             if linga != Linga::F || !stem.ends_with('I') {
@@ -4767,6 +4872,11 @@ pub fn classes_for(stem: &str, linga: Linga) -> Vec<Class> {
             // stem cannot say which is meant, so both tables are offered.
             out.push(Class::IIFN);
             out.push(Class::IIF);
+            // The िय-flavour of the site (जयश्रियौ, कुलस्त्रियौ).
+            out.push(Class::NV2(NV2Opt::Eka));
+            out.push(Class::NV2(NV2Opt::Strong));
+            out.push(Class::NV2(NV2Opt::StrongN));
+            out.push(Class::NV2(NV2Opt::Solo));
         } else if linga == Linga::M {
             // The masculine ई-स्वादि (अमीः, अग्रणीः; site @amI1) and
             // its strong-cell flavours (the ग्य-forms or the वृद्धि) —
@@ -4800,6 +4910,10 @@ pub fn classes_for(stem: &str, linga: Linga) -> Vec<Class> {
         if linga == Linga::F {
             out.push(Class::UUFN);
             out.push(Class::UUF);
+            // The उव-flavour of the site (धुवौ).
+            out.push(Class::NV2(NV2Opt::Eka));
+            out.push(Class::NV2(NV2Opt::Strong));
+            out.push(Class::NV2(NV2Opt::Solo));
         } else if linga == Linga::M {
             // The masculine ऊ-स्वादि (अग्निभूः; site @agnibhU1) and
             // its व्व-form flavour (उल्ल्वौ; site @ullU1).

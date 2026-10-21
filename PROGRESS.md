@@ -1842,3 +1842,24 @@ Covered: उत्तरपश्चिमा, उत्तरपूर्वा
 अल्ला, जगदम्बा.
 
 Whole-db parity: **8,637/9,007** exact.
+
+## 2026-10-21 (41) — the नदीसंज्ञक feminine ई- and ऊ-स्वादि stems
+
+`NV2(NV2Opt)` (धी, धू; site @dhI1/@dhU1): the site writes the िय- and
+उव-forms in the strong cells (धियौ, धुवौ) and, word by word, the
+alternant pairs beside them — in the dative, ablative, genitive and
+locative (जयश्रिये-जयश्रियै, जयश्रियः-जयश्रियाः, जयश्रियाम्-जयश्रीणाम्,
+जयश्रियि-जयश्रियाम्; the `Strong` flavour) or in the accusative
+singular and plural (कुलस्त्रियम्-कुलस्त्रीम्; the `Eka` flavour).
+The `Solo` flavour is the plain form (पर्यन्तभुवौ; site
+@paryantabhU1). The genitive plural alternant takes the retroflex ण
+after the ई-/इ-vowels (जयश्रीणाम्) but not after the ऊ (धूनाम्).
+
+The `StrongN` flavour keeps the dental genitive plural alternant
+(धियाम्-धीनाम्; site @dhI1) where the `Strong` one takes the retroflex
+(जयश्रियाम्-जयश्रीणाम्).
+
+Covered: जयश्री, धनश्री, भद्रश्री, विजयश्री, श्री, सुश्री, कुलस्त्री,
+वारस्त्री, धी, भी, भू, धू, जू, पू, भ्रू, पर्यन्तभू.
+
+Whole-db parity: **8,658/9,007** exact.

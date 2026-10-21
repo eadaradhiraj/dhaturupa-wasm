@@ -581,6 +581,15 @@ fn sha_final_masks() {
     }
 }
 
+/// The नदीसंज्ञक feminine ई- and ऊ-स्वादि stems in the िय-/उव-flavours
+/// (जयश्री, कुलस्त्री, धी, धू; site @jayazrI1/@kulastrI1/@dhI1/@dhU1).
+#[test]
+fn nadi_feminine_i_and_u_stem_pins() {
+    for word in ["जयश्री", "कुलस्त्री", "धी", "धू"] {
+        pin_word_any(word, "S");
+    }
+}
+
 /// The feminine a-stems with the स्य-augment pairs (उत्तरपश्चिमा;
 /// site @uttarapazcimA1) and the bare vocative (हे अक्क; site @akkA1).
 #[test]
