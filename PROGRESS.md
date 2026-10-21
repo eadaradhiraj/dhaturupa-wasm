@@ -1957,3 +1957,61 @@ The families still open, with the shape each needs:
 Blocked, no derived table reaches them: the ह्न family (अष्टाह्न…, the
 third locative अष्टाहनि needs a ह without the virama) and the sparse
 site grids (अक्षत, गृह, चतुर्, अप् — the site's cells are empty).
+
+## 2026-10-21 (47) — the ञ्च-स्वादि, the अस्-स्वादि and the visarga flavours
+
+The handoff (entry 46) named five open families; this entry closes four
+of them (the fifth, the ओ-स्वादि plurals, is still open) and fixes the
+नत्व that the हिन्द-family words exposed.
+
+`AccMV` (उदच्; site @udac1 and its kin): the masculine च्-final nouns
+of the ञ्च-स्वादि family whose weak stem is the वृद्धि-form — the
+strong cells keep the ञ्च-forms (उदञ्चौ, उदञ्चम्), the weak cells the
+वृद्धि-form (उदीचा, उदीचः, उदीचाम्). The weak stem is the citation
+minus its च, minus the trailing vowel, minus a trailing semi-vowel,
+plus the flavour's consonant: उदच् → उद + ईच, न्यच् → न + ईच,
+अन्वच् → अन + ऊच, तिर्यच् → तिर + श्च. The भ-endings voice the stem
+(उदग्भ्याम्) and the locative plural takes the क्षु (उदक्षु).
+
+`AsMV`, `AsMP` and `AsMW` (पिण्डग्रस्, ध्वस्, सुतुस्; site
+@piNDagras1/@dhvas1/@sutus1): the अस्-स्वादि masculine comes in three
+more flavours of the nominative — the plain visarga form (पिण्डग्रः),
+the pause pair (ध्वद्-ध्वत्, with the द-form in the भ-endings and the
+त्सु in the locative plural) and the वृद्धि-form (सुतूः, with the
+वृद्धि + the र् in the भ-endings and the षु-pair in the locative
+plural). `SasV` (ओकास्; site @okAs1) covers the स्-final nouns that
+are not अस्-स्वादि at all: the nominative is the visarga form and the
+भ-endings take the stem without the ओ-augment (ओकाभ्याम्).
+
+`ZamC` (चिकीर्ष्; site @cikIrS1 and its kin): the masculine ष्-final
+nouns of the visarga flavour — the nominative is the visarga form
+(चिकीः, जगच्चक्षुः, सप्तार्चिः, स्थिरायुः), the भ-endings the र-form
+(चिकीर्भ्याम्) and the locative plural the षु-pair (जगच्चक्षुःषु-
+जगच्चक्षुष्षु); where the रुत्व-र् drops, the locative plural is the
+plain षु (चिकीर्षु).
+
+`IIM2` gains two flavours: the गुण-forms with the आ-forms beside them
+(दुर्धी → दुर्ध्यै, दुर्ध्याः, दुर्धीनाम्; site @durdhI1) and the
+वृद्धि with the आ-form in the locative (नी → नियाम्; site @nI1).
+
+The नत्व now reaches the प्रातिपदिक's own न् alone: the इ-स्वादि weak
+stem has dropped it, so the root's internal न keeps its dental
+(कर्मन्दिभ्याम्, परिपन्थिभ्याम् — site @karmandin1/@paripanthin1),
+while the strong stem still voices it (अतिनिर्हारिणौ).
+
+Covered: उदच्, न्यच्, प्रत्यच्, सम्यच्, तद्र्यच्, देवद्र्यच्, सध्र्यच्,
+विष्वद्र्यच्, अन्वच्; पिण्डग्रस्, पिण्डग्लस्, सुवस्, ध्वस्, स्रस्,
+सुतुस्, सुपिस्; ओकास्, भास्; चिकीर्ष्, जगच्चक्षुष्, सप्तार्चिष्,
+स्थिरायुष्; दुर्धी, प्रधी, वृश्चिकभी, नी; कर्मन्दिन्, परिपन्थिन्.
+
+Whole-db parity: **8,710/9,007** exact.
+
+Still open (from the handoff): the ओ-स्वादि plurals (18 words: the
+plural takes the ओ-form, but the site rewrites the stem word by word —
+the औ + त् → the उ in कौत्स → कुत्स, the आ + र → the अ in खारपायण →
+खरप — so each word needs its own stem), the neuter ञ्च-स्वादि
+(6 words), the ण-inserted alternants (the दन्तान्-दतः family, 17
+words) and the three single-word shapes (पुम्स्, सुहिन्स्, दोष्).
+Blocked, no derived table reaches them: the ह्न family (अष्टाह्न…) and
+the sparse site grids (अक्षत, गृह, चतुर्, अप् — the site's cells are
+empty).

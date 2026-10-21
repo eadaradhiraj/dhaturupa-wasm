@@ -700,3 +700,69 @@ fn us_swadi_pins() {
         }
     }
 }
+
+/// The ञ्च-स्वादि masculine nouns whose weak stem is the वृद्धि-form
+/// (उदच् → उदीचः; site @udac1 and its kin). `तिर्यच्` is left out: the
+/// site spells its weak stem `तिरश्च` (the र without its halant), which
+/// no SLP1 surface can render.
+#[test]
+fn anccha_swadi_masculine_pins() {
+    for word in [
+        "उदच्",
+        "न्यच्",
+        "प्रत्यच्",
+        "सम्यच्",
+        "तद्र्यच्",
+        "देवद्र्यच्",
+        "सध्र्यच्",
+        "विष्वद्र्यच्",
+        "अन्वच्",
+    ] {
+        pin_word_any(word, "P");
+    }
+}
+
+/// The अस्-स्वादि masculine nouns of the plain, the pause and the वृद्धि
+/// flavours (पिण्डग्रस्, ध्वस्, सुतुस्; site @piNDagras1/@dhvas1/
+/// @sutus1) and the स्-final nouns that are not अस्-स्वादि at all
+/// (ओकास्, भास्; site @okAs1/@bhAs1).
+#[test]
+fn as_swadi_masculine_pins() {
+    for word in ["पिण्डग्रस्", "पिण्डग्लस्", "सुवस्", "ध्वस्", "स्रस्", "सुतुस्", "सुपिस्"]
+    {
+        pin_word_any(word, "P");
+    }
+    pin_word_any("ओकास्", "P");
+    pin_word_any("भास्", "S");
+}
+
+/// The masculine ष्-final nouns of the visarga flavour (चिकीर्ष्; site
+/// @cikIrS1 and its kin): the nominative is the visarga form, the
+/// भ-endings the र-form.
+#[test]
+fn visarga_sha_final_masculine_pins() {
+    for word in ["चिकीर्ष्", "जगच्चक्षुष्", "सप्तार्चिष्", "स्थिरायुष्"]
+    {
+        pin_word_any(word, "P");
+    }
+}
+
+/// The masculine ई-स्वादि nouns with the आ-forms beside the गुण-forms
+/// (दुर्धी → दुर्ध्यै, दुर्ध्याः; site @durdhI1) and the आ-form in the
+/// locative (नी → नियाम्; site @nI1).
+#[test]
+fn i_stem_masculine_aa_forms_pins() {
+    for word in ["दुर्धी", "प्रधी", "वृश्चिकभी", "नी"] {
+        pin_word_any(word, "P");
+    }
+}
+
+/// The इ-स्वादि masculine nouns whose root's own न् keeps its dental:
+/// the नत्व reaches the प्रातिपदिक's final न् alone (कर्मन्दिन् →
+/// कर्मन्दिभ्याम्; site @karmandin1).
+#[test]
+fn in_stem_dental_natva_pins() {
+    for word in ["कर्मन्दिन्", "परिपन्थिन्"] {
+        pin_word_any(word, "P");
+    }
+}

@@ -159,6 +159,15 @@ pub enum IIM2Opt {
     /// The वृद्धि: the िय-forms in the strong cells (दुर्धियौ, दुर्धियि;
     /// site @durdhI2).
     Vridhi,
+    /// The गुण-forms in the strong cells with the आ-forms beside them
+    /// (दुर्ध्यै, दुर्ध्याः, दुर्धीनाम्; site @durdhI1): the dative
+    /// singular takes the ऐ-form, the ablative and genitive singular the
+    /// आ-form, the genitive plural the ई-form and the vocative the
+    /// ि-form.
+    GunaA,
+    /// The वृद्धि with the आ-form in the locative singular (नियाम्;
+    /// site @nI1).
+    VridhiA,
 }
 
 /// The strong-cell flavours of the masculine ऊ-स्वादि stems: the site
@@ -181,6 +190,8 @@ impl IIM2Opt {
             Self::GunaI => "gunai",
             Self::GunaU => "gunau",
             Self::Vridhi => "vridhi",
+            Self::GunaA => "guna-a",
+            Self::VridhiA => "vridhi-a",
         }
     }
 }
@@ -422,6 +433,12 @@ pub enum Class {
     /// Masculine च्-final nouns (अर्वाच्; site @arvAc2): the ङ्-inserted
     /// nominative (अर्वाङ्) and the ञ्च-forms (अर्वाञ्चौ, अर्वाञ्चः).
     AccM,
+    /// Masculine च्-final nouns of the ञ्च-स्वादि family whose weak
+    /// stem is the वृद्धि-form (उदच्; site @udac1): the strong cells
+    /// keep the ञ्च-forms (उदञ्चौ), the weak cells the वृद्धि-form
+    /// (उदीचः) — the flavour picks the consonant the वृद्धि-form ends
+    /// in (`I` ईच, `U` ऊच, `S` श्च).
+    AccMV(char),
     /// Masculine ज्-final nouns (खन्ज्; site @khanj1): the bare-stem
     /// nominative (खन्) and the ञ्ज-forms (खञ्जौ, खञ्जः).
     AjjM,
@@ -482,6 +499,12 @@ pub enum Class {
     /// The masculine ष्-final nouns (द्विष्; site @dviS1): the ड/ट pair in
     /// the प्रथमा-एकवचन (द्विड्-द्विट्) and the ट्सु locative plural.
     Zam,
+    /// The masculine ष्-final nouns of the visarga flavour (चिकीर्ष्;
+    /// site @cikIrS1): the nominative is the visarga form (चिकीः), the
+    /// भ-endings the र-form (चिकीर्भ्याम्) — the flavour picks the
+    /// nominative (`C` plain, `V` the वृद्धि-form, `R` the रुत्व-dropped
+    /// form) and with it the locative plural.
+    ZamC(char),
     /// The neuter ऋ-chart nouns (दृश्; site @dRz3): the ई-form dual
     /// (दृशी) and the ंशि-form plural (दृंशि).
     RcN,
@@ -511,6 +534,24 @@ pub enum Class {
     /// The feminine अस्-स्वादि (सदस् → सदाः; site @sadas2): the same
     /// shape as the masculine, with the आ-form in the nominative.
     AsF,
+    /// The अस्-स्वादि masculine of the plain flavour (पिण्डग्रस्; site
+    /// @piNDagras1): the nominative is the visarga form (पिण्डग्रः)
+    /// where the आ-flavour writes the आ-form (पिण्डग्राः).
+    AsMV,
+    /// The अस्-स्वादि masculine of the pause flavour (ध्वस्; site
+    /// @dhvas1): the nominative carries the द्/त् pair (ध्वद्-ध्वत्),
+    /// the भ-endings the द-form (ध्वद्भ्याम्) and the locative plural
+    /// the त्सु (ध्वत्सु).
+    AsMP,
+    /// The अस्-स्वादि masculine of the वृद्धि flavour (सुतुस्; site
+    /// @sutus1): the nominative takes the वृद्धि-form (सुतूः), the
+    /// भ-endings the वृद्धि + the र् (सुतूर्भ्याम्).
+    AsMW,
+    /// The स्-final masculine nouns of the visarga flavour (ओकास्; site
+    /// @okAs1): the nominative is the visarga form (ओकाः), the भ-endings
+    /// take the stem without the ओ-augment (ओकाभ्याम्) and the locative
+    /// plural both alternants (ओकाःसु-ओकास्सु).
+    SasV,
     /// The anusvāra-स्वादि (अणीयस्; site @aNIyas1): the nominal forms
     /// take the anusvāra (अणीयान्, अणीयांसौ), the rest the स-forms.
     AsAnM,
@@ -638,6 +679,7 @@ impl Class {
             Self::UUM2(o) => format!("U-m-{}", o.label()),
             Self::TaN => "ta-n".to_string(),
             Self::AccM => "ac-m".to_string(),
+            Self::AccMV(v) => format!("ac-m-v{v}"),
             Self::AjjM => "aj-m".to_string(),
             Self::UvF => "uv-f".to_string(),
             Self::UvFd => "uv-f-d".to_string(),
@@ -657,6 +699,7 @@ impl Class {
             Self::HasAM => "has-am".to_string(),
             Self::DuhM => "duh-m".to_string(),
             Self::Zam => "zam".to_string(),
+            Self::ZamC(v) => format!("zam-c-{v}"),
             Self::RcN => "rc-n".to_string(),
             Self::DadN(ndi) => {
                 if *ndi {
@@ -672,6 +715,10 @@ impl Class {
             Self::ZagM => "zag-m".to_string(),
             Self::AcN => "ac-n".to_string(),
             Self::AsAnM => "asan-m".to_string(),
+            Self::AsMV => "asv-m".to_string(),
+            Self::AsMP => "asp-m".to_string(),
+            Self::AsMW => "asw-m".to_string(),
+            Self::SasV => "sas-v".to_string(),
             Self::AsEM => "ase-m".to_string(),
             Self::AsmM => "asm-m".to_string(),
             Self::AsmN => "asm-n".to_string(),
@@ -1290,8 +1337,14 @@ pub fn decline(stem: &str, linga: Linga, class: &Class) -> Result<Paradigm, &'st
                 return Err(NOT_POSSIBLE);
             }
             let p = &stem[..stem.len() - 1];
-            if matches!(opt, IIM2Opt::Vridhi) {
+            if matches!(opt, IIM2Opt::Vridhi | IIM2Opt::VridhiA) {
                 let v = f(p, "iy");
+                let loc = if matches!(opt, IIM2Opt::VridhiA) {
+                    // The आ-form in the locative singular (नियाम्).
+                    f(&v, "Am")
+                } else {
+                    f(&v, "i")
+                };
                 table(&[
                     (f(stem, "H"), f(&v, "O"), f(&v, "aH")),
                     (f(&v, "am"), f(&v, "O"), f(&v, "aH")),
@@ -1299,7 +1352,7 @@ pub fn decline(stem: &str, linga: Linga, class: &Class) -> Result<Paradigm, &'st
                     (f(&v, "e"), f(stem, "ByAm"), f(stem, "ByaH")),
                     (f(&v, "aH"), f(stem, "ByAm"), f(stem, "ByaH")),
                     (f(&v, "aH"), f(&v, "oH"), f(&v, "Am")),
-                    (f(&v, "i"), f(&v, "oH"), f(stem, "zu")),
+                    (loc, f(&v, "oH"), f(stem, "zu")),
                     (f(stem, "H"), f(&v, "O"), f(&v, "aH")),
                 ])
             } else {
@@ -1307,7 +1360,7 @@ pub fn decline(stem: &str, linga: Linga, class: &Class) -> Result<Paradigm, &'st
                 // singular and plural and in the locative singular; the
                 // ablative and genitive singular take the उ-augment in
                 // the site.
-                let loc = if matches!(opt, IIM2Opt::Guna) {
+                let loc = if matches!(opt, IIM2Opt::Guna | IIM2Opt::GunaA) {
                     f(p, "yAm")
                 } else {
                     f(p, "yi")
@@ -1325,6 +1378,18 @@ pub fn decline(stem: &str, linga: Linga, class: &Class) -> Result<Paradigm, &'st
                 if matches!(opt, IIM2Opt::GunaU) {
                     put(&mut cells, 4, 0, vec![f(p, "yuH")]);
                     put(&mut cells, 5, 0, vec![f(p, "yuH")]);
+                }
+                if matches!(opt, IIM2Opt::GunaA) {
+                    // The ऐ-form in the dative singular (दुर्ध्यै), the
+                    // आ-forms in the ablative and genitive singular
+                    // (दुर्ध्याः), the ई-form in the genitive plural
+                    // (दुर्धीनाम्) and the ि-form in the vocative
+                    // (हे दुर्धि).
+                    put(&mut cells, 3, 0, vec![f(p, "yE")]);
+                    put(&mut cells, 4, 0, vec![f(p, "yAH")]);
+                    put(&mut cells, 5, 0, vec![f(p, "yAH")]);
+                    put(&mut cells, 5, 2, vec![f(stem, "nAm")]);
+                    put(&mut cells, 7, 0, vec![f(p, "i")]);
                 }
                 cells
             }
@@ -3048,6 +3113,51 @@ pub fn decline(stem: &str, linga: Linga, class: &Class) -> Result<Paradigm, &'st
             put(&mut cells, 6, 2, vec![f(base, "wsu"), f(base, "wtsu")]);
             cells
         }
+        Class::ZamC(flavour) => {
+            // The masculine ष्-final nouns of the visarga flavour (चिकीर्ष्;
+            // site @cikIrS1): the nominative is the visarga form (चिकीः),
+            // the भ-endings the र-form (चिकीर्भ्याम्) and the locative
+            // plural the षु-pair (चिकीःषु-चिकीष्षु). The flavour picks
+            // the nominative: `C` the plain stem (जगच्चक्षुः), `V` the
+            // वृद्धि-form (पिपठीः), `R` the stem without its रुत्व-र्
+            // (चिकीः) — and with it the locative plural.
+            if linga != Linga::M || !stem.ends_with('z') || stem.len() < 3 {
+                return Err(NOT_POSSIBLE);
+            }
+            let base = &stem[..stem.len() - 1];
+            let vriddhi = vriddhi_stem(base);
+            let (nom, weak) = match *flavour {
+                'V' => (format!("{vriddhi}H"), vriddhi),
+                'R' => (
+                    format!("{}H", base.strip_suffix('r').unwrap_or(base)),
+                    base.to_string(),
+                ),
+                _ => (format!("{base}H"), base.to_string()),
+            };
+            let bh = if weak.ends_with('r') {
+                weak.clone()
+            } else {
+                format!("{weak}r")
+            };
+            let mut cells = table(&[
+                (nom.clone(), f(stem, "O"), f(stem, "aH")),
+                (f(stem, "am"), f(stem, "O"), f(stem, "aH")),
+                (f(stem, "A"), f(&bh, "ByAm"), f(&bh, "BiH")),
+                (f(stem, "e"), f(&bh, "ByAm"), f(&bh, "ByaH")),
+                (f(stem, "aH"), f(&bh, "ByAm"), f(&bh, "ByaH")),
+                (f(stem, "aH"), f(stem, "oH"), f(stem, "Am")),
+                (f(stem, "i"), f(stem, "oH"), f(stem, "su")),
+                (nom, f(stem, "O"), f(stem, "aH")),
+            ]);
+            // The locative plural: the षु-pair (पिपठीःषु-पिपठीष्षु) or,
+            // where the रुत्व-र् drops, the plain षु (चिकीर्षु).
+            if *flavour == 'R' {
+                put(&mut cells, 6, 2, vec![f(base, "zu")]);
+            } else {
+                put(&mut cells, 6, 2, vec![f(&weak, "Hzu"), f(&weak, "zzu")]);
+            }
+            cells
+        }
         Class::AcN => {
             // The neuter च्-final nouns (अर्वाच्; site @arvAc1): the
             // प्रथमा-एकवचन carries the ग/क pair (अर्वाग्-अर्वाक्), the
@@ -3140,6 +3250,41 @@ pub fn decline(stem: &str, linga: Linga, class: &Class) -> Result<Paradigm, &'st
                 (f(stem, "aH"), f(base, "gByAm"), f(base, "gByaH")),
                 (f(stem, "aH"), f(stem, "oH"), f(stem, "Am")),
                 (f(stem, "i"), f(stem, "oH"), f(base, "kzu")),
+                (f(base, "N"), f(base, "YcO"), f(base, "YcaH")),
+            ])
+        }
+        Class::AccMV(flavour) => {
+            // The masculine च्-final nouns of the ञ्च-स्वादि family whose
+            // weak stem is the वृद्धि-form (उदच्; site @udac1): the
+            // strong cells keep the ञ्च-forms (उदञ्चौ), the weak cells
+            // the वृद्धि-form (उदीचः). The weak stem is the citation
+            // minus its च, minus the trailing vowel, minus a trailing
+            // semi-vowel, plus the flavour's consonant: उदच् → उद + ईच,
+            // न्यच् → न + ईच, अन्वच् → अन + ऊच, तिर्यच् → तिर + श्च.
+            if linga != Linga::M || !stem.ends_with('c') || stem.len() < 3 {
+                return Err(NOT_POSSIBLE);
+            }
+            let base = &stem[..stem.len() - 1];
+            let core = base.trim_end_matches(['a', 'A', 'i', 'I', 'u', 'U']);
+            let weak = match *flavour {
+                'U' => format!("{}Uc", core.strip_suffix('v').unwrap_or(core)),
+                'S' => format!("{}Sc", core.strip_suffix('y').unwrap_or(core)),
+                _ => {
+                    let head = core
+                        .strip_suffix('y')
+                        .or_else(|| core.strip_suffix('v'))
+                        .unwrap_or(core);
+                    format!("{head}Ic")
+                }
+            };
+            table(&[
+                (f(base, "N"), f(base, "YcO"), f(base, "YcaH")),
+                (f(base, "Ycam"), f(base, "YcO"), f(&weak, "aH")),
+                (f(&weak, "A"), f(base, "gByAm"), f(base, "gBiH")),
+                (f(&weak, "e"), f(base, "gByAm"), f(base, "gByaH")),
+                (f(&weak, "aH"), f(base, "gByAm"), f(base, "gByaH")),
+                (f(&weak, "aH"), f(&weak, "oH"), f(&weak, "Am")),
+                (f(&weak, "i"), f(&weak, "oH"), f(base, "kzu")),
                 (f(base, "N"), f(base, "YcO"), f(base, "YcaH")),
             ])
         }
@@ -3265,6 +3410,113 @@ pub fn decline(stem: &str, linga: Linga, class: &Class) -> Result<Paradigm, &'st
             // The locative plural carries both alternants (अनःसु-अनस्सु,
             // site @anas1): the visarga form and the doubled स् form.
             put(&mut cells, 6, 2, vec![f(q, "aHsu"), f(&w, "su")]);
+            cells
+        }
+        Class::AsMV => {
+            // The अस्-स्वादि masculine of the plain flavour (पिण्डग्रस्;
+            // site @piNDagras1): the nominative is the visarga form
+            // (पिण्डग्रः) where the आ-flavour writes the आ-form
+            // (पिण्डग्राः), the भ-endings the ओ-form (पिण्डग्रोभ्याम्)
+            // and the locative plural both alternants
+            // (पिण्डग्रःसु-पिण्डग्रस्सु).
+            if linga != Linga::M || !(stem.ends_with('s') || stem.ends_with('H')) || stem.len() < 2
+            {
+                return Err(NOT_POSSIBLE);
+            }
+            let w = normalize_visarga(stem);
+            let q = &w[..w.len() - 2];
+            let o = format!("{q}o");
+            let mut cells = table(&[
+                (f(q, "aH"), f(&w, "O"), f(&w, "aH")),
+                (f(&w, "am"), f(&w, "O"), f(&w, "aH")),
+                (f(&w, "A"), f(&o, "ByAm"), f(&o, "BiH")),
+                (f(&w, "e"), f(&o, "ByAm"), f(&o, "ByaH")),
+                (f(&w, "aH"), f(&o, "ByAm"), f(&o, "ByaH")),
+                (f(&w, "aH"), f(&w, "oH"), f(&w, "Am")),
+                (f(&w, "i"), f(&w, "oH"), f(&w, "su")),
+                (f(q, "aH"), f(&w, "O"), f(&w, "aH")),
+            ]);
+            put(&mut cells, 6, 2, vec![f(q, "aHsu"), f(&w, "su")]);
+            cells
+        }
+        Class::AsMP => {
+            // The अस्-स्वादि masculine of the pause flavour (ध्वस्; site
+            // @dhvas1): the nominative carries the द्/त् pair
+            // (ध्वद्-ध्वत्), the भ-endings the द-form (ध्वद्भ्याम्) and
+            // the locative plural the त्सु (ध्वत्सु).
+            if linga != Linga::M || !(stem.ends_with('s') || stem.ends_with('H')) || stem.len() < 2
+            {
+                return Err(NOT_POSSIBLE);
+            }
+            let w = normalize_visarga(stem);
+            // The stem without its स् — the inherent vowel kept, so the
+            // pause forms keep their halant (ध्वद्).
+            let base = &w[..w.len() - 1];
+            let voiced = f(base, "d");
+            let pause = f(base, "t");
+            let mut cells = table(&[
+                (f(base, "AH"), f(&w, "O"), f(&w, "aH")),
+                (f(&w, "am"), f(&w, "O"), f(&w, "aH")),
+                (f(&w, "A"), f(&voiced, "ByAm"), f(&voiced, "BiH")),
+                (f(&w, "e"), f(&voiced, "ByAm"), f(&voiced, "ByaH")),
+                (f(&w, "aH"), f(&voiced, "ByAm"), f(&voiced, "ByaH")),
+                (f(&w, "aH"), f(&w, "oH"), f(&w, "Am")),
+                (f(&w, "i"), f(&w, "oH"), f(&w, "su")),
+                (f(base, "aH"), f(&w, "O"), f(&w, "aH")),
+            ]);
+            put(&mut cells, 0, 0, vec![voiced.clone(), pause.clone()]);
+            put(&mut cells, 7, 0, vec![voiced, pause]);
+            put(&mut cells, 6, 2, vec![f(base, "tsu")]);
+            cells
+        }
+        Class::AsMW => {
+            // The अस्-स्वादि masculine of the वृद्धि flavour (सुतुस्; site
+            // @sutus1): the nominative takes the वृद्धि-form of the stem
+            // (सुतूः), the भ-endings the वृद्धि + the र् (सुतूर्भ्याम्)
+            // and the locative plural both alternants (सुतूःषु-सुतूष्षु).
+            if linga != Linga::M || !(stem.ends_with('s') || stem.ends_with('H')) || stem.len() < 2
+            {
+                return Err(NOT_POSSIBLE);
+            }
+            let w = normalize_visarga(stem);
+            // The stem without its स् — the inherent vowel kept, so the
+            // वृद्धि-form ends on the stem's own vowel (सुतू).
+            let v = vriddhi_stem(&w[..w.len() - 1]);
+            let bh = format!("{v}r");
+            let mut cells = table(&[
+                (f(&v, "H"), f(&w, "O"), f(&w, "aH")),
+                (f(&w, "am"), f(&w, "O"), f(&w, "aH")),
+                (f(&w, "A"), f(&bh, "ByAm"), f(&bh, "BiH")),
+                (f(&w, "e"), f(&bh, "ByAm"), f(&bh, "ByaH")),
+                (f(&w, "aH"), f(&bh, "ByAm"), f(&bh, "ByaH")),
+                (f(&w, "aH"), f(&w, "oH"), f(&w, "Am")),
+                (f(&w, "i"), f(&w, "oH"), f(&w, "su")),
+                (f(&v, "H"), f(&w, "O"), f(&w, "aH")),
+            ]);
+            put(&mut cells, 6, 2, vec![f(&v, "Hzu"), f(&v, "zzu")]);
+            cells
+        }
+        Class::SasV => {
+            // The स्-final masculine nouns of the visarga flavour (ओकास्;
+            // site @okAs1): the nominative is the visarga form (ओकाः)
+            // where the अस्-स्वादि writes the आ-form, the भ-endings take
+            // the stem without the ओ-augment (ओकाभ्याम्) and the
+            // locative plural both alternants (ओकाःसु-ओकास्सु).
+            if !matches!(linga, Linga::M | Linga::F) || !stem.ends_with('s') || stem.len() < 3 {
+                return Err(NOT_POSSIBLE);
+            }
+            let base = &stem[..stem.len() - 1];
+            let mut cells = table(&[
+                (f(base, "H"), f(stem, "O"), f(stem, "aH")),
+                (f(stem, "am"), f(stem, "O"), f(stem, "aH")),
+                (f(stem, "A"), f(base, "ByAm"), f(base, "BiH")),
+                (f(stem, "e"), f(base, "ByAm"), f(base, "ByaH")),
+                (f(stem, "aH"), f(base, "ByAm"), f(base, "ByaH")),
+                (f(stem, "aH"), f(stem, "oH"), f(stem, "Am")),
+                (f(stem, "i"), f(stem, "oH"), f(stem, "su")),
+                (f(base, "H"), f(stem, "O"), f(stem, "aH")),
+            ]);
+            put(&mut cells, 6, 2, vec![f(base, "Hsu"), f(stem, "su")]);
             cells
         }
         Class::VasM => {
@@ -3483,6 +3735,21 @@ fn natva_cells(cells: Vec<Slot>, stem: &str, linga: Linga, class: &Class) -> Vec
             class,
             Class::AtN(_) | Class::RFN | Class::VantN | Class::DadN(_)
         );
+    // The नत्व of an न्-final प्रातिपदिक reaches that प्रातिपदिक's own
+    // न् — where the न् drops to a न (the ङ्वनिप् drop family: उक्षन् →
+    // उक्ष्णः) the न sits one slot earlier. The weak stem of the इ-स्वादि
+    // has dropped the न् altogether, so the root's own न keeps its dental
+    // (कर्मन्दिभ्याम्, परिपन्थिभ्याम्).
+    let nan_pos: Vec<usize> = if all && stem.ends_with('n') {
+        let len = stem.len();
+        let mut slots = vec![len - 1];
+        if len >= 2 && stem.as_bytes()[len - 2] == b'a' {
+            slots.push(len - 2);
+        }
+        slots
+    } else {
+        Vec::new()
+    };
     cells
         .into_iter()
         .enumerate()
@@ -3498,8 +3765,13 @@ fn natva_cells(cells: Vec<Slot>, stem: &str, linga: Linga, class: &Class) -> Vec
                 .map(|s| {
                     if !allow || s == stem {
                         s
-                    } else {
+                    } else if nan_pos.is_empty() {
                         site_natva(&s, ru_tva)
+                    } else {
+                        match s.rfind('n') {
+                            Some(q) if nan_pos.contains(&q) => site_natva_at(&s, ru_tva, q),
+                            _ => s,
+                        }
                     }
                 })
                 .collect();
@@ -3526,6 +3798,17 @@ fn site_natva(s: &str, ru_tva: bool) -> String {
     let Some(pos) = s.rfind('n') else {
         return s.to_string();
     };
+    site_natva_at(s, ru_tva, pos)
+}
+
+/// The same णत्व step, but aimed at a known `न्` position: the
+/// प्रातिपदिक's own final न् (the site's नत्व reaches that न् alone —
+/// the weak stem has dropped it, so an internal न keeps its dental:
+/// कर्मन्दिभ्याम्, परिपन्थिभ्याम्).
+fn site_natva_at(s: &str, ru_tva: bool, pos: usize) -> String {
+    if pos >= s.len() {
+        return s.to_string();
+    }
     if pos == s.len() - 1 {
         return s.to_string();
     }
@@ -3560,6 +3843,34 @@ fn site_natva(s: &str, ru_tva: bool) -> String {
 
 fn f(base: &str, ending: &str) -> String {
     format!("{base}{ending}")
+}
+
+/// The वृद्धि-form of a stem: its last vowel takes the वृद्धि (the short
+/// vowel lengthened) — सुतु → सुतू, सुपि → सुपी.
+fn vriddhi_stem(base: &str) -> String {
+    let mut out: Vec<char> = Vec::with_capacity(base.len());
+    let mut done = false;
+    for ch in base.chars().rev() {
+        if !done {
+            let long = match ch {
+                'a' => Some('A'),
+                'i' => Some('I'),
+                'u' => Some('U'),
+                _ => None,
+            };
+            if let Some(v) = long {
+                out.push(v);
+                done = true;
+                continue;
+            }
+            if "AIUfFxeEoO".contains(ch) {
+                done = true;
+            }
+        }
+        out.push(ch);
+    }
+    out.reverse();
+    out.into_iter().collect()
 }
 
 /// The अधिक-compounded युष्मद् (अतियुष्मद्): the base in front of the
@@ -5037,6 +5348,11 @@ pub fn classes_for(stem: &str, linga: Linga) -> Vec<Class> {
             out.push(Class::IIM2(IIM2Opt::GunaI));
             out.push(Class::IIM2(IIM2Opt::GunaU));
             out.push(Class::IIM2(IIM2Opt::Vridhi));
+            // The आ-forms beside the गुण-forms (दुर्ध्यै, दुर्ध्याः) and
+            // the आ-form in the locative (नियाम्) — the site's grid
+            // decides.
+            out.push(Class::IIM2(IIM2Opt::GunaA));
+            out.push(Class::IIM2(IIM2Opt::VridhiA));
         }
     } else if stem.ends_with('u') {
         match linga {
@@ -5143,6 +5459,11 @@ pub fn classes_for(stem: &str, linga: Linga) -> Vec<Class> {
                     // जलमुक्) — the site's grid decides.
                     out.push(Class::AcM2('g'));
                     out.push(Class::AcM2('q'));
+                    // The ञ्च-स्वादि family with the वृद्धि weak stem
+                    // (उदीचः) — the site's grid decides the flavour.
+                    out.push(Class::AccMV('I'));
+                    out.push(Class::AccMV('U'));
+                    out.push(Class::AccMV('S'));
                 } else if stem.ends_with('S') {
                     // The ऋ-chart nouns with two alternants (दिश् →
                     // दिग्-दिक्) are a shape of their own — the Cons keeps
@@ -5179,6 +5500,10 @@ pub fn classes_for(stem: &str, linga: Linga) -> Vec<Class> {
                     // offered and the site's grid decides.
                     out.push(Class::Zam);
                     out.push(Class::ZagM);
+                    // The visarga flavour (चिकीः) is a third candidate.
+                    out.push(Class::ZamC('C'));
+                    out.push(Class::ZamC('V'));
+                    out.push(Class::ZamC('R'));
                 } else {
                     out.push(Class::Cons);
                 }
@@ -5262,6 +5587,15 @@ pub fn classes_for(stem: &str, linga: Linga) -> Vec<Class> {
                 out.push(Class::AsM);
                 out.push(Class::AsAnM);
                 out.push(Class::AsEM);
+                // The plain, the pause and the वृद्धि flavours of the
+                // nominative (पिण्डग्रः, ध्वद्-ध्वत्, सुतूः) — the
+                // site's grid decides.
+                out.push(Class::AsMV);
+                out.push(Class::AsMP);
+                out.push(Class::AsMW);
+                // The स्-final nouns that are not अस्-स्वादि at all
+                // (ओकास् → ओकाः) — the site's grid decides.
+                out.push(Class::SasV);
                 // The वस्-स्वादि (विद्वस्; site @vidvas1) — the वान्
                 // nominative, the वांस् dual/plural and the वुष् weak
                 // forms. A bare stem cannot say which family it is.
@@ -5278,7 +5612,12 @@ pub fn classes_for(stem: &str, linga: Linga) -> Vec<Class> {
             }
             // The feminine अस्-स्वादि (सदस् → सदाः) rides the same shape
             // as the masculine.
-            Linga::F => out.push(Class::AsF),
+            Linga::F => {
+                out.push(Class::AsF);
+                // The स्-final nouns that are not अस्-स्वादि at all
+                // (भास् → भाः) — the site's grid decides.
+                out.push(Class::SasV);
+            }
         }
     }
     out
