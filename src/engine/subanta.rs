@@ -101,6 +101,32 @@ impl AOpt {
     }
 }
 
+/// The flavours of the compounded pronouns (अतियुष्मद्, अत्यस्मद्,
+/// परमयुष्मद्, परमास्मद्): the site grids the pronoun's own paradigm
+/// with the base in front of it, in three flavours per pronoun plus the
+/// पुरुष compounds.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub enum PronFlavour {
+    /// अतियुष्मद् — the त्व-forms (अतित्वम्, अतित्वाम्).
+    YuzTv,
+    /// अतियुष्मद् — the युव-forms (अतियुवाम्).
+    YuzYuv,
+    /// अतियुष्मद् — the युष्म-forms (अतियुष्माम्).
+    YuzYuzm,
+    /// अत्यस्मद् — the म-forms (अतिमाम्).
+    AsmMa,
+    /// अत्यस्मद् — the आव-forms (अत्यावाम्).
+    AsmAv,
+    /// अत्यस्मद् — the स्म-forms (अत्यस्माम्).
+    AsmSm,
+    /// परमयुष्मद् — the pronoun's own grid, the prefix on every
+    /// alternative (परमत्वाम्-परमत्वा).
+    YuzPara,
+    /// परमास्मद् — the pronoun's own grid, the prefix on every
+    /// alternative (परममाम्-परममा).
+    AsmPara,
+}
+
 /// The optional-form flavours of the neuter a-stem: the site's grids
 /// differ in the nominative, the ablative and the instrumental.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
@@ -114,6 +140,23 @@ pub enum ANOpt {
     /// ablative carries only the two स्म-alternants (एकतरस्माद्-एकतरस्मात्)
     /// and the locative the स्म-form alone (एकतरस्मिन्).
     Tara,
+}
+
+impl PronFlavour {
+    /// The class label of this flavour.
+    #[must_use]
+    pub fn label(self) -> &'static str {
+        match self {
+            Self::YuzTv => "tv",
+            Self::YuzYuv => "yuv",
+            Self::YuzYuzm => "yuzm",
+            Self::AsmMa => "ma",
+            Self::AsmAv => "av",
+            Self::AsmSm => "sm",
+            Self::YuzPara => "yuzpara",
+            Self::AsmPara => "asmpara",
+        }
+    }
 }
 
 impl ANOpt {
@@ -379,6 +422,9 @@ pub enum Class {
     /// voiceless one. Strong cells keep the input final. Distinct from
     /// the participle [`Class::AtM`] only in the prathamā-eka slot.
     Cons,
+    /// The compounded pronouns (अतियुष्मद्, अत्यस्मद्; site
+    /// @atiyuSmad1): the base in front of the pronoun's paradigm.
+    Pron(PronFlavour),
     /// उस्/इस्-स्वादि neuter (`आयुष्` `@AyuS1`; हविस्/धनुस् derive): the
     /// stem minus its ष्/स् is the root (आयु, हवि, धनु) — सि is the bare
     /// root + visarga (आयुः), द्वि the root + षि (आयुषी), बहु the
@@ -483,6 +529,7 @@ impl Class {
             Self::AsF => "as-f".to_string(),
             Self::AsM => "as-m".to_string(),
             Self::Cons => "cons".to_string(),
+            Self::Pron(f) => format!("pron-{}", f.label()),
             Self::UsN => "us-n".to_string(),
             Self::VasM => "vas-m".to_string(),
             Self::VasN => "vas-n".to_string(),
@@ -1091,6 +1138,69 @@ pub fn decline(stem: &str, linga: Linga, class: &Class) -> Result<Paradigm, &'st
             put(&mut cells, 5, 0, vec![f(p, "oH"), f(p, "vAH")]);
             put(&mut cells, 6, 0, vec![f(p, "O"), f(p, "vAm")]);
             cells
+        }
+        Class::Pron(flavour) => {
+            // The compounded pronouns (अतियुष्मद्, अत्यस्मद्,
+            // परमयुष्मद्, परमास्मद्). The site grids the pronoun's own
+            // paradigm with the base in front of it, in two shapes:
+            //
+            // * the अधिक compounds (अतियुष्मद्, अत्यस्मद्) — one form
+            //   per cell, the pronoun's त्व/युव/युष्म flavours
+            //   (अतित्वाम्, अतियुवाम्, अतियुष्माम्) or its म/आव/स्म
+            //   flavours (अतिमाम्, अत्यावाम्, अत्यस्माम्); a few
+            //   cells stay with the first flavour (see the helpers).
+            // * the पुरुष compounds (परमयुष्मद्, परमास्मद्) — the
+            //   pronoun's own grid with its pairs, the base on every
+            //   alternative (परमत्वाम्-परमत्वा).
+            if linga != Linga::M {
+                return Err(NOT_POSSIBLE);
+            }
+            match flavour {
+                PronFlavour::YuzTv | PronFlavour::YuzYuv | PronFlavour::YuzYuzm => {
+                    let Some(base) = stem.strip_suffix("yuzmad") else {
+                        return Err(NOT_POSSIBLE);
+                    };
+                    if base.is_empty() {
+                        return Err(NOT_POSSIBLE);
+                    }
+                    let pstem = match flavour {
+                        PronFlavour::YuzYuv => "yuv",
+                        PronFlavour::YuzYuzm => "yuzm",
+                        _ => "tv",
+                    };
+                    yuz_compound_cells(base, pstem)
+                }
+                PronFlavour::AsmMa | PronFlavour::AsmAv | PronFlavour::AsmSm => {
+                    let Some(base) = stem.strip_suffix("asmad") else {
+                        return Err(NOT_POSSIBLE);
+                    };
+                    // The stem carries the sandhi य (अत्यस्मद् = अति + अस्मद्).
+                    let Some(rest) = base.strip_suffix('y') else {
+                        return Err(NOT_POSSIBLE);
+                    };
+                    // The म-forms take the plain अति (अतिमाम्), the आव-
+                    // and स्म-forms the sandhi (अत्यावाम्, अत्यस्माम्).
+                    let ati = format!("{rest}i");
+                    let sandhi = base.to_string();
+                    let pstem = match flavour {
+                        PronFlavour::AsmAv => "Av",
+                        PronFlavour::AsmSm => "sm",
+                        _ => "m",
+                    };
+                    asm_compound_cells(&ati, &sandhi, pstem)
+                }
+                PronFlavour::YuzPara | PronFlavour::AsmPara => {
+                    let pron = if matches!(flavour, PronFlavour::YuzPara) {
+                        "yuzmad"
+                    } else {
+                        "asmad"
+                    };
+                    let Some((plain, sandhi)) = para_bases(stem) else {
+                        return Err(NOT_POSSIBLE);
+                    };
+                    pron_para_cells(&plain, &sandhi, pron)
+                }
+            }
         }
         Class::Cons => {
             // Full consonant-final noun (सरित्/विद्युत्/संविद्/उपनिषद्/
@@ -2975,6 +3085,230 @@ fn f(base: &str, ending: &str) -> String {
     format!("{base}{ending}")
 }
 
+/// The अधिक-compounded युष्मद् (अतियुष्मद्): the base in front of the
+/// pronoun's त्व/युव/युष्म-forms, one form per cell. The site keeps the
+/// first flavour's forms in the nominative singular (अतित्वम्), the
+/// nominative plural (अतियूयम्), the dative singular (अतितुभ्यम्) and
+/// the genitive singular (अतितव); the dative plural drops the आ
+/// (अतित्वभ्यम्) and the ablative singular and plural carry both
+/// alternants (अतित्वद्-अतित्वत्).
+fn yuz_compound_cells(base: &str, pstem: &str) -> Vec<Slot> {
+    let dual = f(base, &format!("{pstem}Am"));
+    let mut cells = table(&[
+        // प्रथमा — the singular and the plural keep the first flavour.
+        (f(base, "tvam"), dual.clone(), f(base, "yUyam")),
+        // द्वितीया — the accusative singular takes the dual form.
+        (dual.clone(), dual.clone(), f(base, &format!("{pstem}An"))),
+        (
+            f(base, &format!("{pstem}ayA")),
+            f(base, &format!("{pstem}AByAm")),
+            f(base, &format!("{pstem}ABiH")),
+        ),
+        // चतुर्थी — the singular keeps the first flavour, the plural
+        // drops the आ (अतित्वभ्यम्).
+        (
+            f(base, "tuByam"),
+            f(base, &format!("{pstem}AByAm")),
+            f(base, &format!("{pstem}aByam")),
+        ),
+        (
+            f(base, &format!("{pstem}ad")),
+            f(base, &format!("{pstem}AByAm")),
+            f(base, &format!("{pstem}at")),
+        ),
+        // षष्ठी — the singular keeps the first flavour.
+        (
+            f(base, "tava"),
+            f(base, &format!("{pstem}ayoH")),
+            f(base, &format!("{pstem}Akam")),
+        ),
+        (
+            f(base, &format!("{pstem}ayi")),
+            f(base, &format!("{pstem}ayoH")),
+            f(base, &format!("{pstem}Asu")),
+        ),
+        // सम्बोधना — the nominative forms again.
+        (f(base, "tvam"), dual.clone(), f(base, "yUyam")),
+    ]);
+    // The ablative singular and plural carry both alternants
+    // (अतित्वद्-अतित्वत्).
+    let abl = vec![
+        f(base, &format!("{pstem}ad")),
+        f(base, &format!("{pstem}at")),
+    ];
+    put(&mut cells, 4, 0, abl.clone());
+    put(&mut cells, 4, 2, abl);
+    cells
+}
+
+/// The अधिक-compounded अस्मद् (अत्यस्मद्): the base in front of the
+/// pronoun's म/आव/स्म-forms. The म-forms take the plain अति
+/// (अतिमाम्), the आव-forms the sandhi य with the आ matra
+/// (अत्यावाम्), the स्म-forms the sandhi य with its inherent written
+/// (अत्यस्माम्). The site keeps the nominative singular and plural at
+/// the अस्मद् forms (अत्यहम्, अतिवयम्) and the dative and genitive
+/// singular at the म-forms (अतिमह्यम्, अतिमम).
+fn asm_compound_cells(ati: &str, sandhi: &str, pstem: &str) -> Vec<Slot> {
+    let fbase = match pstem {
+        "m" => ati.to_string(),
+        "Av" => sandhi.to_string(),
+        _ => format!("{sandhi}a"),
+    };
+    // The cells the site keeps at the अस्मद् and the म-forms.
+    let nom_sg = f(&format!("{sandhi}a"), "ham");
+    let nom_pl = f(ati, "vayam");
+    let dat_sg = f(ati, "mahyam");
+    let gen_sg = f(ati, "mama");
+    let dual = f(&fbase, &format!("{pstem}Am"));
+    let mut cells = table(&[
+        (nom_sg.clone(), dual.clone(), nom_pl.clone()),
+        (dual.clone(), dual.clone(), f(&fbase, &format!("{pstem}An"))),
+        (
+            f(&fbase, &format!("{pstem}ayA")),
+            f(&fbase, &format!("{pstem}AByAm")),
+            f(&fbase, &format!("{pstem}ABiH")),
+        ),
+        (
+            dat_sg.clone(),
+            f(&fbase, &format!("{pstem}AByAm")),
+            f(&fbase, &format!("{pstem}aByam")),
+        ),
+        (
+            f(&fbase, &format!("{pstem}ad")),
+            f(&fbase, &format!("{pstem}AByAm")),
+            f(&fbase, &format!("{pstem}at")),
+        ),
+        (
+            gen_sg.clone(),
+            f(&fbase, &format!("{pstem}ayoH")),
+            f(&fbase, &format!("{pstem}Akam")),
+        ),
+        (
+            f(&fbase, &format!("{pstem}ayi")),
+            f(&fbase, &format!("{pstem}ayoH")),
+            f(&fbase, &format!("{pstem}Asu")),
+        ),
+        (nom_sg.clone(), dual.clone(), nom_pl.clone()),
+    ]);
+    let abl = vec![
+        f(&fbase, &format!("{pstem}ad")),
+        f(&fbase, &format!("{pstem}at")),
+    ];
+    put(&mut cells, 4, 0, abl.clone());
+    put(&mut cells, 4, 2, abl);
+    cells
+}
+
+/// The pronoun grids the पुरुष compounds (परमयुष्मद्, परमास्मद्) use:
+/// the pronoun's own cells with their alternants, the base on every
+/// alternative (परमत्वाम्-परमत्वा).
+const YUZMAD_PARA_GRID: [&[&str]; 21] = [
+    &["tvam"],
+    &["yuvAm"],
+    &["yUyam"],
+    &["tvAm", "tvA"],
+    &["yuvAm", "vAm"],
+    &["yuzmAn", "vaH"],
+    &["tvayA"],
+    &["yuvAByAm"],
+    &["yuzmABiH"],
+    &["tuByam", "te"],
+    &["yuvAByAm", "vAm"],
+    &["yuzmaByam", "vaH"],
+    &["tvad", "tvat"],
+    &["yuvAByAm"],
+    &["yuzmad", "yuzmat"],
+    &["tava", "te"],
+    &["yuvayoH", "vAm"],
+    &["yuzmAkam", "vaH"],
+    &["tvayi"],
+    &["yuvayoH"],
+    &["yuzmAsu"],
+];
+
+/// The अस्मद् grid the पुरुष compound (परमास्मद्) uses.
+const ASMAD_PARA_GRID: [&[&str]; 21] = [
+    &["aham"],
+    &["AvAm"],
+    &["vayam"],
+    &["mAm", "mA"],
+    &["AvAm", "nO"],
+    &["asmAn", "naH"],
+    &["mayA"],
+    &["AvAByAm"],
+    &["asmABiH"],
+    &["mahyam", "me"],
+    &["AvAByAm", "nO"],
+    &["asmaByam", "naH"],
+    &["mad", "mat"],
+    &["AvAByAm"],
+    &["asmad", "asmat"],
+    &["mama", "me"],
+    &["AvayoH", "nO"],
+    &["asmAkam", "naH"],
+    &["mayi"],
+    &["AvayoH"],
+    &["asmAsu"],
+];
+
+/// The पुरुष-compounded pronouns (परमयुष्मद्, परमास्मद्): the
+/// pronoun's own grid with its alternants, the base on every
+/// alternative. The सम्बोधना row is empty on the site.
+fn pron_para_cells(plain: &str, sandhi: &str, pron: &str) -> Vec<Slot> {
+    let grid: &[&[&str]] = if pron == "yuzmad" {
+        &YUZMAD_PARA_GRID
+    } else {
+        &ASMAD_PARA_GRID
+    };
+    let empty: Vec<(String, String, String)> = (0..8)
+        .map(|_| (String::new(), String::new(), String::new()))
+        .collect();
+    let mut cells = table(&empty);
+    for (i, alternatives) in grid.iter().enumerate() {
+        let forms: Vec<String> = alternatives
+            .iter()
+            .map(|alt| para_form(plain, sandhi, alt))
+            .collect();
+        put(&mut cells, i / 3, i % 3, forms);
+    }
+    put(&mut cells, 7, 0, Vec::new());
+    put(&mut cells, 7, 1, Vec::new());
+    put(&mut cells, 7, 2, Vec::new());
+    cells
+}
+
+/// The bases of a पुरुष-compounded pronoun: the plain base (परम) and
+/// the sandhi form (परमा), the one the site takes before a vowel
+/// (परम + अहम् → परमाहम्).
+fn para_bases(stem: &str) -> Option<(String, String)> {
+    // परमयुष्मद् keeps the युष्मद् as it is; परमास्मद् elides the अ
+    // of अस्मद् into the आ of परमा.
+    let base = stem
+        .strip_suffix("yuzmad")
+        .or_else(|| stem.strip_suffix("smad"))?;
+    // The matra of the sandhi gives the consonant its inherent back.
+    let plain = match base.strip_suffix('A') {
+        Some(rest) => format!("{rest}a"),
+        None => base.to_string(),
+    };
+    let sandhi = format!("{}A", plain.strip_suffix('a').unwrap_or(&plain));
+    Some((plain, sandhi))
+}
+
+/// One alternative of a पुरुष-compounded pronoun: the site's sandhi of
+/// the base and the pronoun's form — a vowel-initial form takes the
+/// matra and elides its vowel (परम + अहम् → परमाहम्), a
+/// consonant-initial one the plain base (परम + माम् → परममाम्).
+fn para_form(plain: &str, sandhi: &str, alt: &str) -> String {
+    let mut chars = alt.chars();
+    match chars.next() {
+        Some('a' | 'A' | 'i' | 'I' | 'u' | 'U' | 'f' | 'F' | 'x' | 'X' | 'e' | 'E' | 'o' | 'O') => {
+            format!("{sandhi}{}", chars.as_str())
+        }
+        _ => format!("{plain}{alt}"),
+    }
+}
+
 /// The ह्-final shape: the plain stem everywhere, except the
 /// प्रथमा-/सम्बोधन-एकवचन (the `pair`), the भ-endings (the `voiced`
 /// consonant) and the locative plural (the `loc` forms), which the
@@ -4065,6 +4399,31 @@ pub fn classes_for(stem: &str, linga: Linga) -> Vec<Class> {
     // `Bavat` pronoun behaves like at/I paradigms (covered by endings too,
     // except feminine which needs the word route).
     let mut out = Vec::new();
+    // The compounded pronouns (अतियुष्मद्, अत्यस्मद्, परमयुष्मद्,
+    // परमास्मद्): the site grids the pronoun's own paradigm with the
+    // base in front of it — the अधिक compounds in three flavours per
+    // pronoun, the पुरुष compounds in the pronoun's own grid.
+    if stem.ends_with("yuzmad") && stem.len() > 6 {
+        if stem.ends_with("paramayuzmad") {
+            out.push(Class::Pron(PronFlavour::YuzPara));
+        } else {
+            out.push(Class::Pron(PronFlavour::YuzTv));
+            out.push(Class::Pron(PronFlavour::YuzYuv));
+            out.push(Class::Pron(PronFlavour::YuzYuzm));
+        }
+        return out;
+    }
+    if stem.ends_with("asmad") && stem.len() > 5 {
+        out.push(Class::Pron(PronFlavour::AsmMa));
+        out.push(Class::Pron(PronFlavour::AsmAv));
+        out.push(Class::Pron(PronFlavour::AsmSm));
+        return out;
+    }
+    // परमास्मद् — the अ of अस्मद् elided into the आ of परमा.
+    if stem.ends_with("smad") && stem.len() > 4 {
+        out.push(Class::Pron(PronFlavour::AsmPara));
+        return out;
+    }
     if stem.ends_with('a') && !stem.ends_with("an") {
         match linga {
             Linga::M => {

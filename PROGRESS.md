@@ -1769,3 +1769,30 @@ Covered: अलावु, आलु, उडु, कङ्गु, कच्छु
 मृत्यु, रज्जु, रेणु, श्रद्धालु, सिन्धु, स्नायु, हनु.
 
 Whole-db parity: **8,568/9,007** exact.
+
+## 2026-10-21 (38) — the compounded pronouns
+
+`Pron(PronFlavour)` (अतियुष्मद्; site @atiyuSmad1): the site grids the
+pronoun's own paradigm with the base in front of it, in two shapes.
+
+The अधिक compounds (अतियुष्मद्, अत्यस्मद्) take one form per cell and
+come in three flavours per pronoun — the युष्मद्'s त्व-, युव- and
+युष्म-forms (अतित्वाम्, अतियुवाम्, अतियुष्माम्) and the अस्मद्'s म-,
+आव- and स्म-forms (अतिमाम्, अत्यावाम्, अत्यस्माम्). The site keeps a
+few cells of the first flavour: for युष्मद् the nominative singular and
+plural, the dative singular and the genitive singular (अतित्वम्,
+अतियूयम्, अतितुभ्यम्, अतितव), for अस्मद् the nominative singular and
+plural and the dative and genitive singular (अत्यहम्, अतिवयम्,
+अतिमह्यम्, अतिमम). The dative plural drops the आ (अतित्वभ्यम्) and
+the ablative singular and plural carry both alternants (अतित्वद्-
+अतित्वत्).
+
+The पुरुष compounds (परमयुष्मद्, परमास्मद्) take the pronoun's own
+grid with its alternants, the base on every alternative (परमत्वाम्-
+परमत्वा) — the site's sandhi puts the matra before a vowel-initial form
+(परम + अहम् → परमाहम्) and the plain base before a consonant-initial
+one (परम + माम् → परममाम्).
+
+Covered: अतियुष्मद्, अत्यस्मद्, परमयुष्मद्, परमास्मद्.
+
+Whole-db parity: **8,576/9,007** exact.

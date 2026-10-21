@@ -581,6 +581,20 @@ fn sha_final_masks() {
     }
 }
 
+/// The compounded pronouns (अतियुष्मद्, अत्यस्मद्, परमयुष्मद्,
+/// परमास्मद्): the site grids the pronoun's own paradigm with the base
+/// in front of it — three flavours per pronoun for the अधिक compounds
+/// (अतित्वाम्, अतियुवाम्, अतियुष्माम्; अतिमाम्, अत्यावाम्,
+/// अत्यस्माम्) and the pronoun's own grid, with its alternants, for the
+/// पुरुष ones (परमत्वाम्-परमत्वा).
+#[test]
+fn pronoun_compound_pins() {
+    for word in ["अतियुष्मद्", "अत्यस्मद्", "परमयुष्मद्", "परमास्मद्"]
+    {
+        pin_word_any(word, "P");
+    }
+}
+
 /// उस्/इस्-स्वादि neuters (ADDITIONS 2.4): आयुष् against its vendored db
 /// grid (`@AyuS1`), and the pattern-derived हविस्/धनुस् grids the site
 /// does not list — the contract says derived engine tables must cover
