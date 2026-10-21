@@ -828,3 +828,12 @@ fn as_swadi_neuter_dental_nan_pins() {
         pin_word_any(word, "N");
     }
 }
+
+/// The masculine and the neuter ञ्च-स्वादि with the परसवर्ण spelling
+/// (तिर्यच् → तिरश्च; site @tiryac1/@tiryac2): the र keeps its
+/// inherent vowel, so the श् follows it without a halant.
+#[test]
+fn tiryanccha_parasavarna_pins() {
+    pin_word_any("तिर्यच्", "P");
+    pin_word_any("तिर्यच्", "N");
+}

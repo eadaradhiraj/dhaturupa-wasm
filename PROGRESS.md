@@ -2032,9 +2032,10 @@ Covered: उदच्, न्यच्, प्रत्यच्, सम्य�
 स्थिरायुष्; दुर्धी, प्रधी, वृश्चिकभी, नी, कुमारी; त्वत्, अष्ठीवत्,
 दीध्यत्, वेव्यत्; तुदत्, भात्, ददत्, महत्; न्यच्, सम्यच्, अन्वच्,
 गवाच्, गोअच्, गोच्, गोन्च्, गवान्च्, गोअन्च्, तिर्यन्च्; अक्षि, अस्थि, दधि,
-सक्थि, अतिदधि; अन्तर्मनस्, दुर्मनस्, प्रमनस्; कर्मन्दिन्, परिपन्थिन्.
+सक्थि, अतिदधि; अन्तर्मनस्, दुर्मनस्, प्रमनस्; कर्मन्दिन्, परिपन्थिन्;
+तिर्यच् (the masculine and the neuter — the परसवर्ण spelling तिरश्च).
 
-Whole-db parity: **8,739/9,007** exact.
+Whole-db parity: **8,741/9,007** exact.
 
 Still open (from the handoff): the ओ-स्वादि plurals (18 words: the
 plural takes the ओ-form, but the site rewrites the stem word by word —
@@ -2042,8 +2043,11 @@ the औ + त् → the उ in कौत्स → कुत्स, the आ + �
 खरप — so each word needs its own stem), the ण-inserted alternants (the
 दन्तान्-दतः family, 12 words) and the three single-word shapes
 (पुम्स्, सुहिन्स्, दोष्). The ण-सर्वधातुकारी of the अन्-stems
-(अर्यमणौ) and the तिर्य-श्च spellings (तिरश्च, अर्यम्णः) cannot be
-rendered: the site writes a halant-less ण before the visarga, which no
-SLP1 surface spells. Blocked, no derived table reaches them: the ह्न
+(अर्यमणौ, पूषणौ — site @aryaman1/@pUSan1) is reachable: the engine's
+own transliterator round-trips both spellings (तिरश्च → `tiraSca` →
+तिरश्च, अर्यम्णः → `aryamRaH` → अर्यम्णः), because a consonant whose
+inherent `a` is written keeps its vowel instead of taking a halant. It
+still needs its own class (the सर्वधातुकारी writes the root open, the
+weak form halves it). Blocked, no derived table reaches them: the ह्न
 family (अष्टाह्न…) and the sparse site grids (अक्षत, गृह, चतुर्, अप् —
 the site's cells are empty).

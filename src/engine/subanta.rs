@@ -4059,7 +4059,13 @@ fn ac_weak(base: &str, flavour: char) -> String {
     let core = base.trim_end_matches(['a', 'A', 'i', 'I', 'u', 'U']);
     match flavour {
         'U' => format!("{}Uc", core.strip_suffix('v').unwrap_or(core)),
-        'S' => format!("{}Sc", core.strip_suffix('y').unwrap_or(core)),
+        'S' => {
+            // The परसवर्ण: the य → the श with the vowel before it, so
+            // the र keeps its inherent `a` and takes no halant
+            // (तिर्यच् → तिरश्च).
+            let head = core.strip_suffix('y').unwrap_or(core);
+            format!("{head}aSc")
+        }
         _ => {
             let head = core
                 .strip_suffix('y')
