@@ -168,6 +168,12 @@ pub enum IIM2Opt {
     /// The वृद्धि with the आ-form in the locative singular (नियाम्;
     /// site @nI1).
     VridhiA,
+    /// The गुण-forms in the strong cells with the bare stem in the
+    /// nominative (कुमारी, सखी; site @kumArI1/@sakhI3): the nominative
+    /// singular is the stem itself (कुमारी), the dative singular the
+    /// ऐ-form (कुमार्यै), the ablative and genitive singular the
+    /// आ-form (कुमार्याः) and the vocative the ि-form (हे कुमारि).
+    GunaB,
 }
 
 /// The strong-cell flavours of the masculine ऊ-स्वादि stems: the site
@@ -192,6 +198,7 @@ impl IIM2Opt {
             Self::Vridhi => "vridhi",
             Self::GunaA => "guna-a",
             Self::VridhiA => "vridhi-a",
+            Self::GunaB => "guna-b",
         }
     }
 }
@@ -430,6 +437,11 @@ pub enum Class {
     /// @Atmavat2): the प्रथमा-/द्वितीया-एकवचन carry the द/त pair
     /// (आत्मवद्-आत्मवत्), the rest the ई-forms (आत्मवती, आत्मवन्ति).
     TaN,
+    /// The neuter of a त-स्वादि stem in the site's mixed flavours (तुदत्;
+    /// site @tudat1/@dadat2/@mahat2): `D` the dual carries the न्ती-pair
+    /// (तुदन्ती-तुदती), `P` the plural the न्ति-pair (ददन्ति-ददति), `A`
+    /// the plural the आ-form (महान्ति).
+    TaN2(char),
     /// Masculine च्-final nouns (अर्वाच्; site @arvAc2): the ङ्-inserted
     /// nominative (अर्वाङ्) and the ञ्च-forms (अर्वाञ्चौ, अर्वाञ्चः).
     AccM,
@@ -612,6 +624,10 @@ pub enum Class {
     /// unlike at-stems). Selected by kṛt, not by ending, so at-stems
     /// ending in `vat` (e.g. `sunvat`) stay `AtM`.
     VantM,
+    /// The plain flavour of the masculine वतुप् stems (त्वत्; site
+    /// @tvat1): the nominative carries the द/त pair (त्वद्-त्वत्) and
+    /// the rest keeps the plain stem (त्वतौ, त्वतः).
+    VantMP,
     /// `j`-stem masculine/feminine (नजिङ्): pausa `svapnag`/`svapnak`,
     /// `svapnagByAm`, `svapnakzu`.
     Jvs,
@@ -678,6 +694,7 @@ impl Class {
             Self::UUM => "U-m".to_string(),
             Self::UUM2(o) => format!("U-m-{}", o.label()),
             Self::TaN => "ta-n".to_string(),
+            Self::TaN2(v) => format!("ta-n2-{v}"),
             Self::AccM => "ac-m".to_string(),
             Self::AccMV(v) => format!("ac-m-v{v}"),
             Self::AjjM => "aj-m".to_string(),
@@ -748,6 +765,7 @@ impl Class {
             Self::VasM => "vas-m".to_string(),
             Self::VasN => "vas-n".to_string(),
             Self::VantM => "vant-m".to_string(),
+            Self::VantMP => "vant-m-plain".to_string(),
             Self::Jvs => "j-m/f".to_string(),
             Self::JvsN => "j-n".to_string(),
             Self::VanM => "van-m".to_string(),
@@ -1360,7 +1378,7 @@ pub fn decline(stem: &str, linga: Linga, class: &Class) -> Result<Paradigm, &'st
                 // singular and plural and in the locative singular; the
                 // ablative and genitive singular take the उ-augment in
                 // the site.
-                let loc = if matches!(opt, IIM2Opt::Guna | IIM2Opt::GunaA) {
+                let loc = if matches!(opt, IIM2Opt::Guna | IIM2Opt::GunaA | IIM2Opt::GunaB) {
                     f(p, "yAm")
                 } else {
                     f(p, "yi")
@@ -1379,7 +1397,7 @@ pub fn decline(stem: &str, linga: Linga, class: &Class) -> Result<Paradigm, &'st
                     put(&mut cells, 4, 0, vec![f(p, "yuH")]);
                     put(&mut cells, 5, 0, vec![f(p, "yuH")]);
                 }
-                if matches!(opt, IIM2Opt::GunaA) {
+                if matches!(opt, IIM2Opt::GunaA | IIM2Opt::GunaB) {
                     // The ऐ-form in the dative singular (दुर्ध्यै), the
                     // आ-forms in the ablative and genitive singular
                     // (दुर्ध्याः), the ई-form in the genitive plural
@@ -1390,6 +1408,10 @@ pub fn decline(stem: &str, linga: Linga, class: &Class) -> Result<Paradigm, &'st
                     put(&mut cells, 5, 0, vec![f(p, "yAH")]);
                     put(&mut cells, 5, 2, vec![f(stem, "nAm")]);
                     put(&mut cells, 7, 0, vec![f(p, "i")]);
+                }
+                if matches!(opt, IIM2Opt::GunaB) {
+                    // The bare stem in the nominative singular (कुमारी).
+                    put(&mut cells, 0, 0, vec![stem.to_string()]);
                 }
                 cells
             }
@@ -2175,6 +2197,35 @@ pub fn decline(stem: &str, linga: Linga, class: &Class) -> Result<Paradigm, &'st
                 (f(stem, "i"), f(stem, "oH"), f(stem, "su")),
                 (format!("{q}{l}an"), f(&strong, "O"), f(&strong, "aH")),
             ])
+        }
+        Class::VantMP => {
+            // The plain flavour of the masculine वतुप् stems (त्वत्; site
+            // @tvat1): the nominative carries the द/त pair (त्वद्-त्वत्)
+            // where the वृद्धि flavour writes the वृद्धि-form (आत्मवान्),
+            // the rest keeps the plain stem (त्वतौ, त्वतः) and the
+            // भ-endings the द-form (त्वद्भ्याम्).
+            if linga != Linga::M
+                || !(stem.ends_with("vat") || stem.ends_with("mat") || stem.ends_with("yat"))
+                || stem.len() < 4
+            {
+                return Err(NOT_POSSIBLE);
+            }
+            let p = &stem[..stem.len() - 1];
+            let d = format!("{p}d");
+            let mut cells = table(&[
+                (d.clone(), f(stem, "O"), f(stem, "aH")),
+                (f(stem, "am"), f(stem, "O"), f(stem, "aH")),
+                (f(stem, "A"), f(&d, "ByAm"), f(&d, "BiH")),
+                (f(stem, "e"), f(&d, "ByAm"), f(&d, "ByaH")),
+                (f(stem, "aH"), f(&d, "ByAm"), f(&d, "ByaH")),
+                (f(stem, "aH"), f(stem, "oH"), f(stem, "Am")),
+                (f(stem, "i"), f(stem, "oH"), f(stem, "su")),
+                (d.clone(), f(stem, "O"), f(stem, "aH")),
+            ]);
+            put(&mut cells, 0, 0, vec![d.clone(), stem.to_string()]);
+            put(&mut cells, 7, 0, vec![d, stem.to_string()]);
+            put(&mut cells, 6, 2, vec![f(p, "tsu")]);
+            cells
         }
         Class::AtN(style) => {
             if linga != Linga::N || !(stem.ends_with('t') || stem.ends_with('d')) {
@@ -3380,6 +3431,48 @@ pub fn decline(stem: &str, linga: Linga, class: &Class) -> Result<Paradigm, &'st
             put(&mut cells, 6, 2, vec![f(q, "aHsu"), f(&w, "su")]);
             cells
         }
+        Class::TaN2(flavour) => {
+            // The neuter of a त-स्वादि stem in the site's mixed flavours
+            // (तुदत्; site @tudat1/@dadat2/@mahat2): the प्रथमा-/
+            // द्वितीया-एकवचन carry the द/त pair as always, but the dual
+            // or the plural adds its own alternant — the न्ती-pair
+            // (तुदन्ती-तुदती), the न्ति-pair (ददन्ति-ददति) or the
+            // आ-form (महान्ति).
+            if linga != Linga::N || !stem.ends_with('t') || stem.len() < 3 {
+                return Err(NOT_POSSIBLE);
+            }
+            let base = &stem[..stem.len() - 1];
+            let voiced = f(base, "d");
+            let plural = match *flavour {
+                'P' => vec![f(base, "nti"), f(stem, "i")],
+                'A' => vec![f(stem_before_vowel(base), "Anti")],
+                _ => vec![f(base, "nti")],
+            };
+            let mut cells = table(&[
+                (f(stem, "I"), f(stem, "I"), f(base, "nti")),
+                (f(stem, "I"), f(stem, "I"), f(base, "nti")),
+                (f(stem, "A"), f(&voiced, "ByAm"), f(&voiced, "BiH")),
+                (f(stem, "e"), f(&voiced, "ByAm"), f(&voiced, "ByaH")),
+                (f(stem, "aH"), f(&voiced, "ByAm"), f(&voiced, "ByaH")),
+                (f(stem, "aH"), f(stem, "oH"), f(stem, "Am")),
+                (f(stem, "i"), f(stem, "oH"), f(stem, "su")),
+                (f(stem, "I"), f(stem, "I"), f(base, "nti")),
+            ]);
+            put(&mut cells, 0, 0, vec![voiced.clone(), stem.to_string()]);
+            put(&mut cells, 1, 0, vec![voiced.clone(), stem.to_string()]);
+            put(&mut cells, 7, 0, vec![voiced, stem.to_string()]);
+            put(&mut cells, 0, 2, plural.clone());
+            put(&mut cells, 1, 2, plural.clone());
+            put(&mut cells, 7, 2, plural);
+            if *flavour == 'D' {
+                // The न्ती-pair in the dual (तुदन्ती-तुदती).
+                let pair = vec![f(base, "ntI"), f(stem, "I")];
+                put(&mut cells, 0, 1, pair.clone());
+                put(&mut cells, 1, 1, pair.clone());
+                put(&mut cells, 7, 1, pair);
+            }
+            cells
+        }
         Class::AsM | Class::AsF => {
             // The अस्-स्वादि in the masculine (सुमनसः, site @sumanas1) and
             // the feminine (सदाः, site @sadas2) — the same shape: the
@@ -3720,6 +3813,8 @@ fn natva_cells(cells: Vec<Slot>, stem: &str, linga: Linga, class: &Class) -> Vec
             | Class::AAF
             | Class::IIF
             | Class::IIFN
+            | Class::IIM
+            | Class::IIM2(_)
             | Class::IMF
             | Class::UMF
             | Class::UF
@@ -3729,11 +3824,13 @@ fn natva_cells(cells: Vec<Slot>, stem: &str, linga: Linga, class: &Class) -> Vec
     );
     // The neuter agent nouns (धातृ → धातृणी) are not इगन्त: the site
     // keeps the dental (क्षन्तृ → क्षन्तॄणि), so the णत्व trigger that
-    // sits inside the क्ष conjunct must not fire on them.
+    // sits inside the क्ष conjunct must not fire on them. The neuter of
+    // a त-स्वादि stem (बृहत् → बृहन्ति) is the same: the न belongs to
+    // the सर्वधातुकारी, not to an affix of its own.
     let neuter_n_affix = linga == Linga::N
         && !matches!(
             class,
-            Class::AtN(_) | Class::RFN | Class::VantN | Class::DadN(_)
+            Class::AtN(_) | Class::RFN | Class::VantN | Class::DadN(_) | Class::TaN
         );
     // The नत्व of an न्-final प्रातिपदिक reaches that प्रातिपदिक's own
     // न् — where the न् drops to a न (the ङ्वनिप् drop family: उक्षन् →
@@ -3843,6 +3940,18 @@ fn site_natva_at(s: &str, ru_tva: bool, pos: usize) -> String {
 
 fn f(base: &str, ending: &str) -> String {
     format!("{base}{ending}")
+}
+
+/// A stem without the inherent vowel a final consonant carries in SLP1,
+/// for an ending that starts with a vowel: the neuter आ-form spells
+/// तुदान्ति, not तुदआन्ति.
+fn stem_before_vowel(base: &str) -> &str {
+    if let Some(stripped) = base.strip_suffix('a') {
+        if stripped.ends_with(|c: char| c.is_ascii_alphabetic() && !"aAiIuUfFxXeEoO".contains(c)) {
+            return stripped;
+        }
+    }
+    base
 }
 
 /// The वृद्धि-form of a stem: its last vowel takes the वृद्धि (the short
@@ -5353,6 +5462,9 @@ pub fn classes_for(stem: &str, linga: Linga) -> Vec<Class> {
             // decides.
             out.push(Class::IIM2(IIM2Opt::GunaA));
             out.push(Class::IIM2(IIM2Opt::VridhiA));
+            // The bare stem in the nominative (कुमारी) — the site's grid
+            // decides.
+            out.push(Class::IIM2(IIM2Opt::GunaB));
         }
     } else if stem.ends_with('u') {
         match linga {
@@ -5446,6 +5558,9 @@ pub fn classes_for(stem: &str, linga: Linga) -> Vec<Class> {
                 if stem.ends_with("vat") || stem.ends_with("mat") || stem.ends_with("yat") {
                     out.push(Class::VantM);
                     out.push(Class::AtM(AtMStyle::Num));
+                    // The plain flavour of the वतुप् stems (त्वद्-त्वत्;
+                    // site @tvat1) — the site's grid decides.
+                    out.push(Class::VantMP);
                 } else if stem.ends_with("at") || stem.ends_with("ant") {
                     out.push(Class::AtM(AtMStyle::Num));
                     // The same stems also come in a द/त-pair flavour
@@ -5550,6 +5665,12 @@ pub fn classes_for(stem: &str, linga: Linga) -> Vec<Class> {
                 if stem.ends_with('t') || stem.ends_with('d') {
                     out.push(Class::AtN(AtNStyle::Num));
                     out.push(Class::TaN);
+                    // The mixed flavours of the neuter त-स्वादि (तुदन्ती-
+                    // तुदती, ददन्ति-ददति, महान्ति) — the site's grid
+                    // decides.
+                    out.push(Class::TaN2('D'));
+                    out.push(Class::TaN2('P'));
+                    out.push(Class::TaN2('A'));
                     // The neuter द्-final nouns (उद्भिद्) are a shape of
                     // their own.
                     if stem.ends_with('d') {

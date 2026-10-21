@@ -766,3 +766,25 @@ fn in_stem_dental_natva_pins() {
         pin_word_any(word, "P");
     }
 }
+
+/// The plain flavour of the masculine वतुप् stems (त्वत् → त्वद्-त्वत्;
+/// site @tvat1) and the mixed flavours of the neuter त-स्वादि (तुदत् →
+/// तुदन्ती-तुदती; ददत् → ददन्ति-ददति; महत् → महान्ति; site
+/// @tudat1/@dadat2/@mahat2).
+#[test]
+fn vant_and_ta_final_neuter_pins() {
+    for word in ["त्वत्", "अष्ठीवत्", "दीध्यत्", "वेव्यत्"]
+    {
+        pin_word_any(word, "P");
+    }
+    for word in ["तुदत्", "भात्", "ददत्", "महत्"] {
+        pin_word_any(word, "N");
+    }
+}
+
+/// The masculine ई-स्वादि nouns with the bare stem in the nominative
+/// (कुमारी; site @kumArI1).
+#[test]
+fn i_stem_masculine_bare_nominative_pins() {
+    pin_word_any("कुमारी", "P");
+}

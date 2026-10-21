@@ -1962,7 +1962,7 @@ site grids (अक्षत, गृह, चतुर्, अप् — the site'
 
 The handoff (entry 46) named five open families; this entry closes four
 of them (the fifth, the ओ-स्वादि plurals, is still open) and fixes the
-नत्व that the हिन्द-family words exposed.
+नत्व that the इ-स्वादि words exposed.
 
 `AccMV` (उदच्; site @udac1 and its kin): the masculine च्-final nouns
 of the ञ्च-स्वादि family whose weak stem is the वृद्धि-form — the
@@ -1990,21 +1990,33 @@ nouns of the visarga flavour — the nominative is the visarga form
 जगच्चक्षुष्षु); where the रुत्व-र् drops, the locative plural is the
 plain षु (चिकीर्षु).
 
-`IIM2` gains two flavours: the गुण-forms with the आ-forms beside them
-(दुर्धी → दुर्ध्यै, दुर्ध्याः, दुर्धीनाम्; site @durdhI1) and the
-वृद्धि with the आ-form in the locative (नी → नियाम्; site @nI1).
+`IIM2` gains three flavours: the गुण-forms with the आ-forms beside them
+(दुर्धी → दुर्ध्यै, दुर्ध्याः, दुर्धीनाम्; site @durdhI1), the
+वृद्धि with the आ-form in the locative (नी → नियाम्; site @nI1) and
+the bare stem in the nominative (कुमारी → कुमारी, कुमार्यै; site
+@kumArI1).
+
+`VantMP` (त्वत्; site @tvat1) covers the plain flavour of the masculine
+वतुप् stems — the nominative carries the द/त pair (त्वद्-त्वत्) where
+the वृद्धि flavour writes the वृद्धि-form (आत्मवान्). `TaN2` (तुदत्;
+site @tudat1/@dadat2/@mahat2) covers the mixed flavours of the neuter
+त-स्वादि: the न्ती-pair in the dual (तुदन्ती-तुदती), the न्ति-pair
+in the plural (ददन्ति-ददति) and the आ-form (महान्ति).
 
 The नत्व now reaches the प्रातिपदिक's own न् alone: the इ-स्वादि weak
 stem has dropped it, so the root's internal न keeps its dental
 (कर्मन्दिभ्याम्, परिपन्थिभ्याम् — site @karmandin1/@paripanthin1),
-while the strong stem still voices it (अतिनिर्हारिणौ).
+while the strong stem still voices it (अतिनिर्हारिणौ). The neuter
+त-स्वादि is exempt from the neuter नाम्-नत्व for the same reason
+(बृहन्ति, not बृहण्ति).
 
 Covered: उदच्, न्यच्, प्रत्यच्, सम्यच्, तद्र्यच्, देवद्र्यच्, सध्र्यच्,
 विष्वद्र्यच्, अन्वच्; पिण्डग्रस्, पिण्डग्लस्, सुवस्, ध्वस्, स्रस्,
 सुतुस्, सुपिस्; ओकास्, भास्; चिकीर्ष्, जगच्चक्षुष्, सप्तार्चिष्,
-स्थिरायुष्; दुर्धी, प्रधी, वृश्चिकभी, नी; कर्मन्दिन्, परिपन्थिन्.
+स्थिरायुष्; दुर्धी, प्रधी, वृश्चिकभी, नी, कुमारी; त्वत्, अष्ठीवत्,
+दीध्यत्, वेव्यत्; तुदत्, भात्, ददत्, महत्; कर्मन्दिन्, परिपन्थिन्.
 
-Whole-db parity: **8,710/9,007** exact.
+Whole-db parity: **8,722/9,007** exact.
 
 Still open (from the handoff): the ओ-स्वादि plurals (18 words: the
 plural takes the ओ-form, but the site rewrites the stem word by word —
