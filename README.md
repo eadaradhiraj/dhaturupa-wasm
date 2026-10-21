@@ -263,6 +263,6 @@ cargo run -q --release -- audit
 cargo run -q --release -- audit --full
 # subanta parity hand-runs (the site grid vs the derived tables):
 node web/audit-an-stems.cjs        # अन्-stem nouns
-node web/audit-site-grids.cjs      # every listed word (8,504/9,007 exact)
+node web/audit-site-grids.cjs      # every listed word (8,513/9,007 exact)
 node web/audit-site-grids.cjs cons # the consonant-final family (178/322)
 ```

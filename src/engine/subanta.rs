@@ -124,6 +124,9 @@ pub enum Class {
     /// `A`-stem masculine (कीलालपा; site @kIlAlapA1): the visarga
     /// nominative (कीलालपाः).
     AAM,
+    /// `c`-stem masculine of the pair flavour (जलमुच्; site @jalamuc1):
+    /// the ग/क pair (जलमुग्-जलमुक्) — `q` for the ड/ट pair (सुवृड्-सुवृट्).
+    AcM2(char),
     /// `O`-stem masculine (जनौ; site @janau1): the औ-form nominative
     /// (जनौः) and the व-form in the dual/plural (जनावौ).
     AuM,
@@ -354,6 +357,7 @@ impl Class {
             Self::AN => "a-n".to_string(),
             Self::AAN => "A-n".to_string(),
             Self::AAM => "A-m".to_string(),
+            Self::AcM2(pair) => format!("ac-m-{pair}"),
             Self::AuM => "O-m".to_string(),
             Self::AAF => "A-f".to_string(),
             Self::IMF => "i-m/f".to_string(),
@@ -2276,6 +2280,52 @@ pub fn decline(stem: &str, linga: Linga, class: &Class) -> Result<Paradigm, &'st
             put(&mut cells, 7, 0, vec![voiced, pause]);
             cells
         }
+        Class::AcM2(pair) => {
+            // The masculine च्-final nouns of the pair flavour (जलमुच्;
+            // site @jalamuc1): the प्रथमा-/सम्बोधन-एकवचन carry the
+            // ग/क pair (जलमुग्-जलमुक्) — or the ड/ट pair (सुवृड्-सुवृट्) —
+            // the भ-endings voice the stem (जलमुग्भ्याम्) and the locative
+            // plural the क्षु (जलमुक्षु).
+            if linga != Linga::M || !stem.ends_with('c') || stem.len() < 3 {
+                return Err(NOT_POSSIBLE);
+            }
+            // The ड/ट flavour replaces the whole श्च cluster (सुवृश्च् →
+            // सुवृड्), the ग/क flavour only the च्.
+            let base = match *pair {
+                'g' => &stem[..stem.len() - 1],
+                'q' => {
+                    // The श्च cluster (सुवृश्च्) gives up both letters.
+                    if !stem.ends_with("Sc") {
+                        return Err(NOT_POSSIBLE);
+                    }
+                    &stem[..stem.len() - 2]
+                }
+                _ => return Err(NOT_POSSIBLE),
+            };
+            let (voiced, pause, loc) = match *pair {
+                'g' => (f(base, "g"), f(base, "k"), vec![f(base, "kzu")]),
+                _ => (
+                    f(base, "q"),
+                    f(base, "w"),
+                    vec![f(base, "wsu"), f(base, "wtsu")],
+                ),
+            };
+            let mut cells = table(&[
+                (f(stem, "aH"), f(stem, "O"), f(stem, "aH")),
+                (f(stem, "am"), f(stem, "O"), f(stem, "aH")),
+                (f(stem, "A"), f(&voiced, "ByAm"), f(&voiced, "BiH")),
+                (f(stem, "e"), f(&voiced, "ByAm"), f(&voiced, "ByaH")),
+                (f(stem, "aH"), f(&voiced, "ByAm"), f(&voiced, "ByaH")),
+                (f(stem, "aH"), f(stem, "oH"), f(stem, "Am")),
+                (f(stem, "i"), f(stem, "oH"), f(stem, "su")),
+                (f(stem, "aH"), f(stem, "O"), f(stem, "aH")),
+            ]);
+            let forms = vec![voiced, pause];
+            put(&mut cells, 0, 0, forms.clone());
+            put(&mut cells, 7, 0, forms);
+            put(&mut cells, 6, 2, loc);
+            cells
+        }
         Class::AccM => {
             // Masculine च्-final nouns (अर्वाच्; site @arvAc2): the
             // nominative takes the ङ्-inserted form (अर्वाङ्), the
@@ -3996,6 +4046,10 @@ pub fn classes_for(stem: &str, linga: Linga) -> Vec<Class> {
                     // The masculine च्-final nouns (अर्वाच्) are the अञ्च-
                     // स्वादि family — the सरित् shape does not reach them.
                     out.push(Class::AccM);
+                    // The same stems also come in a pair flavour (जलमुग्-
+                    // जलमुक्) — the site's grid decides.
+                    out.push(Class::AcM2('g'));
+                    out.push(Class::AcM2('q'));
                 } else if stem.ends_with('S') {
                     // The ऋ-chart nouns with two alternants (दिश् →
                     // दिग्-दिक्) are a shape of their own — the Cons keeps

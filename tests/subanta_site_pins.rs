@@ -319,6 +319,25 @@ fn u_and_i_stem_neuter_pins() {
     }
 }
 
+/// The masculine च्-final nouns of the pair flavour (जलमुच् →
+/// जलमुग्-जलमुक्) and the ड/ट pair (सुवृश्च् → सुवृड्-सुवृट्).
+#[test]
+fn c_final_masculine_pair_pins() {
+    for word in [
+        "जलमुच्",
+        "पयोमुच्",
+        "सत्यवाच्",
+        "अस्फुटवाच्",
+        "बहुगर्ह्यवाच्",
+        "मृदुत्वच्",
+        "विशालत्वच्",
+        "वारिमुच्",
+    ] {
+        pin_word_any(word, "P");
+    }
+    pin_word_any("सुवृश्च्", "P");
+}
+
 /// The neuter द्-final nouns (उद्भिद् → उद्भिद्-उद्भित्, उद्भिदी,
 /// उद्भिन्दि) and the ऋ-chart nouns with two alternants (दिश् →
 /// दिग्-दिक्).

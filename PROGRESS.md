@@ -1679,3 +1679,17 @@ Whole-db parity: **8,494/9,007** exact. Gates green (browser 472).
   (दिग्-दिख्-दिक्). Covered: दिश्, मर्मस्पृश्, घृतस्पृश्, जलस्पृश्.
 
 Whole-db parity: **8,504/9,007** exact. Gates green (browser 472).
+
+## 2026-10-21 (32) — the masculine च्-final nouns of the pair flavour
+
+`AcM2` (जलमुच्; site @jalamuc1): the masculine च्-final nouns come in a
+pair flavour besides the अञ्च-स्वादि one the `AccM` class covers — the
+प्रथमा-/सम्बोधन-एकवचन carry the ग/क pair (जलमुग्-जलमुक्), the
+भ-endings voice the stem (जलमुग्भ्याम्) and the locative plural the
+क्षु (जलमुक्षु). The ड/ट flavour (सुवृश्च् → सुवृड्-सुवृट्) gives up the
+whole श्च cluster and takes the ट्सु pair in the locative.
+
+Covered: जलमुच्, पयोमुच्, सत्यवाच्, अस्फुटवाच्, बहुगर्ह्यवाच्, मृदुत्वच्,
+विशालत्वच्, वारिमुच्, सुवृश्च्.
+
+Whole-db parity: **8,513/9,007** exact. Gates green (browser 472).
