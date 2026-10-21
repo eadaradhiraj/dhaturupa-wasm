@@ -165,6 +165,26 @@ fn pin_word_any(word: &str, mark: &str) {
     }
 }
 
+/// Pin a word against the site's *listed* cells: a few शब्दपाठः entries
+/// leave cells empty (the site's own table carries no form there) and an
+/// empty cell carries no information — the audit compares the listed
+/// cells the same way. Any of the engine's candidates may match.
+fn pin_word_listed_any(word: &str) {
+    for (mark, forms) in site_entries(word) {
+        let grids = engine_grids(word, mark);
+        assert!(
+            grids.iter().any(|grid| {
+                grid.len() == forms.len()
+                    && grid
+                        .iter()
+                        .zip(forms.iter())
+                        .all(|(a, b)| b.is_empty() || a == b)
+            }),
+            "{word} [{mark}] is not reproduced by any derived grid"
+        );
+    }
+}
+
 /// Consonant-final nouns routed to the सरित्-family class, plus the
 /// participle regressions that must keep their गच्छन्/AtM shape.
 #[test]
@@ -928,5 +948,16 @@ fn o_swadi_plural_pins() {
         "सादामत्ति",
     ] {
         pin_word_any(word, "P");
+    }
+}
+
+/// The known-word tables: the numerals, the pronouns and the ष्/ञ्च
+/// stems the site grids in full (एकैः, एकेषाम्, तिसृणाम्, त्रयाणाम्,
+/// षड्-षट्, पञ्च).
+#[test]
+fn known_word_numeral_pins() {
+    for word in ["एक", "इदम्", "एतद्", "त्रि", "चतुर्", "षष्", "अष्टन्", "पञ्चन्"]
+    {
+        pin_word_listed_any(word);
     }
 }

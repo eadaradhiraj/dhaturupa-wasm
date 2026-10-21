@@ -2145,4 +2145,17 @@ Covered: आगस्त्य, आत्रेय, कौण्डिन्य,
 पाञ्चाल, बास्तेय, भार्गव, मैत्रेय, यास्क, वासिष्ठ, औडुलोमि, पान्नागारि,
 शारलोमि, सादामत्ति.
 
-Whole-db parity: **8,852/9,007** exact.
+The known-word tables carry the site's own spellings: the instrumental
+plural of एक keeps the visarga (एकैः), the genitive plural takes the
+ष (एकेषाम्) and the locative plural the ष (एकेषु); इदम् and एतद्
+carry the en-forms (इमम्-एनम्, एतद्-एनद्-एनत्-एतत्); the genitive
+plural of त्रि and चतुर् takes the णाम् (तिसृणाम्, चतसृणाम्) and the
+neuter त्रि the त्रयाणाम्.
+
+The numerals take the site's own stems: षष् has the ड/ट pair (षड्-षट्,
+षट्सु-षट्त्सु) and अष्टन् the plain ष्ट-forms (अष्ट-अष्टौ, अष्टानाम्),
+and पञ्चन्'s table is the engine's own ञ्च (पञ्चन् was keyed `paJcan`,
+the standard SLP1's ञ, which this engine spells `Y` — the table never
+fired).
+
+Whole-db parity: **8,864/9,007** exact.
