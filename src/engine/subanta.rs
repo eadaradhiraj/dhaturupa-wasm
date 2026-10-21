@@ -543,6 +543,16 @@ pub enum Class {
     /// The neuter च्-final nouns (अर्वाच्; site @arvAc1): the ग/क pair in
     /// the प्रथमा-एकवचन and the ई-forms (अर्वाची, अर्वाञ्चि).
     AcN,
+    /// The neuter च्-final nouns whose weak stem is the वृद्धि-form
+    /// (न्यच् → नीची; site @nyac2) or the ओ-form (गवाच् → गोची; site
+    /// @gavAc1) — the flavour picks the weak stem (`I` ईच, `U` ऊच,
+    /// `S` श्च, `O` the ओ-form).
+    AcNV(char),
+    /// The neuter न्च-final nouns of the ङ्-inserted family (गोन्च्;
+    /// site @gonc1): the nominative takes the ङ्-inserted form (गोङ्),
+    /// the dual and plural the ञ्च-forms (गोञ्ची, गोञ्चि) and the
+    /// locative plural the ङ्-क्षु pair (गोङ्षु-गोङ्क्षु-गोङ्ख्षु).
+    AncN,
     /// The feminine अस्-स्वादि (सदस् → सदाः; site @sadas2): the same
     /// shape as the masculine, with the आ-form in the nominative.
     AsF,
@@ -731,6 +741,8 @@ impl Class {
             Self::ZvF(v) => format!("zv-f-{v}"),
             Self::ZagM => "zag-m".to_string(),
             Self::AcN => "ac-n".to_string(),
+            Self::AcNV(v) => format!("ac-n-v{v}"),
+            Self::AncN => "anc-n".to_string(),
             Self::AsAnM => "asan-m".to_string(),
             Self::AsMV => "asv-m".to_string(),
             Self::AsMP => "asp-m".to_string(),
@@ -3237,6 +3249,66 @@ pub fn decline(stem: &str, linga: Linga, class: &Class) -> Result<Paradigm, &'st
             put(&mut cells, 7, 0, vec![voiced, pause]);
             cells
         }
+        Class::AcNV(flavour) => {
+            // The neuter च्-final nouns whose weak stem is not the plain
+            // stem (न्यच् → नीची; site @nyac2): the strong cells keep the
+            // ञ्च-forms (न्यञ्चि) and the ग/क pair in the nominative
+            // (न्यग्-न्यक्), the weak cells the वृद्धि-form (नीचा) or the
+            // ओ-form (गोचा) — the flavour picks the weak stem.
+            if linga != Linga::N || !stem.ends_with('c') || stem.len() < 3 {
+                return Err(NOT_POSSIBLE);
+            }
+            let base = &stem[..stem.len() - 1];
+            let weak = if *flavour == 'O' {
+                ac_weak_o(stem)
+            } else {
+                ac_weak(base, *flavour)
+            };
+            let mut cells = table(&[
+                (f(base, "g"), f(&weak, "I"), f(base, "Yci")),
+                (f(base, "g"), f(&weak, "I"), f(base, "Yci")),
+                (f(&weak, "A"), f(base, "gByAm"), f(base, "gBiH")),
+                (f(&weak, "e"), f(base, "gByAm"), f(base, "gByaH")),
+                (f(&weak, "aH"), f(base, "gByAm"), f(base, "gByaH")),
+                (f(&weak, "aH"), f(&weak, "oH"), f(&weak, "Am")),
+                (f(&weak, "i"), f(&weak, "oH"), f(base, "kzu")),
+                (f(base, "g"), f(&weak, "I"), f(base, "Yci")),
+            ]);
+            // The प्रथमा-, द्वितीया- and सम्बोधन-एकवचन carry the ग/क pair.
+            put(&mut cells, 0, 0, vec![f(base, "g"), f(base, "k")]);
+            put(&mut cells, 1, 0, vec![f(base, "g"), f(base, "k")]);
+            put(&mut cells, 7, 0, vec![f(base, "g"), f(base, "k")]);
+            cells
+        }
+        Class::AncN => {
+            // The neuter न्च-final nouns of the ङ्-inserted family (गोन्च्;
+            // site @gonc1): the nominative takes the ङ्-inserted form
+            // (गोङ्), the dual and plural the ञ्च-forms (गोञ्ची, गोञ्चि),
+            // the भ-endings the ङ्-form (गोङ्भ्याम्) and the locative
+            // plural the three ङ्-क्षu alternants (गोङ्षु-गोङ्क्षु-गोङ्ख्षु).
+            if linga != Linga::N || !stem.ends_with("nc") || stem.len() < 3 {
+                return Err(NOT_POSSIBLE);
+            }
+            let base = &stem[..stem.len() - 2];
+            let ang = f(base, "N");
+            let mut cells = table(&[
+                (ang.clone(), f(base, "YcI"), f(base, "Yci")),
+                (ang.clone(), f(base, "YcI"), f(base, "Yci")),
+                (f(base, "YcA"), f(&ang, "ByAm"), f(&ang, "BiH")),
+                (f(base, "Yce"), f(&ang, "ByAm"), f(&ang, "ByaH")),
+                (f(base, "YcaH"), f(&ang, "ByAm"), f(&ang, "ByaH")),
+                (f(base, "YcaH"), f(base, "YcoH"), f(base, "YcAm")),
+                (f(base, "Yci"), f(base, "YcoH"), f(&ang, "su")),
+                (ang.clone(), f(base, "YcI"), f(base, "Yci")),
+            ]);
+            put(
+                &mut cells,
+                6,
+                2,
+                vec![f(&ang, "zu"), f(&ang, "kzu"), f(&ang, "Kzu")],
+            );
+            cells
+        }
         Class::AcM2(pair) => {
             // The masculine च्-final nouns of the pair flavour (जलमुच्;
             // site @jalamuc1): the प्रथमा-/सम्बोधन-एकवचन carry the
@@ -3316,18 +3388,7 @@ pub fn decline(stem: &str, linga: Linga, class: &Class) -> Result<Paradigm, &'st
                 return Err(NOT_POSSIBLE);
             }
             let base = &stem[..stem.len() - 1];
-            let core = base.trim_end_matches(['a', 'A', 'i', 'I', 'u', 'U']);
-            let weak = match *flavour {
-                'U' => format!("{}Uc", core.strip_suffix('v').unwrap_or(core)),
-                'S' => format!("{}Sc", core.strip_suffix('y').unwrap_or(core)),
-                _ => {
-                    let head = core
-                        .strip_suffix('y')
-                        .or_else(|| core.strip_suffix('v'))
-                        .unwrap_or(core);
-                    format!("{head}Ic")
-                }
-            };
+            let weak = ac_weak(base, *flavour);
             table(&[
                 (f(base, "N"), f(base, "YcO"), f(base, "YcaH")),
                 (f(base, "Ycam"), f(base, "YcO"), f(&weak, "aH")),
@@ -3936,6 +3997,42 @@ fn site_natva_at(s: &str, ru_tva: bool, pos: usize) -> String {
     out.push('R');
     out.push_str(&s[pos + 1..]);
     out
+}
+
+/// The weak stem of the ञ्च-स्वादि च्-final nouns: the citation minus
+/// its च, minus the trailing vowel, minus a trailing semi-vowel, plus
+/// the flavour's consonant — उदच् → उद + ईच, न्यच् → न + ईच,
+/// अन्वच् → अन + ऊच, तिर्यच् → तिर + श्च.
+fn ac_weak(base: &str, flavour: char) -> String {
+    let core = base.trim_end_matches(['a', 'A', 'i', 'I', 'u', 'U']);
+    match flavour {
+        'U' => format!("{}Uc", core.strip_suffix('v').unwrap_or(core)),
+        'S' => format!("{}Sc", core.strip_suffix('y').unwrap_or(core)),
+        _ => {
+            let head = core
+                .strip_suffix('y')
+                .or_else(|| core.strip_suffix('v'))
+                .unwrap_or(core);
+            format!("{head}Ic")
+        }
+    }
+}
+
+/// The ओ-form of the weak stem of the च्-final nouns: the व + अ → the
+/// ओ (the संधि) and the च् → the च — गवाच् → गोच्, गोअच् → गोच्,
+/// गोच् → गोच्.
+fn ac_weak_o(stem: &str) -> String {
+    let head = &stem[..stem.len() - 1];
+    let head = match head.strip_suffix("vA") {
+        // The संधि: the व + the आ → the ओ, whose matra takes the व's
+        // place (गवाच् → गोच्).
+        Some(h) => {
+            let h = h.strip_suffix('a').unwrap_or(h);
+            format!("{h}o")
+        }
+        None => head.strip_suffix('a').unwrap_or(head).to_string(),
+    };
+    format!("{head}c")
 }
 
 fn f(base: &str, ending: &str) -> String {
@@ -5684,6 +5781,15 @@ pub fn classes_for(stem: &str, linga: Linga) -> Vec<Class> {
                     }
                 } else if stem.ends_with('c') {
                     out.push(Class::AcN);
+                    // The neuter ञ्च-स्वादि family: the वृद्धि weak stem
+                    // (न्यच् → नीची), the ओ-form (गवाच् → गोची) and the
+                    // ङ्-inserted न्च-stems (गोन्च् → गोङ्) — the site's
+                    // grid decides.
+                    out.push(Class::AcNV('I'));
+                    out.push(Class::AcNV('U'));
+                    out.push(Class::AcNV('S'));
+                    out.push(Class::AcNV('O'));
+                    out.push(Class::AncN);
                 } else if stem.ends_with('S') {
                     // The neuter ऋ-chart nouns (दृश्).
                     out.push(Class::RcN);

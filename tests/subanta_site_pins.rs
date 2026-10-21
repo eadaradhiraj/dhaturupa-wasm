@@ -788,3 +788,20 @@ fn vant_and_ta_final_neuter_pins() {
 fn i_stem_masculine_bare_nominative_pins() {
     pin_word_any("कुमारी", "P");
 }
+
+/// The neuter ञ्च-स्वादि family: the वृद्धि weak stem (न्यच् → नीची;
+/// site @nyac2), the ओ-form (गवाच् → गोची; site @gavAc1) and the
+/// ङ्-inserted न्च-stems (गोन्च् → गोङ्; site @gonc1).
+#[test]
+fn anccha_swadi_neuter_pins() {
+    for word in ["न्यच्", "सम्यच्", "अन्वच्"] {
+        pin_word_any(word, "N");
+    }
+    for word in ["गवाच्", "गोअच्", "गोच्"] {
+        pin_word_any(word, "N");
+    }
+    for word in ["गोन्च्", "गवान्च्", "गोअन्च्", "तिर्यन्च्"]
+    {
+        pin_word_any(word, "N");
+    }
+}

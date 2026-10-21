@@ -2003,6 +2003,12 @@ site @tudat1/@dadat2/@mahat2) covers the mixed flavours of the neuter
 त-स्वादि: the न्ती-pair in the dual (तुदन्ती-तुदती), the न्ति-pair
 in the plural (ददन्ति-ददति) and the आ-form (महान्ति).
 
+`AcNV` (न्यच्; site @nyac2) and `AncN` (गोन्च्; site @gonc1) close the
+neuter half of the ञ्च-स्वादि family: the वृद्धि weak stem (नीची,
+नीचा, नीचः), the ओ-form of the संधि (गवाच् → गोची, गोचा, गोचः)
+and the ङ्-inserted न्च-stems (गोङ्, गोञ्ची, गोञ्चि, गोङ्भ्याम्,
+गोङ्षु-गोङ्क्षु-गोङ्ख्षु).
+
 The नत्व now reaches the प्रातिपदिक's own न् alone: the इ-स्वादि weak
 stem has dropped it, so the root's internal न keeps its dental
 (कर्मन्दिभ्याम्, परिपन्थिभ्याम् — site @karmandin1/@paripanthin1),
@@ -2014,16 +2020,17 @@ Covered: उदच्, न्यच्, प्रत्यच्, सम्य�
 विष्वद्र्यच्, अन्वच्; पिण्डग्रस्, पिण्डग्लस्, सुवस्, ध्वस्, स्रस्,
 सुतुस्, सुपिस्; ओकास्, भास्; चिकीर्ष्, जगच्चक्षुष्, सप्तार्चिष्,
 स्थिरायुष्; दुर्धी, प्रधी, वृश्चिकभी, नी, कुमारी; त्वत्, अष्ठीवत्,
-दीध्यत्, वेव्यत्; तुदत्, भात्, ददत्, महत्; कर्मन्दिन्, परिपन्थिन्.
+दीध्यत्, वेव्यत्; तुदत्, भात्, ददत्, महत्; न्यच्, सम्यच्, अन्वच्,
+गवाच्, गोअच्, गोच्, गोन्च्, गवान्च्, गोअन्च्, तिर्यन्च्; कर्मन्दिन्,
+परिपन्थिन्.
 
-Whole-db parity: **8,722/9,007** exact.
+Whole-db parity: **8,731/9,007** exact.
 
 Still open (from the handoff): the ओ-स्वादि plurals (18 words: the
 plural takes the ओ-form, but the site rewrites the stem word by word —
 the औ + त् → the उ in कौत्स → कुत्स, the आ + र → the अ in खारपायण →
-खरप — so each word needs its own stem), the neuter ञ्च-स्वादि
-(6 words), the ण-inserted alternants (the दन्तान्-दतः family, 17
-words) and the three single-word shapes (पुम्स्, सुहिन्स्, दोष्).
-Blocked, no derived table reaches them: the ह्न family (अष्टाह्न…) and
-the sparse site grids (अक्षत, गृह, चतुर्, अप् — the site's cells are
-empty).
+खरप — so each word needs its own stem), the ण-inserted alternants (the
+दन्तान्-दतः family, 17 words) and the three single-word shapes
+(पुम्स्, सुहिन्स्, दोष्). Blocked, no derived table reaches them: the
+ह्न family (अष्टाह्न…) and the sparse site grids (अक्षत, गृह, चतुर्,
+अप् — the site's cells are empty).
