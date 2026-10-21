@@ -467,6 +467,11 @@ pub enum Class {
     /// the masculine nominative carries the जश् pause pair (गुब्-गुप्),
     /// the feminine the आ-form (आपः).
     ApM,
+    /// The ओ-स्वादि compound plurals (आगस्त्य → अगस्तयः; site @Agastya1
+    /// and its kin): the plural takes the compound's reduced stem with
+    /// the endings of the a-stem masculine, the इ-स्वादि masculine or the
+    /// उ-स्वादि masculine.
+    OPlur(&'static str, char),
     /// The neuter i-stems in the ण-form (अतिस्त्रि; site @atistri3): the
     /// dvi/plural take the ण-forms (अतिस्त्रिणी) and the cat/paJ/sap carry
     /// both alternants (अतिस्त्रिणे-अतिस्त्रये).
@@ -732,6 +737,7 @@ impl Class {
             Self::UvFd => "uv-f-d".to_string(),
             Self::UnN => "un-n".to_string(),
             Self::ApM => "ap-m".to_string(),
+            Self::OPlur(x, fam) => format!("oplur-{fam}-{x}"),
             Self::INu => "i-nu".to_string(),
             Self::INv => "i-nv".to_string(),
             Self::HasM => "has-m".to_string(),
@@ -1319,6 +1325,86 @@ pub fn decline(stem: &str, linga: Linga, class: &Class) -> Result<Paradigm, &'st
                 (f(p, "O"), f(p, "yoH"), f(p, "izu")),
                 (f(p, "e"), f(p, "I"), f(p, "ayaH")),
             ])
+        }
+        Class::OPlur(x, family) => {
+            // The ओ-स्वादि compound plurals (आगस्त्य → अगस्तयः; site
+            // @Agastya1 and its kin): the singular keeps the plain stem
+            // (आगस्त्यः, औडुलोमिः) and the plural takes the compound's
+            // reduced stem (अगस्त, उडुलोम) with the endings of the a-stem
+            // masculine (कुण्डिनाः), the इ-स्वादि masculine (अगस्तयः) or
+            // the उ-स्वादि masculine (भृगवः).
+            if linga != Linga::M {
+                return Err(NOT_POSSIBLE);
+            }
+            let (nom, acc, instr, dat, gen, loc) = match family {
+                'i' => (
+                    f(x, "ayaH"),
+                    f(x, "In"),
+                    f(x, "iBiH"),
+                    f(x, "iByaH"),
+                    f(x, "InAm"),
+                    f(x, "izu"),
+                ),
+                'u' => (
+                    f(x, "avaH"),
+                    f(x, "Un"),
+                    f(x, "uBiH"),
+                    f(x, "uByaH"),
+                    f(x, "URAm"),
+                    f(x, "uzu"),
+                ),
+                _ => (
+                    f(x, "AH"),
+                    f(x, "An"),
+                    f(x, "EH"),
+                    f(x, "eByaH"),
+                    f(x, "AnAm"),
+                    f(x, "ezu"),
+                ),
+            };
+            let mut cells = if stem.ends_with('i') {
+                // The i-stem singular (औडुलोमिः, हे औडुलोमे).
+                table(&[
+                    (f(stem, "H"), f(stem, "I"), f(stem, "aH")),
+                    (f(stem, "am"), f(stem, "I"), f(stem, "aH")),
+                    (f(stem, "inA"), f(stem, "ByAm"), f(stem, "BiH")),
+                    (f(stem, "aye"), f(stem, "ByAm"), f(stem, "ByaH")),
+                    (f(stem, "eH"), f(stem, "ByAm"), f(stem, "ByaH")),
+                    (f(stem, "eH"), f(stem, "yoH"), f(stem, "InAm")),
+                    (f(stem, "O"), f(stem, "yoH"), f(stem, "izu")),
+                    (f(stem, "e"), f(stem, "I"), f(stem, "aH")),
+                ])
+            } else {
+                // The a-stem singular (आगस्त्यः, आगस्त्येन).
+                let p = stem.strip_suffix('a').unwrap_or(stem);
+                table(&[
+                    (f(p, "aH"), f(p, "O"), f(p, "AH")),
+                    (f(p, "am"), f(p, "O"), f(p, "An")),
+                    (f(p, "ena"), f(p, "AByAm"), f(p, "EH")),
+                    (f(p, "Aya"), f(p, "AByAm"), f(p, "eByaH")),
+                    (f(p, "At"), f(p, "AByAm"), f(p, "eByaH")),
+                    (f(p, "asya"), f(p, "ayoH"), f(p, "AnAm")),
+                    (f(p, "e"), f(p, "ayoH"), f(p, "ezu")),
+                    (f(p, "aH"), f(p, "O"), f(p, "AH")),
+                ])
+            };
+            put(&mut cells, 0, 2, vec![nom.clone()]);
+            put(&mut cells, 1, 2, vec![acc]);
+            put(&mut cells, 2, 2, vec![instr]);
+            put(&mut cells, 3, 2, vec![dat.clone()]);
+            put(&mut cells, 4, 2, vec![dat]);
+            put(&mut cells, 5, 2, vec![gen]);
+            put(&mut cells, 6, 2, vec![loc]);
+            // The vocative singular is the bare stem (हे आगस्त्य) and the
+            // vocative plural the reduced one (हे अगस्तयः).
+            put(&mut cells, 7, 0, vec![stem.to_string()]);
+            put(&mut cells, 7, 2, vec![nom]);
+            // The ablative singular carries the वृद्धि pair
+            // (आगस्त्याद्-आगस्त्यात्).
+            if let Some(p) = stem.strip_suffix('a') {
+                put(&mut cells, 4, 0, vec![f(p, "Ad"), f(p, "At")]);
+            }
+            cells
         }
         Class::ApM => {
             // The अ-स्वादि masculine/feminine (गुप्, अप्; site @gup1/@ap1):
@@ -4103,6 +4189,7 @@ fn natva_cells(cells: Vec<Slot>, stem: &str, linga: Linga, class: &Class) -> Vec
                 | Class::DadN(_)
                 | Class::TaN
                 | Class::TaN2(_)
+                | Class::OPlur(_, _)
                 | Class::AsN
                 | Class::AsAnM
         );
@@ -5592,6 +5679,29 @@ fn td_slots(cells: &mut [Slot], t: &str, d: &str) {
     }
 }
 
+/// The ओ-स्वादि compound plurals: the stem, the reduced plural stem and
+/// the ending family (`a` the a-stem masculine, `i` the इ-स्वादि masculine,
+/// `u` the उ-स्वादि masculine).
+const O_PLURALS: &[(&str, &str, char)] = &[
+    ("Agastya", "agast", 'i'),
+    ("Atreya", "atr", 'i'),
+    ("kORqinya", "kuRqin", 'a'),
+    ("kOtsa", "kuts", 'a'),
+    ("KArapAyaRa", "Karap", 'a'),
+    ("gArgya", "garg", 'a'),
+    ("gOtama", "gotam", 'a'),
+    ("pAYcAla", "paYcAl", 'a'),
+    ("bAsteya", "vast", 'i'),
+    ("BArgava", "Bfg", 'u'),
+    ("mEtreya", "mitray", 'u'),
+    ("yAska", "yask", 'a'),
+    ("vAsizWa", "vasizW", 'a'),
+    ("Oqulomi", "uqulom", 'a'),
+    ("pAnnAgAri", "pannAgAr", 'a'),
+    ("SAralomi", "Saralom", 'a'),
+    ("sAdAmatti", "sadAmatt", 'a'),
+];
+
 /// Known pronoun/numeral stems. गो/नौ/रै (ADDITIONS 2.5) are gridded
 /// diphthong words — 'go'/'nO'/'rE' in SLP1. अन्य/इतर/कतर/कतम/उभय/उभ/अन्या
 /// (ADDITIONS 2.6) are the सर्व-family स्म-ending pronominals the site
@@ -5638,6 +5748,13 @@ pub fn classes_for(stem: &str, linga: Linga) -> Vec<Class> {
     if stem.ends_with("smad") && stem.len() > 4 {
         out.push(Class::Pron(PronFlavour::AsmPara));
         return out;
+    }
+    if linga == Linga::M {
+        if let Some(&(_, x, fam)) = O_PLURALS.iter().find(|(s, _, _)| *s == stem) {
+            // The ओ-स्वादि compound plurals (आगस्त्य → अगस्तयः).
+            out.push(Class::OPlur(x, fam));
+            return out;
+        }
     }
     if stem.ends_with('a') && !stem.ends_with("an") {
         match linga {

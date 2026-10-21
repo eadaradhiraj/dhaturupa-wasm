@@ -2129,4 +2129,16 @@ carries the जश् pause pair (गुब्-गुप्), the भ-endings th
 
 Covered: गुप्.
 
-Whole-db parity: **8,835/9,007** exact.
+`OPlur` (आगस्त्य; site @Agastya1 and its kin) covers the ओ-स्वादि
+compound plurals: the singular keeps the plain stem (आगस्त्यः, हे आगस्त्य)
+and the plural takes the compound's reduced stem (अगस्त, कुत्स, गोतम,
+भृग) with the endings of the a-stem masculine (कुत्साः), the इ-स्वादि
+masculine (अगस्तयः) or the उ-स्वादि masculine (भृगवः).
+
+Covered: आगस्त्य, कौण्डिन्य, कौत्स, गौतम, पाञ्चाल, यास्क, वासिष्ठ
+(the rest of the family — आत्रेय, खारपायण, गार्ग्य, बास्तेय, भार्गव,
+मैत्रेय, औडुलोमि, पान्नागारि, शारलोमि, सादामत्ति — still differ in a
+cell or two: the ण-form of the genitive plural or the singular's
+instrumental).
+
+Whole-db parity: **8,842/9,007** exact.

@@ -902,3 +902,21 @@ fn hna_final_pins() {
 fn a_swadi_masculine_pins() {
     pin_word_any("गुप्", "P");
 }
+
+/// The ओ-स्वादि compound plurals (आगस्त्य → अगस्तयः; site @Agastya1 and
+/// its kin): the singular keeps the plain stem and the plural takes the
+/// compound's reduced stem.
+#[test]
+fn o_swadi_plural_pins() {
+    for word in [
+        "आगस्त्य",
+        "कौण्डिन्य",
+        "कौत्स",
+        "गौतम",
+        "पाञ्चाल",
+        "यास्क",
+        "वासिष्ठ",
+    ] {
+        pin_word_any(word, "P");
+    }
+}
