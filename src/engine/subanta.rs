@@ -4961,17 +4961,17 @@ fn word_table(stem: &str, linga: Linga, word: &'static str) -> Result<Paradigm, 
         ]),
         ("tad", Linga::N) => {
             let rows = rows1(&[
-                ["tat", "te", "tAni"],
-                ["tat", "te", "tAni"],
+                ["tad", "te", "tAni"],
+                ["tad", "te", "tAni"],
                 ["tena", "tAByAm", "tEH"],
                 ["tasmE", "tAByAm", "teByaH"],
                 ["tasmAd/tasmAt", "tAByAm", "teByaH"],
                 ["tasya", "tayoH", "tezAm"],
                 ["tasmin", "tayoH", "tezu"],
-                ["tat", "te", "tAni"],
+                ["tad", "te", "tAni"],
             ]);
             let mut cells = rows_to_slots(&rows);
-            td_slots(&mut cells, "tat", "tad");
+            td_slots(&mut cells, "tad", "tat");
             return Ok(Paradigm {
                 stem: stem.to_string(),
                 linga,
@@ -5001,17 +5001,17 @@ fn word_table(stem: &str, linga: Linga, word: &'static str) -> Result<Paradigm, 
         ]),
         ("etad", Linga::N) => {
             let rows = rows1(&[
-                ["etat", "ete", "etAni"],
-                ["etat", "ete", "etAni"],
+                ["etad", "ete", "etAni"],
+                ["etad", "ete", "etAni"],
                 ["etena", "etAByAm", "etEH"],
                 ["etasmE", "etAByAm", "eteByaH"],
                 ["etasmAd/etasmAt", "etAByAm", "eteByaH"],
                 ["etasya", "etayoH", "etezAm"],
                 ["etasmin", "etayoH", "etezu"],
-                ["etat", "ete", "etAni"],
+                ["etad", "ete", "etAni"],
             ]);
             let mut cells = rows_to_slots(&rows);
-            td_slots(&mut cells, "etat", "etad");
+            td_slots(&mut cells, "etad", "etat");
             return Ok(Paradigm {
                 stem: stem.to_string(),
                 linga,
@@ -5041,17 +5041,17 @@ fn word_table(stem: &str, linga: Linga, word: &'static str) -> Result<Paradigm, 
         ]),
         ("yad", Linga::N) => {
             let rows = rows1(&[
-                ["yat", "ye", "yAni"],
-                ["yat", "ye", "yAni"],
+                ["yad", "ye", "yAni"],
+                ["yad", "ye", "yAni"],
                 ["yena", "yAByAm", "yEH"],
                 ["yasmE", "yAByAm", "yeByaH"],
                 ["yasmAd/yasmAt", "yAByAm", "yeByaH"],
                 ["yasya", "yayoH", "yezAm"],
                 ["yasmin", "yayoH", "yezu"],
-                ["yat", "ye", "yAni"],
+                ["yad", "ye", "yAni"],
             ]);
             let mut cells = rows_to_slots(&rows);
-            td_slots(&mut cells, "yat", "yad");
+            td_slots(&mut cells, "yad", "yat");
             return Ok(Paradigm {
                 stem: stem.to_string(),
                 linga,
@@ -5166,24 +5166,24 @@ fn word_table(stem: &str, linga: Linga, word: &'static str) -> Result<Paradigm, 
             return Ok(asmad_table(linga));
         }
         ("eka", Linga::M) => rows1(&[
-            ["ekaH", "", ""],
-            ["ekam", "", ""],
-            ["ekena", "", ""],
-            ["ekasmE", "", ""],
-            ["ekasmAd/ekasmAt", "", ""],
-            ["ekasya", "", ""],
-            ["ekasmin", "", ""],
-            ["eka", "", ""],
+            ["ekaH", "ekO", "eke"],
+            ["ekam", "ekO", "ekAn"],
+            ["ekena", "ekAByAm", "ekE"],
+            ["ekasmE", "ekAByAm", "ekeByaH"],
+            ["ekasmAd/ekasmAt", "ekAByAm", "ekeByaH"],
+            ["ekasya", "ekayoH", "ekeSAm"],
+            ["ekasmin", "ekayoH", "ekeSu"],
+            ["ekaH", "ekO", "eke"],
         ]),
         ("eka", Linga::N) => rows1(&[
-            ["ekam", "", ""],
-            ["ekam", "", ""],
-            ["ekena", "", ""],
-            ["ekasmE", "", ""],
-            ["ekasmAd/ekasmAt", "", ""],
-            ["ekasya", "", ""],
-            ["ekasmin", "", ""],
-            ["ekam", "", ""],
+            ["ekam", "eke", "ekAni"],
+            ["ekam", "eke", "ekAni"],
+            ["ekena", "ekAByAm", "ekE"],
+            ["ekasmE", "ekAByAm", "ekeByaH"],
+            ["ekasmAd/ekasmAt", "ekAByAm", "ekeByaH"],
+            ["ekasya", "ekayoH", "ekeSAm"],
+            ["ekasmin", "ekayoH", "ekeSu"],
+            ["ekam", "eke", "ekAni"],
         ]),
         ("eka", Linga::F) => rows1(&[
             ["ekA", "", ""],

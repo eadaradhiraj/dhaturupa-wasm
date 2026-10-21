@@ -2113,4 +2113,7 @@ Covered: राज्, देवेज्, परिमृज्, परिव�
 The इदम्/एतद् entries carry both the im-/et- and the ena-forms (इमम्-एनम्,
 अनेन-एनेन).
 
-Whole-db parity: **8,820/9,007** exact.
+The एक tables had their dual and plural columns empty; they are filled
+now, and the neuter प्रोनouns' pause pair runs द्-त् (तद्-तत्).
+
+Whole-db parity: **8,822/9,007** exact.
