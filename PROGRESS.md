@@ -1864,3 +1864,15 @@ Covered: जयश्री, धनश्री, भद्रश्री, व�
 वारस्त्री, धी, भी, भू, धू, जू, पू, भ्रू, पर्यन्तभू.
 
 Whole-db parity: **8,665/9,007** exact.
+
+## 2026-10-21 (42) — the ordinals with the स्म-alternant
+
+`AMo(AOpt::SmPairs)` and `ANo(ANOpt::SmPairs)` (द्वितीय; site @dvitIya1/
+@dvitIya2): the site writes the ordinals with the स्म-augment beside the
+plain form — the cat (द्वितीयाय-द्वितीयस्मै), the four-way ablative
+(द्वितीयाद्-द्वितीयस्माद्-द्वितीयस्मात्-द्वितीयात्) and the locative
+(द्वितीयये-द्वितीयस्मिन्) — while the rest of the grid stays plain.
+
+Covered: द्वितीय, तृतीय (masculine and neuter).
+
+Whole-db parity: **8,669/9,007** exact.

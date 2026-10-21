@@ -581,6 +581,14 @@ fn sha_final_masks() {
     }
 }
 
+/// The ordinals with the स्म-alternant beside the plain form (द्वितीय;
+/// site @dvitIya1/@dvitIya2).
+#[test]
+fn ordinal_sm_pair_pins() {
+    pin_word_any("द्वितीय", "P");
+    pin_word_any("द्वितीय", "N");
+}
+
 /// The नदीसंज्ञक feminine ई- and ऊ-स्वादि stems in the िय-/उव-flavours
 /// (जयश्री, कुलस्त्री, धी, धू; site @jayazrI1/@kulastrI1/@dhI1/@dhU1).
 #[test]

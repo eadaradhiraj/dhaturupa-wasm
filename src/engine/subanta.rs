@@ -84,6 +84,11 @@ pub enum AOpt {
     /// (एकतर; site @ekatara1): the ablative carries only the two
     /// स्म-alternants and the locative the स्म-form.
     SmEN,
+    /// The स्म-alternant beside the plain form (द्वितीय; site
+    /// @dvitIya1): the cat (द्वितीयाय-द्वितीयस्मै), the four-way
+    /// ablative (द्वितीयाद्-द्वितीयस्माद्-द्वितीयस्मात्-द्वितीयात्)
+    /// and the locative (द्वितीयये-द्वितीयस्मिन्).
+    SmPairs,
 }
 
 impl AOpt {
@@ -97,6 +102,7 @@ impl AOpt {
             Self::Sm => "sm",
             Self::SmE => "sm-e",
             Self::SmEN => "sm-en",
+            Self::SmPairs => "sm-pairs",
         }
     }
 }
@@ -252,6 +258,10 @@ pub enum ANOpt {
     /// ablative carries only the two स्म-alternants (एकतरस्माद्-एकतरस्मात्)
     /// and the locative the स्म-form alone (एकतरस्मिन्).
     Tara,
+    /// The स्म-alternant beside the plain form (द्वितीय; site @dvitIya2):
+    /// the cat (द्वितीयाय-द्वितीयस्मै), the four-way ablative and the
+    /// locative (द्वितीयये-द्वितीयस्मिन्).
+    SmPairs,
 }
 
 impl PronFlavour {
@@ -278,6 +288,7 @@ impl ANOpt {
         match self {
             Self::Apara => "a",
             Self::Tara => "t",
+            Self::SmPairs => "sm-pairs",
         }
     }
 }
@@ -816,6 +827,21 @@ pub fn decline(stem: &str, linga: Linga, class: &Class) -> Result<Paradigm, &'st
                     put(&mut cells, 6, 0, vec![f(p, "e"), f(p, "asmin")]);
                     cells[17].forms = vec![f(p, "ezAm")];
                 }
+                AOpt::SmPairs => {
+                    // The स्म-alternant beside the plain form: the cat,
+                    // the four-way ablative and the locative; the
+                    // nominative and vocative plurals stay plain.
+                    cells[2].forms = vec![f(p, "AH")];
+                    cells[23].forms = vec![f(p, "AH")];
+                    cells[9].forms = vec![f(p, "Aya"), f(p, "asmE")];
+                    put(
+                        &mut cells,
+                        4,
+                        0,
+                        vec![f(p, "Ad"), f(p, "asmAd"), f(p, "asmAt"), f(p, "At")],
+                    );
+                    put(&mut cells, 6, 0, vec![f(p, "e"), f(p, "asmin")]);
+                }
                 AOpt::Sm => {
                     // The cat takes the स्म-form, the ablative the two
                     // स्म-alternants, the locative the स्म-form and the
@@ -979,6 +1005,18 @@ pub fn decline(stem: &str, linga: Linga, class: &Class) -> Result<Paradigm, &'st
                         vec![f(p, "Ad"), f(p, "asmAd"), f(p, "asmAt"), f(p, "At")],
                     );
                     cells[17].forms = vec![f(p, "ezAm")];
+                    put(&mut cells, 6, 0, vec![f(p, "e"), f(p, "asmin")]);
+                }
+                ANOpt::SmPairs => {
+                    // The स्म-alternant beside the plain form: the cat,
+                    // the four-way ablative and the locative.
+                    cells[9].forms = vec![f(p, "Aya"), f(p, "asmE")];
+                    put(
+                        &mut cells,
+                        4,
+                        0,
+                        vec![f(p, "Ad"), f(p, "asmAd"), f(p, "asmAt"), f(p, "At")],
+                    );
                     put(&mut cells, 6, 0, vec![f(p, "e"), f(p, "asmin")]);
                 }
                 ANOpt::Tara => {
@@ -4787,6 +4825,7 @@ pub fn classes_for(stem: &str, linga: Linga) -> Vec<Class> {
                 out.push(Class::AMo(AOpt::Sm));
                 out.push(Class::AMo(AOpt::SmE));
                 out.push(Class::AMo(AOpt::SmEN));
+                out.push(Class::AMo(AOpt::SmPairs));
             }
             Linga::N => {
                 out.push(Class::AN);
@@ -4794,6 +4833,7 @@ pub fn classes_for(stem: &str, linga: Linga) -> Vec<Class> {
                 // एकतम) — the site's grid decides.
                 out.push(Class::ANo(ANOpt::Apara));
                 out.push(Class::ANo(ANOpt::Tara));
+                out.push(Class::ANo(ANOpt::SmPairs));
                 out.push(Class::AsmN);
             }
             Linga::F => {}
