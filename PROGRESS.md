@@ -2110,4 +2110,7 @@ Covered: राज्, देवेज्, परिमृज्, परिव�
 ननान्दृ, यातृ; अर्यमन्, तमिस्रहन्; सर्व, अदस्, इदम्, एक, एतद्, किम्,
 तद्, यद्.
 
-Whole-db parity: **8,818/9,007** exact.
+The इदम्/एतद् entries carry both the im-/et- and the ena-forms (इमम्-एनम्,
+अनेन-एनेन).
+
+Whole-db parity: **8,820/9,007** exact.
