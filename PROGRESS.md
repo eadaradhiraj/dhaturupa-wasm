@@ -1665,3 +1665,17 @@ Covered: अहङ्कारवत्, आयुष्मत्, ऊर्म�
 विषुवत्, शर्करावत्, श्रीमत्.
 
 Whole-db parity: **8,494/9,007** exact. Gates green (browser 472).
+
+## 2026-10-21 (31) — the neuter द्-final nouns and the two-alternant ऋ-chart
+
+- `DadN` (उद्भिद्; site @udbhid2): the neuter द्-final nouns take the
+  द/त pair in the प्रथमा-/द्वितीया-/सम्बोधन-एकवचन (उद्भिद्-उद्भित्),
+  the ई-form in the dual (उद्भिदी) and the plural either the न्दि-form
+  (उद्भिन्दि) or the plain stem (बेभिदि) — the site differs per word, so
+  both are offered. Covered: उद्भिद्, बेभिद्, चेच्छिद्, शास्त्रविद्,
+  हृद्.
+- `Rc2` (दिश्; site @diz1): the ऋ-chart nouns with two alternants take
+  the ग/क pair (दिग्-दिक्) where the Cons class carries three
+  (दिग्-दिख्-दिक्). Covered: दिश्, मर्मस्पृश्, घृतस्पृश्, जलस्पृश्.
+
+Whole-db parity: **8,504/9,007** exact. Gates green (browser 472).

@@ -319,6 +319,21 @@ fn u_and_i_stem_neuter_pins() {
     }
 }
 
+/// The neuter द्-final nouns (उद्भिद् → उद्भिद्-उद्भित्, उद्भिदी,
+/// उद्भिन्दि) and the ऋ-chart nouns with two alternants (दिश् →
+/// दिग्-दिक्).
+#[test]
+fn dad_final_and_two_alternant_pins() {
+    for word in ["उद्भिद्", "बेभिद्", "चेच्छिद्", "शास्त्रविद्", "हृद्"]
+    {
+        pin_word_any(word, "N");
+    }
+    for word in ["दिश्", "मर्मस्पृश्", "घृतस्पृश्", "जलस्पृश्"]
+    {
+        pin_word_any(word, "P");
+    }
+}
+
 /// The neuter of the वतुप् stems (अहङ्कारवत् → अहङ्कारवद्-अहङ्कारवत्,
 /// अहङ्कारवती, अहङ्कारवन्ति).
 #[test]

@@ -26,7 +26,7 @@ Every item below is **delivered** — each with its own commit and a green
 | 3.2 | Seṭ/Karma filters | `#list-settva`, `#list-karma` dropdowns |
 | 4.1 | WASM size | release profile + tuned wasm-opt: 1.61MB → 1.03MB |
 
-Beyond the roadmap, the subanta engine now reproduces **8,494 of the
+Beyond the roadmap, the subanta engine now reproduces **8,504 of the
 9,007** grids the site lists (`node web/audit-site-grids.cjs`), and the
 new paradigms read back as well as decline.
 
@@ -50,6 +50,8 @@ The paradigms added after the roadmap:
 | the u-stem neuter without the गुण-forms | `UNp` |
 | the i-stem neuters with the य- and ऋ-forms | `INy`, `INr` |
 | the neuter of the वतुप् stems | `VantN` |
+| the neuter द्-final nouns | `DadN` |
+| the ऋ-chart nouns with two alternants | `Rc2` |
 
 ---
 

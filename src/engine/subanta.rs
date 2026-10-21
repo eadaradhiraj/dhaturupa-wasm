@@ -239,6 +239,13 @@ pub enum Class {
     /// The neuter ऋ-chart nouns (दृश्; site @dRz3): the ई-form dual
     /// (दृशी) and the ंशि-form plural (दृंशि).
     RcN,
+    /// The neuter द्-final nouns (उद्भिद्; site @udbhid2): the द/त pair
+    /// (उद्भिद्-उद्भित्) and the न्दि-form plural (उद्भिन्दि) — `true`
+    /// for the न्दि-form, `false` for the plain one (बेभिदि).
+    DadN(bool),
+    /// The ऋ-chart nouns with two alternants (दिश्; site @diz1): the ग/क
+    /// pair (दिग्-दिक्).
+    Rc2,
     /// The feminine ष्-final nouns of the ड/ट flavour (तृष्; site @tRS1):
     /// the ड/ट pair (तृड्-तृट्).
     ZamF,
@@ -384,6 +391,14 @@ impl Class {
             Self::DuhM => "duh-m".to_string(),
             Self::Zam => "zam".to_string(),
             Self::RcN => "rc-n".to_string(),
+            Self::DadN(ndi) => {
+                if *ndi {
+                    "dad-n".to_string()
+                } else {
+                    "dad-p".to_string()
+                }
+            }
+            Self::Rc2 => "rc-2".to_string(),
             Self::ZamF => "zam-f".to_string(),
             Self::ZvF(v) => format!("zv-f-{v}"),
             Self::ZagM => "zag-m".to_string(),
@@ -2075,6 +2090,63 @@ pub fn decline(stem: &str, linga: Linga, class: &Class) -> Result<Paradigm, &'st
             put(&mut cells, 6, 2, vec![f(base, "kzu")]);
             cells
         }
+        Class::DadN(ndi) => {
+            // The neuter द्-final nouns (उद्भिद्; site @udbhid2): the
+            // प्रथमा-/द्वितीया-एकवचन carry the द/त pair (उद्भिद्-उद्भित्),
+            // the dual the ई-form (उद्भिदी) and the plural the न्दि-form
+            // (उद्भिन्दि); the भ-endings keep the stem (उद्भिद्भ्याम्) and
+            // the locative plural the त्सु (उद्भित्सु).
+            if linga != Linga::N || !stem.ends_with('d') || stem.len() < 3 {
+                return Err(NOT_POSSIBLE);
+            }
+            let base = &stem[..stem.len() - 1];
+            let pair = vec![stem.to_string(), f(base, "t")];
+            // The plural is either the न्दि-form (उद्भिन्दि) or the plain
+            // stem (बेभिदि) — the site differs per word.
+            let plural = if *ndi { f(base, "ndi") } else { f(stem, "i") };
+            let mut cells = table(&[
+                (stem.to_string(), f(stem, "I"), plural.clone()),
+                (stem.to_string(), f(stem, "I"), plural.clone()),
+                (f(stem, "A"), f(stem, "ByAm"), f(stem, "BiH")),
+                (f(stem, "e"), f(stem, "ByAm"), f(stem, "ByaH")),
+                (f(stem, "aH"), f(stem, "ByAm"), f(stem, "ByaH")),
+                (f(stem, "aH"), f(stem, "oH"), f(stem, "Am")),
+                (f(stem, "i"), f(stem, "oH"), f(stem, "su")),
+                (stem.to_string(), f(stem, "I"), plural.clone()),
+            ]);
+            put(&mut cells, 0, 0, pair.clone());
+            put(&mut cells, 1, 0, pair.clone());
+            put(&mut cells, 7, 0, pair);
+            put(&mut cells, 6, 2, vec![f(base, "tsu")]);
+            cells
+        }
+        Class::Rc2 => {
+            // The ऋ-chart nouns with two alternants (दिश्; site @diz1):
+            // the प्रथमा-/सम्बोधन-एकवचन carry the ग/क pair (दिग्-दिक्),
+            // the भ-endings the ग-form (दिग्भ्याम्) and the locative plural
+            // the क्षु (दिक्षु).
+            if !matches!(linga, Linga::M | Linga::F) || !stem.ends_with('S') || stem.len() < 3 {
+                return Err(NOT_POSSIBLE);
+            }
+            let base = &stem[..stem.len() - 1];
+            let voiced = f(base, "g");
+            let pause = f(base, "k");
+            let mut cells = table(&[
+                (f(stem, "am"), f(stem, "O"), f(stem, "aH")),
+                (f(stem, "am"), f(stem, "O"), f(stem, "aH")),
+                (f(stem, "A"), f(&voiced, "ByAm"), f(&voiced, "BiH")),
+                (f(stem, "e"), f(&voiced, "ByAm"), f(&voiced, "ByaH")),
+                (f(stem, "aH"), f(&voiced, "ByAm"), f(&voiced, "ByaH")),
+                (f(stem, "aH"), f(stem, "oH"), f(stem, "Am")),
+                (f(stem, "i"), f(stem, "oH"), f(stem, "su")),
+                (f(stem, "am"), f(stem, "O"), f(stem, "aH")),
+            ]);
+            let pair = vec![voiced, pause];
+            put(&mut cells, 0, 0, pair.clone());
+            put(&mut cells, 7, 0, pair);
+            put(&mut cells, 6, 2, vec![f(base, "kzu")]);
+            cells
+        }
         Class::ZamF => {
             // The feminine ष्-final nouns of the ड/ट flavour (तृष्; site
             // @tRS1): the प्रथमा-/सम्बोधन-एकवचन carry the ड/ट pair
@@ -2560,8 +2632,11 @@ fn natva_cells(cells: Vec<Slot>, stem: &str, linga: Linga, class: &Class) -> Vec
     // The neuter agent nouns (धातृ → धातृणी) are not इगन्त: the site
     // keeps the dental (क्षन्तृ → क्षन्तॄणि), so the णत्व trigger that
     // sits inside the क्ष conjunct must not fire on them.
-    let neuter_n_affix =
-        linga == Linga::N && !matches!(class, Class::AtN(_) | Class::RFN | Class::VantN);
+    let neuter_n_affix = linga == Linga::N
+        && !matches!(
+            class,
+            Class::AtN(_) | Class::RFN | Class::VantN | Class::DadN(_)
+        );
     cells
         .into_iter()
         .enumerate()
@@ -3921,6 +3996,12 @@ pub fn classes_for(stem: &str, linga: Linga) -> Vec<Class> {
                     // The masculine च्-final nouns (अर्वाच्) are the अञ्च-
                     // स्वादि family — the सरित् shape does not reach them.
                     out.push(Class::AccM);
+                } else if stem.ends_with('S') {
+                    // The ऋ-chart nouns with two alternants (दिश् →
+                    // दिग्-दिक्) are a shape of their own — the Cons keeps
+                    // its three-alternant pair as the other candidate.
+                    out.push(Class::Rc2);
+                    out.push(Class::Cons);
                 } else if stem.ends_with('h') {
                     // The masculine ह्-final nouns (लिह्) come in three
                     // flavours on the site — the ड/ट pair (लिड्-लिट्), the
@@ -3988,6 +4069,12 @@ pub fn classes_for(stem: &str, linga: Linga) -> Vec<Class> {
                 if stem.ends_with('t') || stem.ends_with('d') {
                     out.push(Class::AtN(AtNStyle::Num));
                     out.push(Class::TaN);
+                    // The neuter द्-final nouns (उद्भिद्) are a shape of
+                    // their own.
+                    if stem.ends_with('d') {
+                        out.push(Class::DadN(true));
+                        out.push(Class::DadN(false));
+                    }
                     // The neuter of a वतुप् stem (अहङ्कारवत्) is the
                     // द/त-pair flavour.
                     if stem.ends_with("vat") || stem.ends_with("mat") || stem.ends_with("yat") {
