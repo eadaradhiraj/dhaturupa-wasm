@@ -1857,13 +1857,12 @@ after the ई-/इ-vowels (जयश्रीणाम्) but not after the ऊ
 
 The `StrongN` flavour keeps the dental genitive plural alternant
 (धियाम्-धीनाम्; site @dhI1) where the `Strong` one takes the retroflex
-(जयश्रियाम्-जयश्रीणाम्), and the `Vva` flavour writes the व्व-forms of
-the feminine ऊ-stems (खलप्वम्; site @khalapU2).
+(जयश्रियाम्-जयश्रीणाम्).
 
 Covered: जयश्री, धनश्री, भद्रश्री, विजयश्री, श्री, सुश्री, कुलस्त्री,
 वारस्त्री, धी, भी, भू, धू, जू, पू, भ्रू, पर्यन्तभू.
 
-Whole-db parity: **8,665/9,007** exact.
+Whole-db parity: **8,658/9,007** exact.
 
 ## 2026-10-21 (42) — the ordinals with the स्म-alternant
 
@@ -1892,3 +1891,13 @@ word.
 Covered: अन्यतर, एकतम, ततम, ततर, यतम, यतर.
 
 Whole-db parity: **8,675/9,007** exact.
+
+## 2026-10-21 (44) — the व्व-flavour of the feminine ऊ-स्वादि stems
+
+The `Vva` flavour of `NV2` (खलपू; site @khalapU2): the site writes some
+feminine ऊ-स्वादि stems with the व्व-forms (खलप्वम्, खलप्वौ) where the
+उव-form (धुवौ) is the rule.
+
+Covered: खलपू, जुहू, पितृप्रसू, प्रसू, भीष्मसू, मलपू, वर्षाभू, वीरसू.
+
+Whole-db parity: **8,665/9,007** exact.
