@@ -997,3 +997,13 @@ fn site_verbatim_grid_pins() {
         pin_word_listed_any(word);
     }
 }
+
+/// The words whose cells carry the site's own second form — the
+/// reduced-stem alternant (दन्तान्-दतः, आस्यानि-आसानि) and the like.
+#[test]
+fn cell_alternant_pins() {
+    for word in ["नासिका", "निशा", "पृतना", "यकृत्", "शकृत्", "जरा"]
+    {
+        pin_word_listed_any(word);
+    }
+}

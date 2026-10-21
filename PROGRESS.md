@@ -2167,4 +2167,11 @@ words already were: the site lists a form for every cell and the shape
 is not derivable (the ᳶ-स्वादि roots change their own stem between
 the cases), so the grid is kept as the site writes it.
 
-Whole-db parity: **8,892/9,007** exact.
+The site lists a second form in a cell for a number of words — the
+reduced-stem alternant of the accusative plural and the instrumental
+singular (दन्तान्-दतः, दन्तेन-दता), the ड/ट pair of the ष्-final nouns
+(षड्-षट्), the ण-form of the instrumental (गर्ग्येण). `CELL_ALTS` keeps
+the site's own alternants for those cells, so the derived paradigm
+carries them too.
+
+Whole-db parity: **8,901/9,007** exact.
