@@ -319,6 +319,25 @@ fn u_and_i_stem_neuter_pins() {
     }
 }
 
+/// The neuter of the वतुप् stems (अहङ्कारवत् → अहङ्कारवद्-अहङ्कारवत्,
+/// अहङ्कारवती, अहङ्कारवन्ति).
+#[test]
+fn vant_stem_neuter_pins() {
+    for word in [
+        "अहङ्कारवत्",
+        "आयुष्मत्",
+        "ऊर्मिमत्",
+        "ऊषवत्",
+        "क्रियावत्",
+        "परवत्",
+        "विषुवत्",
+        "शर्करावत्",
+        "श्रीमत्",
+    ] {
+        pin_word_any(word, "N");
+    }
+}
+
 /// The a-stem masculine with the site's optional वृद्धि-forms: the
 /// ए-form as an alternant in the nominative plural (अर्धाः-अर्धे), the
 /// ए + the ण in the instrumental (चरमेण) and the स्म-forms

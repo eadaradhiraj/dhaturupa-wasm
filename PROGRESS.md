@@ -1650,3 +1650,18 @@ own classes:
   फलेग्रहि, आत्मम्भरि, कुक्षिम्भरि.
 
 Whole-db parity: **8,485/9,007** exact. Gates green (browser 472).
+
+## 2026-10-21 (30) — the neuter of the वतुप् stems
+
+`VantN` (अहङ्कारवत्; site @ahaGkAravat2): the neuter of the वतुप्
+stems takes the द/त pair in the प्रथमा-/द्वितीया-/सम्बोधन-एकवचन
+(अहङ्कारवद्-अहङ्कारवत्), the ई-form in the dual (अहङ्कारवती) and the
+न्ति-form in the plural (अहङ्कारवन्ति); the भ-endings voice the stem
+(अहङ्कारवद्भ्याम्) and the locative plural the त्सु (अहङ्कारवत्सु).
+The class is not an इगन्त neuter, so its न्ति-forms stay dental — the
+णत्व step skips it.
+
+Covered: अहङ्कारवत्, आयुष्मत्, ऊर्मिमत्, ऊषवत्, क्रियावत्, परवत्,
+विषुवत्, शर्करावत्, श्रीमत्.
+
+Whole-db parity: **8,494/9,007** exact. Gates green (browser 472).

@@ -113,6 +113,9 @@ pub enum Class {
     /// `a`-stem masculine with the site's optional वृद्धि-forms (अर्ध;
     /// site @ardha1): the nominative plural carries अर्धाः-अर्धे.
     AMo(AOpt),
+    /// The neuter of the वतुप् stems (अहङ्कारवत्; site @ahaGkAravat2):
+    /// the द/त pair (अहङ्कारवद्-अहङ्कारवत्).
+    VantN,
     /// `a`-stem neuter (`vana`).
     AN,
     /// `A`-stem neuter (श्रीपा; site @zrIpA1): the णि-form plural
@@ -340,6 +343,7 @@ impl Class {
         match self {
             Self::AM => "a-m".to_string(),
             Self::AMo(opt) => format!("a-m-{}", opt.label()),
+            Self::VantN => "vant-n".to_string(),
             Self::AN => "a-n".to_string(),
             Self::AAN => "A-n".to_string(),
             Self::AAM => "A-m".to_string(),
@@ -481,6 +485,39 @@ pub fn decline(stem: &str, linga: Linga, class: &Class) -> Result<Paradigm, &'st
         return Err(NOT_POSSIBLE);
     }
     let cells = match class {
+        Class::VantN => {
+            // The neuter of the वतुप् stems (अहङ्कारवत्; site
+            // @ahaGkAravat2): the प्रथमा-/द्वितीया-एकवचन carry the द/त
+            // pair (अहङ्कारवद्-अहङ्कारवत्), the dual the ई-form
+            // (अहङ्कारवती) and the plural the न्ति-form (अहङ्कारवन्ति);
+            // the भ-endings voice the stem (अहङ्कारवद्भ्याम्) and the
+            // locative plural the त्सु (अहङ्कारवत्सु).
+            if linga != Linga::N
+                || !(stem.ends_with("vat") || stem.ends_with("mat") || stem.ends_with("yat"))
+                || stem.len() < 5
+            {
+                return Err(NOT_POSSIBLE);
+            }
+            // The base drops the वतुप्'s त (अहङ्कारवद्-अहङ्कारवत्), and
+            // the न्ति-form builds on it (अहङ्कारवन्ति).
+            let base = &stem[..stem.len() - 1];
+            let mut cells = table(&[
+                (f(base, "d"), f(stem, "I"), f(base, "nti")),
+                (f(base, "d"), f(stem, "I"), f(base, "nti")),
+                (f(stem, "A"), f(base, "dByAm"), f(base, "dBiH")),
+                (f(stem, "e"), f(base, "dByAm"), f(base, "dByaH")),
+                (f(stem, "aH"), f(base, "dByAm"), f(base, "dByaH")),
+                (f(stem, "aH"), f(stem, "oH"), f(stem, "Am")),
+                (f(stem, "i"), f(stem, "oH"), f(stem, "su")),
+                (f(base, "d"), f(stem, "I"), f(base, "nti")),
+            ]);
+            put(&mut cells, 6, 2, vec![f(base, "tsu")]);
+            // The प्रथमा-, द्वितीया- and सम्बोधन-एकवचन carry the द/त pair.
+            put(&mut cells, 0, 0, vec![f(base, "d"), stem.to_string()]);
+            put(&mut cells, 1, 0, vec![f(base, "d"), stem.to_string()]);
+            put(&mut cells, 7, 0, vec![f(base, "d"), stem.to_string()]);
+            cells
+        }
         Class::AMo(opt) => {
             // The a-stem masculine with the site's optional वृद्धि-forms
             // (अर्ध; site @ardha1): the nominative and vocative plurals
@@ -2523,7 +2560,8 @@ fn natva_cells(cells: Vec<Slot>, stem: &str, linga: Linga, class: &Class) -> Vec
     // The neuter agent nouns (धातृ → धातृणी) are not इगन्त: the site
     // keeps the dental (क्षन्तृ → क्षन्तॄणि), so the णत्व trigger that
     // sits inside the क्ष conjunct must not fire on them.
-    let neuter_n_affix = linga == Linga::N && !matches!(class, Class::AtN(_) | Class::RFN);
+    let neuter_n_affix =
+        linga == Linga::N && !matches!(class, Class::AtN(_) | Class::RFN | Class::VantN);
     cells
         .into_iter()
         .enumerate()
@@ -3950,6 +3988,11 @@ pub fn classes_for(stem: &str, linga: Linga) -> Vec<Class> {
                 if stem.ends_with('t') || stem.ends_with('d') {
                     out.push(Class::AtN(AtNStyle::Num));
                     out.push(Class::TaN);
+                    // The neuter of a वतुप् stem (अहङ्कारवत्) is the
+                    // द/त-pair flavour.
+                    if stem.ends_with("vat") || stem.ends_with("mat") || stem.ends_with("yat") {
+                        out.push(Class::VantN);
+                    }
                 } else if stem.ends_with('c') {
                     out.push(Class::AcN);
                 } else if stem.ends_with('S') {
