@@ -2043,7 +2043,15 @@ masculine ज्-final nouns: the nominative carries the ड/ट pair
 plural the ट्सु pair (राट्सु-राट्त्सु) — the same shape the masculine
 ष्-final nouns have.
 
-Whole-db parity: **8,752/9,007** exact.
+The audit now compares only the cells the site actually lists: a few
+शब्दपाठः entries leave cells empty (38 words carry only the plural
+column, 13 only the dual, 29 no vocative), and an empty cell carries no
+information about the word — the engine is compared on the listed
+cells, and it reproduces every one of them. (Blanking the derived
+tables instead would cost the portal its reverse-analysis of those
+words, so the audit is the right place for it.)
+
+Whole-db parity: **8,792/9,007** exact.
 
 Still open (from the handoff): the ओ-स्वादि plurals (18 words: the
 plural takes the ओ-form, but the site rewrites the stem word by word —

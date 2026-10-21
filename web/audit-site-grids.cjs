@@ -71,8 +71,13 @@ for (const entry of candidates) {
     continue;
   }
   const want = siteCells(entry);
+  // The site's grid leaves cells empty where its शब्दपाठः lists no form
+  // for the word (a few entries carry only the plural or only the
+  // vocative-less set). An empty cell carries no information, so the
+  // engine is only compared on the cells the site actually lists.
+  const listed = want.map((c, i) => (c === '' ? -1 : i)).filter((i) => i >= 0);
   // The site grid must be reproducible by one of the derived candidates.
-  if (grids.some((cells) => cells.every((c, i) => c === want[i]))) {
+  if (grids.some((cells) => listed.every((i) => cells[i] === want[i]))) {
     exact += 1;
     continue;
   }
@@ -82,19 +87,20 @@ for (const entry of candidates) {
   const scored = grids
     .map((cells) => ({
       cells,
-      diff: cells.reduce((n, c, i) => n + (c === want[i] ? 0 : 1), 0),
+      diff: listed.reduce((n, i) => n + (cells[i] === want[i] ? 0 : 1), 0),
     }))
     .sort((a, b) => a.diff - b.diff);
   const best = scored[0];
   const cls = JSON.parse(wasm.subanta_table(entry.word, code)).tables[0].class;
   const bad = [];
-  for (let i = 0; i < 24; i += 1) {
+  for (const i of listed) {
     if (best.cells[i] !== want[i]) bad.push(`${i}: got '${best.cells[i]}' want '${want[i]}'`);
   }
+  const firstDiff = listed.find((i) => best.cells[i] !== want[i]);
   diffs.push({
     word: entry.word,
     id: entry.urlid,
-    why: `${cls} @${VIB[Math.floor(best.diff === 24 ? 0 : best.cells.findIndex((c, i) => c !== want[i]))]} — ${bad.slice(0, 2).join(' | ')}`,
+    why: `${cls} @${VIB[Math.floor(firstDiff / 3)]} — ${bad.slice(0, 2).join(' | ')}`,
   });
 }
 
