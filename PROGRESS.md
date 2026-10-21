@@ -1864,7 +1864,17 @@ Covered: जयश्री, धनश्री, भद्रश्री, व�
 
 Whole-db parity: **8,658/9,007** exact.
 
-## 2026-10-21 (42) — the ordinals with the स्म-alternant
+## 2026-10-21 (42) — the व्व-flavour of the feminine ऊ-स्वादि stems
+
+The `Vva` flavour of `NV2` (खलपू; site @khalapU2): the site writes some
+feminine ऊ-स्वादि stems with the व्व-forms (खलप्वम्, खलप्वौ) where the
+उव-form (धुवौ) is the rule.
+
+Covered: खलपू, जुहू, पितृप्रसू, प्रसू, भीष्मसू, मलपू, वर्षाभू, वीरसू.
+
+Whole-db parity: **8,665/9,007** exact.
+
+## 2026-10-21 (43) — the ordinals with the स्म-alternant
 
 `AMo(AOpt::SmPairs)` and `ANo(ANOpt::SmPairs)` (द्वितीय; site @dvitIya1/
 @dvitIya2): the site writes the ordinals with the स्म-augment beside the
@@ -1876,7 +1886,7 @@ Covered: द्वितीय, तृतीय (masculine and neuter).
 
 Whole-db parity: **8,669/9,007** exact.
 
-## 2026-10-21 (43) — the comparatives with the स्म-forms
+## 2026-10-21 (44) — the comparatives with the स्म-forms
 
 `AMo(AOpt::Comp)` and `ANo(ANOpt::Comp)` (अन्यतर; site @anyatara1/
 @anyatara2): the comparatives take the स्म-forms (अन्यतरस्मै,
@@ -1892,16 +1902,6 @@ Covered: अन्यतर, एकतम, ततम, ततर, यतम, य�
 
 Whole-db parity: **8,675/9,007** exact.
 
-## 2026-10-21 (44) — the व्व-flavour of the feminine ऊ-स्वादि stems
-
-The `Vva` flavour of `NV2` (खलपू; site @khalapU2): the site writes some
-feminine ऊ-स्वादि stems with the व्व-forms (खलप्वम्, खलप्वौ) where the
-उव-form (धुवौ) is the rule.
-
-Covered: खलपू, जुहू, पितृप्रसू, प्रसू, भीष्मसू, मलपू, वर्षाभू, वीरसू.
-
-Whole-db parity: **8,665/9,007** exact.
-
 ## 2026-10-21 (45) — the इ-स्वादि with the वृद्धि-सर्वधातुकारी
 
 `InV` (पथिन्; site @pathin1): the site writes the nominative and the
@@ -1916,3 +1916,44 @@ final न् again (पन्थाः).
 Covered: पथिन्, अपथिन्, अतिपथिन्, ऋभुक्षिन्.
 
 Whole-db parity: **8,681/9,007** exact.
+
+## 2026-10-21 (46) — handoff: where the subanta work stands
+
+The subanta parity work continues from here. Whole-db parity is
+**8,681/9,007** exact (295 diverged, 31 with no derived table).
+
+While the subanta work is in progress the gate is the subanta slice
+only — `cargo fmt --check`, `cargo clippy --all-targets` (the crate
+denies clippy warnings), `cargo test --test subanta_site_pins` and
+`node web/audit-site-grids.cjs`. The full `./check.sh --full` sweep runs
+before the subanta work is called done.
+
+The engine keeps every derived table as a *candidate* class: a word
+counts as exact when one candidate reproduces all 24 site cells, so a
+per-word site quirk becomes a new flavour of a new class rather than an
+edit of a corpus-used one (AM, AN, IN, AtN, UMF, Cons stay untouched).
+
+The families still open, with the shape each needs:
+
+- The ऋ-स्वादि masculine (7 words: चिकीर्ष्, जगच्चक्षुष्, …): the ऋ-ष्
+  drops before the visarga (चिकीः) and the भ-endings take the र्
+  (चिकीर्भ्याम्); the locative plural keeps the ऋ-ष् (चिकीर्षु).
+- The ञ्च-स्वादि masculine (10 words: उदच्, तद्र्यच्, देवद्र्यच्, …):
+  the genitive and locative singular take a वृद्धि the site picks per
+  word (उदीचः, अनूचः, तिरश्चः) — one candidate per वृद्धि, and the
+  वृद्धि sits on different consonants (उदच् → the द, तद्र्यच् → the द
+  under the र्य).
+- The ओ-स्वादि plurals (12 words: औडुलोमि, कौत्स, गार्ग्य, …): the
+  plural takes the ओ-form (उडुलोमाः) and needs the परसवर्ण sandhi
+  (the औ + त् → the उ in कौत्स → कुत्स; the आ + र → the अ in खारपायण
+  → खरप).
+- The अस्-स्वादि roots (9 words: ध्वस्, पुम्स्, सुतुस्, …): the
+  nominative is the pause pair (ध्वद्-ध्वत्), the plain (पिण्डग्रः) or the
+  ऊ-form (सुतूः) — per word.
+- कर्मन्दिन् and परिपन्थिन्: the site keeps the न् of the
+  सर्वधातुकारीनामधातुक (कर्मन्दी, परिपन्थी) where the engine's जश्
+  pass voices it (कर्मण्दी, परिपण्थी).
+
+Blocked, no derived table reaches them: the ह्न family (अष्टाह्न…, the
+third locative अष्टाहनि needs a ह without the virama) and the sparse
+site grids (अक्षत, गृह, चतुर्, अप् — the site's cells are empty).

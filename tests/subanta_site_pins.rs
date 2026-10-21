@@ -611,7 +611,8 @@ fn ordinal_sm_pair_pins() {
 /// (जयश्री, कुलस्त्री, धी, धू; site @jayazrI1/@kulastrI1/@dhI1/@dhU1).
 #[test]
 fn nadi_feminine_i_and_u_stem_pins() {
-    for word in ["जयश्री", "कुलस्त्री", "धी", "धू"] {
+    for word in ["जयश्री", "कुलस्त्री", "धी", "धू", "खलपू"]
+    {
         pin_word_any(word, "S");
     }
 }
