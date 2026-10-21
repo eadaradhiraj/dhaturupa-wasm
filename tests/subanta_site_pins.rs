@@ -581,6 +581,17 @@ fn sha_final_masks() {
     }
 }
 
+/// The masculine ई- and ऊ-स्वादि stems in their strong-cell flavours:
+/// the गुण-forms (अग्रण्यम्, जलप्यि, क्षाम्युः), the वृद्धि (पक्वियौ)
+/// and the व्व-forms (उल्ल्वौ, अग्रेदिधिष्वौ).
+#[test]
+fn i_and_u_stem_strong_cell_pins() {
+    for word in ["अग्रणी", "जलपी", "क्षामी", "पक्वी", "उल्लू", "अग्रेदिधिषू"]
+    {
+        pin_word_any(word, "P");
+    }
+}
+
 /// The compounded pronouns (अतियुष्मद्, अत्यस्मद्, परमयुष्मद्,
 /// परमास्मद्): the site grids the pronoun's own paradigm with the base
 /// in front of it — three flavours per pronoun for the अधिक compounds

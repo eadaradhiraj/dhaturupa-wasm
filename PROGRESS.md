@@ -1796,3 +1796,32 @@ one (परम + माम् → परममाम्).
 Covered: अतियुष्मद्, अत्यस्मद्, परमयुष्मद्, परमास्मद्.
 
 Whole-db parity: **8,576/9,007** exact.
+
+## 2026-10-21 (39) — the masculine ई- and ऊ-स्वादि stems in their strong-cell flavours
+
+The site writes the masculine ई- and ऊ-स्वादि stems word by word, so
+the engine offers every flavour it can derive as a candidate.
+
+`IIM2(IIM2Opt)` (अग्रणी; site @agraNI1) — the ई-stems:
+
+- `Guna`: the ग्य-forms in the accusative singular and plural and in the
+  locative singular (अग्रण्यम्, अग्रण्यः, अग्रण्याम्).
+- `GunaI`: the same with the ि-locative (जलप्यि; site @jalapI1).
+- `GunaU`: the same with the उ-augment in the ablative and genitive
+  singular (क्षाम्युः; site @kSAmI1).
+- `Vridhi`: the वृद्धि — the िय-forms in every strong cell (दुर्धियौ,
+  दुर्धियि; site @durdhI2).
+
+`UUM2(UUM2Opt)` (उल्लू; site @ullU1) — the ऊ-stems: the व्व-forms in
+the strong cells (`Vva`: उल्ल्वम्, उल्ल्वः) or the same with the
+accusative keeping the ऊ-forms (`VvaU`: अग्रेदिधिषूम्, अग्रेदिधिषून्;
+site @agredidhiSU1).
+
+Covered: अग्रणी, अतिलक्ष्मी, अरिष्टदुष्टधी, उन्नी, कुमारी, क्षामी,
+ग्रामणी, जलपी, तीक्ष्णधी, दुर्धी, नी, पक्वी, परमक्री, परमधी, प्रधी,
+प्रस्तीती, प्रस्तीमी, बहुश्रेयसी, मन्दधी, यवक्री, लूनी, वातप्रमी,
+वेगी, वृश्चिकभी, अग्रेदिधिषू, अतिचमू, उल्लू, करभू, कर्कन्धू,
+कारभू, खलपू, तर्दू, दृन्भू, दृम्भू, नग्नहू, परमलू, पुनर्भू, ब्रह्मसू,
+वर्षाभू, सुलू, हूहू.
+
+Whole-db parity: **8,625/9,007** exact.

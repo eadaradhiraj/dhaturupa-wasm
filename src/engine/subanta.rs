@@ -127,6 +127,58 @@ pub enum PronFlavour {
     AsmPara,
 }
 
+/// The strong-cell flavours of the masculine ई-स्वादि stems: the site
+/// writes the गुण-forms, the वृद्धि or a mixture word by word.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub enum IIM2Opt {
+    /// The ग्य-forms in the accusative and the locative (अग्रण्यम्,
+    /// अग्रण्याम्; site @agraNI1).
+    Guna,
+    /// The same, with the ि-locative (जलप्यि; site @jalapI1).
+    GunaI,
+    /// The same, with the उ-augment in the ablative and genitive singular
+    /// (क्षाम्युः; site @kSAmI1).
+    GunaU,
+    /// The वृद्धि: the िय-forms in the strong cells (दुर्धियौ, दुर्धियि;
+    /// site @durdhI2).
+    Vridhi,
+}
+
+/// The strong-cell flavours of the masculine ऊ-स्वादि stems: the site
+/// writes the व्व-forms, with or without the plain accusative.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub enum UUM2Opt {
+    /// The व्व-forms everywhere (उल्ल्वम्, उल्ल्वः; site @ullU1).
+    Vva,
+    /// The व्व-forms, but the accusative keeps the ऊ-forms
+    /// (अग्रेदिधिषूम्, अग्रेदिधिषून्; site @agredidhiSU1).
+    VvaU,
+}
+
+impl IIM2Opt {
+    /// The class label of this flavour.
+    #[must_use]
+    pub fn label(self) -> &'static str {
+        match self {
+            Self::Guna => "guna",
+            Self::GunaI => "gunai",
+            Self::GunaU => "gunau",
+            Self::Vridhi => "vridhi",
+        }
+    }
+}
+
+impl UUM2Opt {
+    /// The class label of this flavour.
+    #[must_use]
+    pub fn label(self) -> &'static str {
+        match self {
+            Self::Vva => "vva",
+            Self::VvaU => "vvau",
+        }
+    }
+}
+
 /// The optional-form flavours of the neuter a-stem: the site's grids
 /// differ in the nominative, the ablative and the instrumental.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
@@ -231,6 +283,10 @@ pub enum Class {
     /// takes the visarga (`amIaH`) and the y-forms carry the accusative
     /// and the other case endings (`amya`, `amyeH`, `amyaH`).
     IIM,
+    /// `I`-stem masculine with the गुण-forms in the strong cells
+    /// (`agraNI`; site @agraNI1): the accusative and the locative
+    /// singular take the ग्य-forms (`agraNyam`, `agraNyAm`).
+    IIM2(IIM2Opt),
     /// `u`-stem masculine/feminine (`guru`).
     UMF,
     /// `u`-stem feminine with ङित् endings (`Denu`): `DenvA`, `Denave`/
@@ -258,6 +314,9 @@ pub enum Class {
     /// the visarga (`agnibhUaH`) and the v-forms carry the endings
     /// (`agnibhuvA`, `agnibhuvE`, `agnibhuvAH`).
     UUM,
+    /// `U`-stem masculine with the व्-forms in the strong cells (`ullU`;
+    /// site @ullU1): the व्व-forms (`ullvaO`, `ullvam`).
+    UUM2(UUM2Opt),
     /// The neuter of a त-स्वादि stem (आत्मवत्, आयुष्मत्; site
     /// @Atmavat2): the प्रथमा-/द्वितीया-एकवचन carry the द/त pair
     /// (आत्मवद्-आत्मवत्), the rest the ई-forms (आत्मवती, आत्मवन्ति).
@@ -461,6 +520,7 @@ impl Class {
             Self::IIF => "I-f".to_string(),
             Self::IIFN => "I-f-nadi".to_string(),
             Self::IIM => "I-m".to_string(),
+            Self::IIM2(o) => format!("I-m-{}", o.label()),
             Self::UMF => "u-m/f".to_string(),
             Self::UF => "u-f".to_string(),
             Self::UN => "u-n".to_string(),
@@ -470,6 +530,7 @@ impl Class {
             Self::UUF => "U-f".to_string(),
             Self::UUFN => "U-f-nadi".to_string(),
             Self::UUM => "U-m".to_string(),
+            Self::UUM2(o) => format!("U-m-{}", o.label()),
             Self::TaN => "ta-n".to_string(),
             Self::AccM => "ac-m".to_string(),
             Self::AjjM => "aj-m".to_string(),
@@ -989,6 +1050,55 @@ pub fn decline(stem: &str, linga: Linga, class: &Class) -> Result<Paradigm, &'st
                 (f(stem, "H"), f(p, "yO"), f(p, "yaH")),
             ])
         }
+        Class::IIM2(opt) => {
+            // The masculine ई-स्वादि in the strong-cell flavours the
+            // site writes word by word: the गुण-forms (the ग्य-forms) in
+            // the accusative and the locative (अग्रण्यम्, अग्रण्याम्)
+            // or the वृद्धि (the िय-forms) in every strong cell (दुर्धियौ,
+            // दुर्धियि).
+            if linga != Linga::M || !stem.ends_with('I') {
+                return Err(NOT_POSSIBLE);
+            }
+            let p = &stem[..stem.len() - 1];
+            if matches!(opt, IIM2Opt::Vridhi) {
+                let v = f(p, "iy");
+                table(&[
+                    (f(stem, "H"), f(&v, "O"), f(&v, "aH")),
+                    (f(&v, "am"), f(&v, "O"), f(&v, "aH")),
+                    (f(&v, "A"), f(stem, "ByAm"), f(stem, "BiH")),
+                    (f(&v, "e"), f(stem, "ByAm"), f(stem, "ByaH")),
+                    (f(&v, "aH"), f(stem, "ByAm"), f(stem, "ByaH")),
+                    (f(&v, "aH"), f(&v, "oH"), f(&v, "Am")),
+                    (f(&v, "i"), f(&v, "oH"), f(stem, "zu")),
+                    (f(stem, "H"), f(&v, "O"), f(&v, "aH")),
+                ])
+            } else {
+                // The गुण flavour: the ग्य-forms in the accusative
+                // singular and plural and in the locative singular; the
+                // ablative and genitive singular take the उ-augment in
+                // the site.
+                let loc = if matches!(opt, IIM2Opt::Guna) {
+                    f(p, "yAm")
+                } else {
+                    f(p, "yi")
+                };
+                let mut cells = table(&[
+                    (f(stem, "H"), f(p, "yO"), f(p, "yaH")),
+                    (f(p, "yam"), f(p, "yO"), f(p, "yaH")),
+                    (f(p, "yA"), f(stem, "ByAm"), f(stem, "BiH")),
+                    (f(p, "ye"), f(stem, "ByAm"), f(stem, "ByaH")),
+                    (f(p, "yaH"), f(stem, "ByAm"), f(stem, "ByaH")),
+                    (f(p, "yaH"), f(p, "yoH"), f(p, "yAm")),
+                    (loc, f(p, "yoH"), f(stem, "zu")),
+                    (f(stem, "H"), f(p, "yO"), f(p, "yaH")),
+                ]);
+                if matches!(opt, IIM2Opt::GunaU) {
+                    put(&mut cells, 4, 0, vec![f(p, "yuH")]);
+                    put(&mut cells, 5, 0, vec![f(p, "yuH")]);
+                }
+                cells
+            }
+        }
         Class::IIF => {
             if linga != Linga::F || !stem.ends_with('I') {
                 return Err(NOT_POSSIBLE);
@@ -1466,6 +1576,31 @@ pub fn decline(stem: &str, linga: Linga, class: &Class) -> Result<Paradigm, &'st
                 (f(p, "uvaH"), f(p, "uvoH"), f(p, "uvAm")),
                 (f(p, "uvi"), f(p, "uvoH"), f(stem, "zu")),
                 (f(stem, "H"), f(p, "uvO"), f(p, "uvaH")),
+            ])
+        }
+        Class::UUM2(opt) => {
+            // The masculine ऊ-स्वादि with the व्व-forms in the strong
+            // cells (उल्ल्वौ, उल्ल्वम्; site @ullU1) — the accusative
+            // sometimes keeps the ऊ-forms (अग्रेदिधिषूम्; site
+            // @agredidhiSU1).
+            if linga != Linga::M || !stem.ends_with('U') {
+                return Err(NOT_POSSIBLE);
+            }
+            let p = &stem[..stem.len() - 1];
+            let v = f(p, "v");
+            let (acc_sg, acc_pl) = match opt {
+                UUM2Opt::Vva => (f(&v, "am"), f(&v, "aH")),
+                UUM2Opt::VvaU => (f(stem, "m"), f(stem, "n")),
+            };
+            table(&[
+                (f(stem, "H"), f(&v, "O"), f(&v, "aH")),
+                (acc_sg, f(&v, "O"), acc_pl),
+                (f(&v, "A"), f(stem, "ByAm"), f(stem, "BiH")),
+                (f(&v, "e"), f(stem, "ByAm"), f(stem, "ByaH")),
+                (f(&v, "aH"), f(stem, "ByAm"), f(stem, "ByaH")),
+                (f(&v, "aH"), f(&v, "oH"), f(&v, "Am")),
+                (f(&v, "i"), f(&v, "oH"), f(stem, "zu")),
+                (f(stem, "H"), f(&v, "O"), f(&v, "aH")),
             ])
         }
         Class::UUF => {
@@ -4531,8 +4666,14 @@ pub fn classes_for(stem: &str, linga: Linga) -> Vec<Class> {
             out.push(Class::IIFN);
             out.push(Class::IIF);
         } else if linga == Linga::M {
-            // The masculine ई-स्वादि (अमीः, अग्रणीः; site @amI1).
+            // The masculine ई-स्वादि (अमीः, अग्रणीः; site @amI1) and
+            // its strong-cell flavours (the ग्य-forms or the वृद्धि) —
+            // the site writes them word by word, so all are candidates.
             out.push(Class::IIM);
+            out.push(Class::IIM2(IIM2Opt::Guna));
+            out.push(Class::IIM2(IIM2Opt::GunaI));
+            out.push(Class::IIM2(IIM2Opt::GunaU));
+            out.push(Class::IIM2(IIM2Opt::Vridhi));
         }
     } else if stem.ends_with('u') {
         match linga {
@@ -4558,8 +4699,11 @@ pub fn classes_for(stem: &str, linga: Linga) -> Vec<Class> {
             out.push(Class::UUFN);
             out.push(Class::UUF);
         } else if linga == Linga::M {
-            // The masculine ऊ-स्वादि (अग्निभूः; site @agnibhU1).
+            // The masculine ऊ-स्वादि (अग्निभूः; site @agnibhU1) and
+            // its व्व-form flavour (उल्ल्वौ; site @ullU1).
             out.push(Class::UUM);
+            out.push(Class::UUM2(UUM2Opt::Vva));
+            out.push(Class::UUM2(UUM2Opt::VvaU));
         }
     } else if stem.ends_with('f') {
         if linga == Linga::N {
