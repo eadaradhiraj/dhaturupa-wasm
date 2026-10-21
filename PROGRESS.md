@@ -1733,3 +1733,26 @@ to the स्म-form.
 Covered: अधर, अन्तर, अपर, अवर, उत्तर, पर, पूर्व, एकतर.
 
 Whole-db parity: **8,534/9,007** exact. Gates green (browser 472).
+
+## 2026-10-21 (36) — the a-stems with the स्म-forms and the optional ए-forms
+
+Two more flavours of the a-stem masculine (`AMo`):
+
+- `SmE` (दक्षिण; site @dakSiNa1): the nominative plural keeps the आ- and
+  ए-forms (दक्षिणाः-दक्षिणे), the cat takes the स्म-form (दक्षिणस्मै), the
+  ablative the four alternants (दक्षिणाद्-दक्षिणस्माद्-दक्षिणस्मात्-दक्षिणात्)
+  and the locative the ए- and स्म-forms (दक्षिणे-दक्षिणस्मिन्); the
+  instrumental stays plain (दक्षिणेन).
+- `SmEN` (एकतर; site @ekatara1): the nominative plural keeps the ए-form
+  alone (एकतरे), the instrumental takes the ए + the ण (एकतरेण), the cat
+  the स्म-form, the ablative the two स्म-alternants and the locative the
+  स्म-form.
+
+Covered: दक्षिण, स्व, अन्यतर, एकतर, ततर, यतर, परमसर्व.
+
+While the subanta work is in progress the gate is the subanta slice only
+(`cargo fmt --check`, `cargo clippy --all-targets`, the subanta site pins
+and `node web/audit-site-grids.cjs`); the full `./check.sh --full` sweep
+runs before the subanta work is called done.
+
+Whole-db parity: **8,541/9,007** exact.

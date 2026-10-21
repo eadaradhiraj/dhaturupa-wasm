@@ -379,6 +379,17 @@ fn dad_final_and_two_alternant_pins() {
     pin_word_any("विश्", "P");
 }
 
+/// The a-stems with the स्म-forms and the optional ए-forms (दक्षिण →
+/// दक्षिणस्मै, दक्षिणाद्-दक्षिणस्माद्-दक्षिणस्मात्-दक्षिणात्) and the
+/// स्म-forms without the nominative pair (एकतर → एकतरेण, एकतरस्मै).
+#[test]
+fn a_stem_sm_form_pins() {
+    for word in ["दक्षिण", "स्व", "अन्यतर", "एकतर", "ततर", "यतर", "परमसर्व"]
+    {
+        pin_word_any(word, "P");
+    }
+}
+
 /// The neuter a-stems with the site's optional वृद्धि-forms (अधर →
 /// अधरेण, अधरस्मै, अधराद्-अधरस्माद्-अधरस्मात्-अधरात्).
 #[test]

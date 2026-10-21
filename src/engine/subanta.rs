@@ -75,6 +75,15 @@ pub enum AOpt {
     /// The स्म-forms with the plain instrumental (नेमस्मै, नेमेन; site
     /// @nema1).
     Sm,
+    /// The स्म-forms with the ए-pair (दक्षिण; site @dakSiNa1): the
+    /// nominative plural keeps the आ- and ए-forms (दक्षिणाः-दक्षिणे), the
+    /// cat the स्म-form, the ablative the four alternants and the locative
+    /// the ए- and स्म-forms.
+    SmE,
+    /// The स्म-forms with the ए + the ण and without the nominative pair
+    /// (एकतर; site @ekatara1): the ablative carries only the two
+    /// स्म-alternants and the locative the स्म-form.
+    SmEN,
 }
 
 impl AOpt {
@@ -86,6 +95,8 @@ impl AOpt {
             Self::EN => "en",
             Self::ENSm => "en-sm",
             Self::Sm => "sm",
+            Self::SmE => "sm-e",
+            Self::SmEN => "sm-en",
         }
     }
 }
@@ -629,6 +640,33 @@ pub fn decline(stem: &str, linga: Linga, class: &Class) -> Result<Paradigm, &'st
                     // The cat takes the स्म-form, the ablative the two
                     // स्म-alternants, the locative the स्म-form and the
                     // genitive plural the ए-form (नेमेषाम्).
+                    cells[9].forms = vec![f(p, "asmE")];
+                    put(&mut cells, 4, 0, vec![f(p, "asmAd"), f(p, "asmAt")]);
+                    cells[18].forms = vec![f(p, "asmin")];
+                    cells[17].forms = vec![f(p, "ezAm")];
+                }
+                AOpt::SmE => {
+                    // The cat takes the स्म-form, the ablative the four
+                    // alternants, the locative the ए- and स्म-forms and the
+                    // genitive plural the ए-form (दक्षिणेषाम्).
+                    cells[9].forms = vec![f(p, "asmE")];
+                    put(
+                        &mut cells,
+                        4,
+                        0,
+                        vec![f(p, "Ad"), f(p, "asmAd"), f(p, "asmAt"), f(p, "At")],
+                    );
+                    put(&mut cells, 6, 0, vec![f(p, "e"), f(p, "asmin")]);
+                    cells[17].forms = vec![f(p, "ezAm")];
+                }
+                AOpt::SmEN => {
+                    // The nominative plural keeps the ए-form alone
+                    // (एकतरे), the instrumental takes the ए + the ण
+                    // (एकतरेण), the cat the स्म-form, the ablative the two
+                    // स्म-alternants and the locative the स्म-form.
+                    cells[2].forms = vec![f(p, "e")];
+                    cells[23].forms = vec![f(p, "e")];
+                    cells[6].forms = vec![f(p, "eRa")];
                     cells[9].forms = vec![f(p, "asmE")];
                     put(&mut cells, 4, 0, vec![f(p, "asmAd"), f(p, "asmAt")]);
                     cells[18].forms = vec![f(p, "asmin")];
@@ -4011,6 +4049,8 @@ pub fn classes_for(stem: &str, linga: Linga) -> Vec<Class> {
                 out.push(Class::AMo(AOpt::EN));
                 out.push(Class::AMo(AOpt::ENSm));
                 out.push(Class::AMo(AOpt::Sm));
+                out.push(Class::AMo(AOpt::SmE));
+                out.push(Class::AMo(AOpt::SmEN));
             }
             Linga::N => {
                 out.push(Class::AN);
