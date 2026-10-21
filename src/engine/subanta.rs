@@ -3930,11 +3930,20 @@ fn natva_cells(cells: Vec<Slot>, stem: &str, linga: Linga, class: &Class) -> Vec
     // keeps the dental (क्षन्तृ → क्षन्तॄणि), so the णत्व trigger that
     // sits inside the क्ष conjunct must not fire on them. The neuter of
     // a त-स्वादि stem (बृहत् → बृहन्ति) is the same: the न belongs to
-    // the सर्वधातुकारी, not to an affix of its own.
+    // the सर्वधातुकारी, not to an affix of its own. The अस्-स्वादि
+    // neuters (अन्तर्मनस् → अन्तर्मनांसि) carry their own न the same
+    // way.
     let neuter_n_affix = linga == Linga::N
         && !matches!(
             class,
-            Class::AtN(_) | Class::RFN | Class::VantN | Class::DadN(_) | Class::TaN
+            Class::AtN(_)
+                | Class::RFN
+                | Class::VantN
+                | Class::DadN(_)
+                | Class::TaN
+                | Class::TaN2(_)
+                | Class::AsN
+                | Class::AsAnM
         );
     // The नत्व of an न्-final प्रातिपदिक reaches that प्रातिपदिक's own
     // न् — where the न् drops to a न (the ङ्वनिप् drop family: उक्षन् →

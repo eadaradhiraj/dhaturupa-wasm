@@ -2015,6 +2015,10 @@ in the oblique cases: the ष-final stems take the ण (अक्ष्णा, �
 locative singular and the vocative carry both alternants (अक्ष्णि-अक्षणि,
 हे अक्षि-हे अक्षे).
 
+The नाम्-नत्व leaves the neuter अस्-स्वादि alone as well: the न of
+अन्तर्मनस् belongs to the root, not to an affix, so the plural keeps it
+dental (अन्तर्मनांसि, not अन्तर्मणांसि — site @antarmanas2).
+
 The नत्व now reaches the प्रातिपदिक's own न् alone: the इ-स्वादि weak
 stem has dropped it, so the root's internal न keeps its dental
 (कर्मन्दिभ्याम्, परिपन्थिभ्याम् — site @karmandin1/@paripanthin1),
@@ -2028,9 +2032,9 @@ Covered: उदच्, न्यच्, प्रत्यच्, सम्य�
 स्थिरायुष्; दुर्धी, प्रधी, वृश्चिकभी, नी, कुमारी; त्वत्, अष्ठीवत्,
 दीध्यत्, वेव्यत्; तुदत्, भात्, ददत्, महत्; न्यच्, सम्यच्, अन्वच्,
 गवाच्, गोअच्, गोच्, गोन्च्, गवान्च्, गोअन्च्, तिर्यन्च्; अक्षि, अस्थि, दधि,
-सक्थि, अतिदधि; कर्मन्दिन्, परिपन्थिन्.
+सक्थि, अतिदधि; अन्तर्मनस्, दुर्मनस्, प्रमनस्; कर्मन्दिन्, परिपन्थिन्.
 
-Whole-db parity: **8,736/9,007** exact.
+Whole-db parity: **8,739/9,007** exact.
 
 Still open (from the handoff): the ओ-स्वादि plurals (18 words: the
 plural takes the ओ-form, but the site rewrites the stem word by word —

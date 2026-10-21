@@ -817,3 +817,14 @@ fn i_stem_neuter_na_forms_pins() {
         pin_word_any(word, "N");
     }
 }
+
+/// The neuter अस्-स्वादि with its own न (अन्तर्मनस् → अन्तर्मनांसि; site
+/// @antarmanas2): the न belongs to the root, so the नाम्-नत्व does not
+/// reach it.
+#[test]
+fn as_swadi_neuter_dental_nan_pins() {
+    for word in ["अन्तर्मनस्", "दुर्मनस्", "प्रमनस्"]
+    {
+        pin_word_any(word, "N");
+    }
+}
