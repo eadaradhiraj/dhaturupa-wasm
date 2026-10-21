@@ -837,3 +837,24 @@ fn tiryanccha_parasavarna_pins() {
     pin_word_any("तिर्यच्", "P");
     pin_word_any("तिर्यच्", "N");
 }
+
+/// The masculine ज्-final nouns of the ड/ट flavour (राज् → राड्-राट्;
+/// site @rAj1 and its kin): the nominative carries the ड/ट pair and the
+/// भ-endings the ड-form.
+#[test]
+fn j_final_dada_flavor_pins() {
+    for word in [
+        "राज्",
+        "देवेज्",
+        "परिमृज्",
+        "परिव्राज्",
+        "परेतराज्",
+        "यक्षराज्",
+        "यमराज्",
+        "सम्राज्",
+        "स्वाराज्",
+        "विभ्राज्",
+    ] {
+        pin_word_any(word, "P");
+    }
+}

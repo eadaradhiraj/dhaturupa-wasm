@@ -2033,9 +2033,17 @@ Covered: उदच्, न्यच्, प्रत्यच्, सम्य�
 दीध्यत्, वेव्यत्; तुदत्, भात्, ददत्, महत्; न्यच्, सम्यच्, अन्वच्,
 गवाच्, गोअच्, गोच्, गोन्च्, गवान्च्, गोअन्च्, तिर्यन्च्; अक्षि, अस्थि, दधि,
 सक्थि, अतिदधि; अन्तर्मनस्, दुर्मनस्, प्रमनस्; कर्मन्दिन्, परिपन्थिन्;
-तिर्यच् (the masculine and the neuter — the परसवर्ण spelling तिरश्च).
+तिर्यच् (the masculine and the neuter — the परसवर्ण spelling तिरश्च);
+राज्, देवेज्, परिमृज्, परिव्राज्, परेतराज्, यक्षराज्, यमराज्, सम्राज्,
+स्वाराज्, विभ्राज्.
 
-Whole-db parity: **8,741/9,007** exact.
+`JasM` (राज्; site @rAj1 and its kin) adds the ड/ट flavour to the
+masculine ज्-final nouns: the nominative carries the ड/ट pair
+(राड्-राट्), the भ-endings the ड-form (राड्भ्याम्) and the locative
+plural the ट्सु pair (राट्सु-राट्त्सु) — the same shape the masculine
+ष्-final nouns have.
+
+Whole-db parity: **8,752/9,007** exact.
 
 Still open (from the handoff): the ओ-स्वादि plurals (18 words: the
 plural takes the ओ-form, but the site rewrites the stem word by word —

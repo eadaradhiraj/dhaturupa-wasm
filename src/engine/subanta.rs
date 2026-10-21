@@ -647,6 +647,9 @@ pub enum Class {
     /// `j`-stem masculine/feminine (नजिङ्): pausa `svapnag`/`svapnak`,
     /// `svapnagByAm`, `svapnakzu`.
     Jvs,
+    /// The masculine ज्-final nouns of the ड/ट flavour (राज्; site @rAj1):
+    /// the nominative carries the ड/ट pair (राड्-राट्).
+    JasM,
     /// `j`-stem neuter (नजिङ्): `svapnajI`, `svapnaYji` (the @svapnaj2
     /// paradigm).
     JvsN,
@@ -786,6 +789,7 @@ impl Class {
             Self::VantM => "vant-m".to_string(),
             Self::VantMP => "vant-m-plain".to_string(),
             Self::Jvs => "j-m/f".to_string(),
+            Self::JasM => "jas-m".to_string(),
             Self::JvsN => "j-n".to_string(),
             Self::VanM => "van-m".to_string(),
             Self::ManN => "man-n".to_string(),
@@ -3443,6 +3447,35 @@ pub fn decline(stem: &str, linga: Linga, class: &Class) -> Result<Paradigm, &'st
                 (f(base, "N"), f(base, "YcO"), f(base, "YcaH")),
             ])
         }
+        Class::JasM => {
+            // The masculine ज्-final nouns of the ड/ट flavour (राज्; site
+            // @rAj1): the nominative carries the ड/ट pair (राड्-राट्), the
+            // भ-endings voice the stem (राड्भ्याम्) and the locative plural
+            // the ट्सु pair (राट्सु-राट्त्सु) — the ड/ट flavour the
+            // masculine ष्-final nouns have.
+            if linga != Linga::M || !stem.ends_with('j') || stem.len() < 3 {
+                return Err(NOT_POSSIBLE);
+            }
+            let base = &stem[..stem.len() - 1];
+            let voiced = f(base, "q");
+            let pause = f(base, "w");
+            let mut cells = table(&[
+                (f(stem, "aH"), f(stem, "O"), f(stem, "aH")),
+                (f(stem, "am"), f(stem, "O"), f(stem, "aH")),
+                (f(stem, "A"), f(&voiced, "ByAm"), f(&voiced, "BiH")),
+                (f(stem, "e"), f(&voiced, "ByAm"), f(&voiced, "ByaH")),
+                (f(stem, "aH"), f(&voiced, "ByAm"), f(&voiced, "ByaH")),
+                (f(stem, "aH"), f(stem, "oH"), f(stem, "Am")),
+                (f(stem, "i"), f(stem, "oH"), f(stem, "su")),
+                (f(stem, "aH"), f(stem, "O"), f(stem, "aH")),
+            ]);
+            // The प्रथमा- and सम्बोधन-एकवचन carry the ड/ट pair; the
+            // locative plural carries the ट्सु pair.
+            put(&mut cells, 0, 0, vec![voiced.clone(), pause.clone()]);
+            put(&mut cells, 7, 0, vec![voiced.clone(), pause]);
+            put(&mut cells, 6, 2, vec![f(base, "wsu"), f(base, "wtsu")]);
+            cells
+        }
         Class::AjjM => {
             // Masculine ज्-final nouns (खन्ज्; site @khanj1): the
             // nominative is the bare stem (खन्), the dual/plural the
@@ -5677,6 +5710,9 @@ pub fn classes_for(stem: &str, linga: Linga) -> Vec<Class> {
             Linga::M => {
                 out.push(Class::Jvs);
                 out.push(Class::AjjM);
+                // The ड/ट flavour of the ज्-final nouns (राड्-राट्) —
+                // the site's grid decides.
+                out.push(Class::JasM);
             }
             Linga::F => out.push(Class::Jvs),
             Linga::N => out.push(Class::JvsN),
