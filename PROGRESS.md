@@ -1756,3 +1756,16 @@ and `node web/audit-site-grids.cjs`); the full `./check.sh --full` sweep
 runs before the subanta work is called done.
 
 Whole-db parity: **8,541/9,007** exact.
+
+## 2026-10-21 (37) — the व-स्वादि feminine u-stems with the dental genitive plural
+
+`UvFd` (अलावु; site @alAvu1): the व-स्वादि feminine u-stems come in a
+dental flavour of the genitive plural — the site writes अलावूनाम् where
+the `UvF` class has अलावूणाम् (अभ्रमूणाम्, site @abhramu1), so the
+site itself differs from word to word and both are offered as candidates.
+
+Covered: अलावु, आलु, उडु, कङ्गु, कच्छु, कटु, कण्डु, कन्दु, करेणु,
+काकु, कु, खर्जु, गवेधु, चञ्चु, जम्बु, तनु, धेनु, परशु, पशुरज्जु, बाहु,
+मृत्यु, रज्जु, रेणु, श्रद्धालु, सिन्धु, स्नायु, हनु.
+
+Whole-db parity: **8,568/9,007** exact.

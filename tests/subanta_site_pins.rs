@@ -379,6 +379,16 @@ fn dad_final_and_two_alternant_pins() {
     pin_word_any("विश्", "P");
 }
 
+/// The व-स्वादि feminine u-stems with the dental genitive plural
+/// (अलावु → अलावूनाम्).
+#[test]
+fn v_form_u_stem_feminine_pins() {
+    for word in ["अलावु", "आलु", "उडु", "कच्छु", "कटु", "तनु", "धेनु", "सिन्धु"]
+    {
+        pin_word_any(word, "S");
+    }
+}
+
 /// The a-stems with the स्म-forms and the optional ए-forms (दक्षिण →
 /// दक्षिणस्मै, दक्षिणाद्-दक्षिणस्माद्-दक्षिणस्मात्-दक्षिणात्) and the
 /// स्म-forms without the nominative pair (एकतर → एकतरेण, एकतरस्मै).

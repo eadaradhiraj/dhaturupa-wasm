@@ -228,6 +228,9 @@ pub enum Class {
     /// The व-स्वादि feminine u-stems (अभ्रमु; site @abhramuh1): the
     /// व-forms (अभ्रम्वा) and the paired alternants (अभ्रमवे-अभ्रम्वै).
     UvF,
+    /// The व-स्वादि feminine u-stems with the dental genitive plural
+    /// (अलावूनाम्; site @alAvu1).
+    UvFd,
     /// The neuter u-stems (अगुरु; site @aguru2): the ण-forms in the
     /// cat/paJ/zaz/sap (अगुरुणे, अगुरूणाम्).
     UnN,
@@ -425,6 +428,7 @@ impl Class {
             Self::AccM => "ac-m".to_string(),
             Self::AjjM => "aj-m".to_string(),
             Self::UvF => "uv-f".to_string(),
+            Self::UvFd => "uv-f-d".to_string(),
             Self::UnN => "un-n".to_string(),
             Self::INu => "i-nu".to_string(),
             Self::HasM => "has-m".to_string(),
@@ -989,6 +993,34 @@ pub fn decline(stem: &str, linga: Linga, class: &Class) -> Result<Paradigm, &'st
                 (f(u, "ave"), f(stem, "ByAm"), f(stem, "ByaH")),
                 (f(u, "oH"), f(stem, "ByAm"), f(stem, "ByaH")),
                 (f(u, "oH"), f(u, "voH"), f(u, "URAm")),
+                (f(u, "O"), f(u, "voH"), f(stem, "zu")),
+                (f(u, "o"), f(u, "U"), f(u, "avaH")),
+            ]);
+            // The cat, paJ, zaz and sap carry both alternants.
+            put(&mut cells, 3, 0, vec![f(u, "ave"), f(u, "vE")]);
+            put(&mut cells, 4, 0, vec![f(u, "oH"), f(u, "vAH")]);
+            put(&mut cells, 5, 0, vec![f(u, "oH"), f(u, "vAH")]);
+            put(&mut cells, 6, 0, vec![f(u, "O"), f(u, "vAm")]);
+            cells
+        }
+        Class::UvFd => {
+            // The व-स्वादि feminine u-stems of the dental genitive plural
+            // (अलावु; site @alAvu1): the same shape as `UvF` — the
+            // instrumental and the case endings take the व-forms (अलाव्वा)
+            // and the cat/paJ/sap carry both alternants — but the genitive
+            // plural keeps the dental न (अलावूनाम्) where `UvF` has the
+            // ण-form (अभ्रमूणाम्, site @abhramu1).
+            if linga != Linga::F || !stem.ends_with('u') {
+                return Err(NOT_POSSIBLE);
+            }
+            let u = &stem[..stem.len() - 1];
+            let mut cells = table(&[
+                (f(stem, "H"), f(u, "U"), f(u, "avaH")),
+                (f(stem, "m"), f(u, "U"), f(u, "UH")),
+                (f(u, "vA"), f(stem, "ByAm"), f(stem, "BiH")),
+                (f(u, "ave"), f(stem, "ByAm"), f(stem, "ByaH")),
+                (f(u, "oH"), f(stem, "ByAm"), f(stem, "ByaH")),
+                (f(u, "oH"), f(u, "voH"), f(u, "UnAm")),
                 (f(u, "O"), f(u, "voH"), f(stem, "zu")),
                 (f(u, "o"), f(u, "U"), f(u, "avaH")),
             ]);
@@ -4151,6 +4183,9 @@ pub fn classes_for(stem: &str, linga: Linga) -> Vec<Class> {
             Linga::F => {
                 out.push(Class::UMF);
                 out.push(Class::UvF);
+                // The same stems also come with the dental genitive
+                // plural (अलावूनाम्) — the site's grid decides.
+                out.push(Class::UvFd);
             }
             Linga::N => {
                 out.push(Class::UN);

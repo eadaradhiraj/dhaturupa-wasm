@@ -26,7 +26,7 @@ Every item below is **delivered** — each with its own commit and a green
 | 3.2 | Seṭ/Karma filters | `#list-settva`, `#list-karma` dropdowns |
 | 4.1 | WASM size | release profile + tuned wasm-opt: 1.61MB → 1.03MB |
 
-Beyond the roadmap, the subanta engine now reproduces **8,541 of the
+Beyond the roadmap, the subanta engine now reproduces **8,568 of the
 9,007** grids the site lists (`node web/audit-site-grids.cjs`), and the
 new paradigms read back as well as decline.
 
@@ -56,6 +56,7 @@ The paradigms added after the roadmap:
 | the masculine at-participles with the द/त pair | `AtM2` |
 | the श्-final nouns of the ड/ट flavour | `Sam` |
 | the neuter a-stems with the optional वृद्धि-forms | `ANo` |
+| the व-स्वादि feminine u-stems with the dental genitive plural | `UvFd` |
 
 ---
 
