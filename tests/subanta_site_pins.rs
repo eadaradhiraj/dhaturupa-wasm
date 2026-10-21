@@ -581,6 +581,16 @@ fn sha_final_masks() {
     }
 }
 
+/// The feminine a-stems with the स्य-augment pairs (उत्तरपश्चिमा;
+/// site @uttarapazcimA1) and the bare vocative (हे अक्क; site @akkA1).
+#[test]
+fn a_stem_sy_pairs_and_bare_vocative_pins() {
+    for word in ["उत्तरपश्चिमा", "उत्तरपूर्वा", "अक्का", "जगदम्बा"]
+    {
+        pin_word_any(word, "S");
+    }
+}
+
 /// The masculine ई- and ऊ-स्वादि stems in their strong-cell flavours:
 /// the गुण-forms (अग्रण्यम्, जलप्यि, क्षाम्युः), the वृद्धि (पक्वियौ)
 /// and the व्व-forms (उल्ल्वौ, अग्रेदिधिष्वौ).

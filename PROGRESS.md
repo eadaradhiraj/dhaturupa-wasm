@@ -1825,3 +1825,20 @@ Covered: अग्रणी, अतिलक्ष्मी, अरिष्ट�
 वर्षाभू, सुलू, हूहू.
 
 Whole-db parity: **8,625/9,007** exact.
+
+## 2026-10-21 (40) — the feminine a-stems with the स्य-augment pairs
+
+`AAFS(AAFSOpt)` (उत्तरपश्चिमा; site @uttarapazcimA1): the site writes the
+दिग्-स्वादि and the ordinals with the स्य-augment as a second alternant
+(उत्तरपश्चिमायै-उत्तरपश्चिमस्यै, उत्तरपश्चिमायाः-उत्तरपश्चिमस्याः,
+उत्तरपश्चिमायाम्-उत्तरपश्चिमस्याम्) and the genitive plural in a pair
+(उत्तरपश्चिमानाम्-उत्तरपश्चिमासाम्) — the ण-final compounds take the
+retroflex there (उत्तरपूर्वाणाम्-उत्तरपूर्वासाम्, the `SyGen` flavour).
+The `Bare` flavour is the vocative the site writes without its ending
+(हे अक्क, हे जगदम्ब).
+
+Covered: उत्तरपश्चिमा, उत्तरपूर्वा, दक्षिणपश्चिमा, दक्षिणपूर्वा,
+पश्चिमदक्षिणा, पश्चिमोत्तरा, पूर्वदक्षिणा, पूर्वोत्तरा, अक्का, अम्बा,
+अल्ला, जगदम्बा.
+
+Whole-db parity: **8,637/9,007** exact.

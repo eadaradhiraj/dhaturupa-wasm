@@ -179,6 +179,32 @@ impl UUM2Opt {
     }
 }
 
+/// The flavours of the feminine a-stems: the site writes the स्य-augment
+/// pairs (the दिग्-स्वादि and the ordinals) and the bare vocative.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub enum AAFSOpt {
+    /// The स्य-pairs in the dative, ablative, genitive and locative
+    /// singular (उत्तरपश्चिमायै-उत्तरपश्चिमस्यै; site @uttarapazcimA1).
+    Sy,
+    /// The same, with the genitive plural (उत्तरपश्चिमानाम्-
+    /// उत्तरपश्चिमासाम्).
+    SyGen,
+    /// The bare vocative (हे अक्क; site @akkA1).
+    Bare,
+}
+
+impl AAFSOpt {
+    /// The class label of this flavour.
+    #[must_use]
+    pub fn label(self) -> &'static str {
+        match self {
+            Self::Sy => "sy",
+            Self::SyGen => "sygen",
+            Self::Bare => "bare",
+        }
+    }
+}
+
 /// The optional-form flavours of the neuter a-stem: the site's grids
 /// differ in the nominative, the ablative and the instrumental.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
@@ -267,6 +293,9 @@ pub enum Class {
     AuM,
     /// `A`-stem feminine (`ramA`).
     AAF,
+    /// The feminine a-stems with the स्य-augment pairs (उत्तरपश्चिमा;
+    /// site @uttarapazcimA1) or the bare vocative (हे अक्क).
+    AAFS(AAFSOpt),
     /// `i`-stem masculine/feminine (`kavi`/`mati`).
     IMF,
     /// `i`-stem neuter (`vAri`).
@@ -515,6 +544,7 @@ impl Class {
             Self::AcM2(pair) => format!("ac-m-{pair}"),
             Self::AuM => "O-m".to_string(),
             Self::AAF => "A-f".to_string(),
+            Self::AAFS(o) => format!("A-f-{}", o.label()),
             Self::IMF => "i-m/f".to_string(),
             Self::IN => "i-n".to_string(),
             Self::IIF => "I-f".to_string(),
@@ -959,6 +989,72 @@ pub fn decline(stem: &str, linga: Linga, class: &Class) -> Result<Paradigm, &'st
                 (f(p, "AyAm"), f(p, "ayoH"), f(p, "Asu")),
                 (f(p, "e"), f(p, "e"), f(p, "AH")),
             ])
+        }
+        Class::AAFS(opt) => {
+            // The feminine a-stems in the flavours the site writes word by
+            // word: the स्य-augment pairs of the दिग्-स्वादि and the
+            // ordinals (उत्तरपश्चिमायै-उत्तरपश्चिमस्यै) or the bare
+            // vocative (हे अक्क).
+            if linga != Linga::F || !stem.ends_with('A') {
+                return Err(NOT_POSSIBLE);
+            }
+            let p = &stem[..stem.len() - 1];
+            let mut cells = table(&[
+                (stem.to_string(), f(p, "e"), f(p, "AH")),
+                (f(p, "Am"), f(p, "e"), f(p, "AH")),
+                (f(p, "ayA"), f(p, "AByAm"), f(p, "ABiH")),
+                (f(p, "AyE"), f(p, "AByAm"), f(p, "AByaH")),
+                (f(p, "AyAH"), f(p, "AByAm"), f(p, "AByaH")),
+                (f(p, "AyAH"), f(p, "ayoH"), f(p, "AnAm")),
+                (f(p, "AyAm"), f(p, "ayoH"), f(p, "Asu")),
+                (f(p, "e"), f(p, "e"), f(p, "AH")),
+            ]);
+            if matches!(opt, AAFSOpt::Bare) {
+                // The vocative takes the bare stem (हे अक्क) — the
+                // consonant keeps its inherent written.
+                let bare = match p.chars().last() {
+                    Some(c)
+                        if !matches!(
+                            c,
+                            'a' | 'A'
+                                | 'i'
+                                | 'I'
+                                | 'u'
+                                | 'U'
+                                | 'f'
+                                | 'F'
+                                | 'x'
+                                | 'X'
+                                | 'e'
+                                | 'E'
+                                | 'o'
+                                | 'O'
+                        ) =>
+                    {
+                        format!("{p}a")
+                    }
+                    _ => p.to_string(),
+                };
+                put(&mut cells, 7, 0, vec![bare]);
+            } else {
+                // The स्य-augment pairs (the site writes the plain form
+                // first and the स्य-form second; the स-form is spelled
+                // with the य carrying the vowel).
+                put(&mut cells, 3, 0, vec![f(p, "AyE"), f(p, "asyE")]);
+                put(&mut cells, 4, 0, vec![f(p, "AyAH"), f(p, "asyAH")]);
+                put(&mut cells, 5, 0, vec![f(p, "AyAH"), f(p, "asyAH")]);
+                put(&mut cells, 6, 0, vec![f(p, "AyAm"), f(p, "asyAm")]);
+                // The genitive plural pairs: the dental (उत्तरपश्चिमानाम्)
+                // or the retroflex (उत्तरपूर्वाणाम्) with the साम्
+                // alternant — the ण-final compounds take the retroflex.
+                let gen = if matches!(opt, AAFSOpt::SyGen) {
+                    f(stem, "RAm")
+                } else {
+                    f(stem, "nAm")
+                };
+                put(&mut cells, 5, 2, vec![gen, f(stem, "sAm")]);
+            }
+            cells
         }
         Class::IMF => {
             if linga == Linga::N || !stem.ends_with('i') {
@@ -4619,6 +4715,12 @@ pub fn classes_for(stem: &str, linga: Linga) -> Vec<Class> {
     } else if stem.ends_with('A') {
         if linga == Linga::F {
             out.push(Class::AAF);
+            // The स्य-augment pairs of the दिग्-स्वादि and the ordinals
+            // (उत्तरपश्चिमायै-उत्तरपश्चिमस्यै) and the bare vocative
+            // (हे अक्क) — the site writes them word by word.
+            out.push(Class::AAFS(AAFSOpt::Sy));
+            out.push(Class::AAFS(AAFSOpt::SyGen));
+            out.push(Class::AAFS(AAFSOpt::Bare));
             // The स्म-ending variant (अधरा → अधरस्यै) is the other
             // candidate: a bare stem cannot say whether the word is a
             // primary or a compound — the site picks one, we offer both.
