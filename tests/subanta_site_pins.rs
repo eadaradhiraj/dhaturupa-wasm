@@ -871,3 +871,26 @@ fn r_swadi_pins() {
     }
     pin_word_any("मातृ", "S");
 }
+
+/// The ह्न-final a-stems (अष्टाह्न; site @aSTAhna1 and its kin): the
+/// locative singular carries three alternants — the plain form, the
+/// ण-form and the form with the ह's halant dropped.
+#[test]
+fn hna_final_pins() {
+    for word in [
+        "अष्टाह्न",
+        "चतुरह्न",
+        "त्र्यह्न",
+        "दशाह्न",
+        "द्व्यह्न",
+        "नवाह्न",
+        "पञ्चाह्न",
+        "मध्याह्न",
+        "व्यह्न",
+        "षडह्न",
+        "सप्ताह्न",
+        "सायाह्न",
+    ] {
+        pin_word_any(word, "P");
+    }
+}

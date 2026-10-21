@@ -2116,4 +2116,11 @@ The इदम्/एतद् entries carry both the im-/et- and the ena-forms (
 The एक tables had their dual and plural columns empty; they are filled
 now, and the neuter प्रोनouns' pause pair runs द्-त् (तद्-तत्).
 
-Whole-db parity: **8,822/9,007** exact.
+The ह्न-final a-stems (अष्टाह्न, दशाह्न, …) carry three alternants in
+the locative singular (अष्टाह्ने-अष्टाह्नि-अष्टाहनि) — the plain
+form, the ण-form and the form with the ह's halant dropped.
+
+Covered: अष्टाह्न, चतुरह्न, त्र्यह्न, दशाह्न, द्व्यह्न, नवाह्न, पञ्चाह्न,
+मध्याह्न, व्यह्न, षडह्न, सप्ताह्न, सायाह्न.
+
+Whole-db parity: **8,834/9,007** exact.

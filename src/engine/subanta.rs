@@ -1036,6 +1036,18 @@ pub fn decline(stem: &str, linga: Linga, class: &Class) -> Result<Paradigm, &'st
             ]);
             // Panchami eka: the site shows the vṛddhi `-Ad` before `-At`.
             put(&mut cells, 4, 0, vec![f(p, "Ad"), f(p, "At")]);
+            // The ह्न-final stems carry three alternants in the locative
+            // singular (अष्टाह्ने-अष्टाह्नि-अष्टाहनि): the plain form, the
+            // ण-form and the form with the ह's halant dropped.
+            if stem.ends_with("hna") {
+                let hna = &p[..p.len() - 1];
+                put(
+                    &mut cells,
+                    6,
+                    0,
+                    vec![f(p, "e"), f(p, "i"), format!("{hna}ani")],
+                );
+            }
             cells
         }
         Class::AuM => {
