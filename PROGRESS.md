@@ -1719,3 +1719,17 @@ rest keeps the plain stem (विशौ, विशः). The `Rc2` class (the two
 Covered: विश् (masculine and feminine), विपाश्, दिश्.
 
 Whole-db parity: **8,526/9,007** exact. Gates green (browser 472).
+
+## 2026-10-21 (35) — the neuter a-stems with the optional वृद्धि-forms
+
+`ANo(ANOpt)` (अधर; site @adhara2): the neuter a-stems come in flavours of
+their own beside the plain `AN` shape — the instrumental takes the ए + the
+ण (अधरेण), the cat the स्म-form (अधरस्मै), the ablative the स्म-
+alternants (अधराद्-अधरस्माद्-अधरस्मात्-अधरात्) and the locative the ए-
+and स्म-forms (अधरे-अधरस्मिन्). The `Tara` flavour (एकतर; site
+@ekatara2) narrows the ablative to the two स्म-alternants and the locative
+to the स्म-form.
+
+Covered: अधर, अन्तर, अपर, अवर, उत्तर, पर, पूर्व, एकतर.
+
+Whole-db parity: **8,534/9,007** exact. Gates green (browser 472).

@@ -379,6 +379,15 @@ fn dad_final_and_two_alternant_pins() {
     pin_word_any("विश्", "P");
 }
 
+/// The neuter a-stems with the site's optional वृद्धि-forms (अधर →
+/// अधरेण, अधरस्मै, अधराद्-अधरस्माद्-अधरस्मात्-अधरात्).
+#[test]
+fn neuter_a_stem_optional_forms_pins() {
+    for word in ["अधर", "अपर", "अवर", "पूर्व", "एकतर"] {
+        pin_word_any(word, "N");
+    }
+}
+
 /// The neuter of the वतुप् stems (अहङ्कारवत् → अहङ्कारवद्-अहङ्कारवत्,
 /// अहङ्कारवती, अहङ्कारवन्ति).
 #[test]

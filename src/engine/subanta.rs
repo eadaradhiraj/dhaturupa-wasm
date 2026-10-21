@@ -90,6 +90,32 @@ impl AOpt {
     }
 }
 
+/// The optional-form flavours of the neuter a-stem: the site's grids
+/// differ in the nominative, the ablative and the instrumental.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub enum ANOpt {
+    /// The अपर-family flavour (अधर; site @adhara2): the plain nominative
+    /// (अधरम्), the ए + the ण instrumental (अधरेण), the four-way
+    /// ablative (अधराद्-अधरस्माद्-अधरस्मात्-अधरात्) and the ए- and
+    /// स्म-locative (अधरे-अधरस्मिन्).
+    Apara,
+    /// The एकतर flavour (एकतर; site @ekatara2): as `Apara`, but the
+    /// ablative carries only the two स्म-alternants (एकतरस्माद्-एकतरस्मात्)
+    /// and the locative the स्म-form alone (एकतरस्मिन्).
+    Tara,
+}
+
+impl ANOpt {
+    /// The class label of this flavour.
+    #[must_use]
+    pub fn label(self) -> &'static str {
+        match self {
+            Self::Apara => "a",
+            Self::Tara => "t",
+        }
+    }
+}
+
 /// Style of the neuter `t`-stem (शतृ neuter and वत्-stems).
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum AtNStyle {
@@ -118,6 +144,9 @@ pub enum Class {
     VantN,
     /// `a`-stem neuter (`vana`).
     AN,
+    /// The neuter a-stem with the site's optional वृद्धि-forms (अधर; site
+    /// @adhara2): the nominative may be a द/त pair.
+    ANo(ANOpt),
     /// `A`-stem neuter (श्रीपा; site @zrIpA1): the णि-form plural
     /// (श्रीपाणि).
     AAN,
@@ -361,6 +390,7 @@ impl Class {
             Self::AMo(opt) => format!("a-m-{}", opt.label()),
             Self::VantN => "vant-n".to_string(),
             Self::AN => "a-n".to_string(),
+            Self::ANo(opt) => format!("a-n-{}", opt.label()),
             Self::AAN => "A-n".to_string(),
             Self::AAM => "A-m".to_string(),
             Self::AcM2(pair) => format!("ac-m-{pair}"),
@@ -694,6 +724,56 @@ pub fn decline(stem: &str, linga: Linga, class: &Class) -> Result<Paradigm, &'st
             ]);
             // The पञ्चमी-एकवचन carries both alternants (श्रीपाद्-श्रीपात्).
             put(&mut cells, 4, 0, vec![f(base, "Ad"), f(base, "At")]);
+            cells
+        }
+        Class::ANo(opt) => {
+            // The neuter a-stem with the site's optional वृद्धि-forms
+            // (अधर; site @adhara2): the nominative may be plain or a
+            // द/त pair, the instrumental takes the ए + the ण, the cat the
+            // स्म-form, the ablative the स्म-alternants and the locative the
+            // ए- or स्म-form.
+            if linga != Linga::N || !stem.ends_with('a') {
+                return Err(NOT_POSSIBLE);
+            }
+            let p = &stem[..stem.len() - 1];
+            let mut cells = table(&[
+                (f(p, "am"), f(p, "e"), f(p, "Ani")),
+                (f(p, "am"), f(p, "e"), f(p, "Ani")),
+                (f(p, "ena"), f(p, "AByAm"), f(p, "EH")),
+                (f(p, "Aya"), f(p, "AByAm"), f(p, "eByaH")),
+                (f(p, "At"), f(p, "AByAm"), f(p, "eByaH")),
+                (f(p, "asya"), f(p, "ayoH"), f(p, "AnAm")),
+                (f(p, "e"), f(p, "ayoH"), f(p, "ezu")),
+                (stem.to_string(), f(p, "e"), f(p, "Ani")),
+            ]);
+            put(&mut cells, 4, 0, vec![f(p, "Ad"), f(p, "At")]);
+            match opt {
+                ANOpt::Apara => {
+                    // The instrumental takes the ए + the ण (अधरेण), the cat
+                    // the स्म-form, the ablative the four alternants and the
+                    // locative the ए- and स्म-forms.
+                    cells[6].forms = vec![f(p, "eRa")];
+                    cells[9].forms = vec![f(p, "asmE")];
+                    put(
+                        &mut cells,
+                        4,
+                        0,
+                        vec![f(p, "Ad"), f(p, "asmAd"), f(p, "asmAt"), f(p, "At")],
+                    );
+                    cells[17].forms = vec![f(p, "ezAm")];
+                    put(&mut cells, 6, 0, vec![f(p, "e"), f(p, "asmin")]);
+                }
+                ANOpt::Tara => {
+                    // The instrumental takes the ए + the ण (एकतरेण), the
+                    // cat the स्म-form, the ablative the two स्म-alternants
+                    // and the locative the स्म-form.
+                    cells[6].forms = vec![f(p, "eRa")];
+                    cells[9].forms = vec![f(p, "asmE")];
+                    put(&mut cells, 4, 0, vec![f(p, "asmAd"), f(p, "asmAt")]);
+                    cells[17].forms = vec![f(p, "ezAm")];
+                    cells[18].forms = vec![f(p, "asmin")];
+                }
+            }
             cells
         }
         Class::AN => {
@@ -3934,6 +4014,10 @@ pub fn classes_for(stem: &str, linga: Linga) -> Vec<Class> {
             }
             Linga::N => {
                 out.push(Class::AN);
+                // The same stems also come in the वृद्धि-flavours (अधर,
+                // एकतम) — the site's grid decides.
+                out.push(Class::ANo(ANOpt::Apara));
+                out.push(Class::ANo(ANOpt::Tara));
                 out.push(Class::AsmN);
             }
             Linga::F => {}
