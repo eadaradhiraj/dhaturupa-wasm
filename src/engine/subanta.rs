@@ -545,6 +545,11 @@ pub enum Class {
     AnM,
     /// `in`-stem masculine (`balin`).
     InM,
+    /// The इ-स्वादि masculine with the वृद्धि-सर्वधातुकारी in the
+    /// nominative and accusative slots (पथिन्; site @pathin1): the
+    /// सर्वधातुकारी-forms (पन्थाः, पन्थानौ, पन्थानम्) there and the
+    /// plain root (पथा, पथिभ्याम्, पथे) in the other cases.
+    InV,
     /// `in`-stem neuter (`kzamin`): `kzami`, `kzamiRI`, `kzami` vocative
     /// (the ashtadhyayi.com @kSamin2 paradigm).
     InN,
@@ -684,6 +689,7 @@ impl Class {
             Self::AnM => "an-m".to_string(),
             Self::AnF => "an-f".to_string(),
             Self::InM => "in-m".to_string(),
+            Self::InV => "in-m-vr".to_string(),
             Self::InF => "in-f".to_string(),
             Self::InN => "in-n".to_string(),
             Self::AsN => "as-n".to_string(),
@@ -2206,6 +2212,42 @@ pub fn decline(stem: &str, linga: Linga, class: &Class) -> Result<Paradigm, &'st
                 put(&mut cells, 6, 0, vec![f(&weak, "i"), f(stem, "i")]);
             }
             cells
+        }
+        Class::InV => {
+            // The इ-स्वादि masculine with the वृद्धि-सर्वधातुकारी in
+            // the nominative and accusative slots (पथिन्; site
+            // @pathin1): the site writes पन्थाः, पन्थानौ, पन्थानः and
+            // पन्थानम् there and the plain root (पथा, पथिभ्याम्, पथे)
+            // in the other cases.
+            if linga != Linga::M || !stem.ends_with("in") {
+                return Err(NOT_POSSIBLE);
+            }
+            let root = &stem[..stem.len() - 2];
+            // The सर्वधातुकारी-stem: the root with the न् (the ण in the
+            // ऋ-class) before its last consonant, plus the आ + the न्
+            // (पन्थान्).
+            let Some(last) = root.chars().last() else {
+                return Err(NOT_POSSIBLE);
+            };
+            let vr = if root.contains('f') {
+                // The ऋ-class roots take the ण-सर्वधातुकारी (ऋभुक्षाण्).
+                format!("{root}AR")
+            } else {
+                // The न् goes before the last consonant (पन्थान्).
+                format!("{}n{last}An", &root[..root.len() - 1])
+            };
+            // The nominative singular drops the final न् again (पन्थाः).
+            let vr_a = &vr[..vr.len() - 1];
+            table(&[
+                (f(&vr_a, "H"), f(&vr, "O"), f(&vr, "aH")),
+                (f(&vr, "am"), f(&vr, "O"), f(root, "aH")),
+                (f(root, "A"), f(root, "iByAm"), f(root, "iBiH")),
+                (f(root, "e"), f(root, "iByAm"), f(root, "iByaH")),
+                (f(root, "aH"), f(root, "iByAm"), f(root, "iByaH")),
+                (f(root, "aH"), f(root, "oH"), f(root, "Am")),
+                (f(root, "i"), f(root, "oH"), f(root, "izu")),
+                (f(&vr_a, "H"), f(&vr, "O"), f(&vr, "aH")),
+            ])
         }
         Class::InM => {
             if linga != Linga::M || !stem.ends_with("in") {
@@ -4918,7 +4960,11 @@ pub fn classes_for(stem: &str, linga: Linga) -> Vec<Class> {
         }
     } else if stem.ends_with("in") {
         match linga {
-            Linga::M => out.push(Class::InM),
+            Linga::M => {
+                out.push(Class::InM);
+                // The वृद्धि-सर्वधातुकारी flavour (पथिन्; site @pathin1).
+                out.push(Class::InV);
+            }
             Linga::N => out.push(Class::InN),
             Linga::F => out.push(Class::InF),
         }

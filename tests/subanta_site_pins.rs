@@ -581,6 +581,15 @@ fn sha_final_masks() {
     }
 }
 
+/// The इ-स्वादि with the वृद्धि-सर्वधातुकारी in the nom/acc slots
+/// (पथिन्; site @pathin1).
+#[test]
+fn in_stem_vriddhi_pins() {
+    for word in ["पथिन्", "अतिपथिन्", "ऋभुक्षिन्"] {
+        pin_word_any(word, "P");
+    }
+}
+
 /// The comparatives (अन्यतर, एकतम; site @anyatara1/@anyatara2/
 /// @ekatama2): the स्म-forms beside the plain ones.
 #[test]

@@ -1901,3 +1901,18 @@ feminine ऊ-स्वादि stems with the व्व-forms (खलप्व�
 Covered: खलपू, जुहू, पितृप्रसू, प्रसू, भीष्मसू, मलपू, वर्षाभू, वीरसू.
 
 Whole-db parity: **8,665/9,007** exact.
+
+## 2026-10-21 (45) — the इ-स्वादि with the वृद्धि-सर्वधातुकारी
+
+`InV` (पथिन्; site @pathin1): the site writes the nominative and the
+accusative of these इ-स्वादि in the वृद्धि-सर्वधातुकारी (पन्थाः,
+पन्थानौ, पन्थानः, पन्थानम्) and the other cases in the plain root
+(पथा, पथिभ्याम्, पथे, पथः, पथोः, पथाम्, पथि, पथिषु). The
+सर्वधातुकारी-stem is the root with the न् before its last consonant
+plus the आ + the न् (पन्थान्); the ऋ-class roots take the
+ण-सर्वधातुकारी instead (ऋभुक्षाण्). The nominative singular drops the
+final न् again (पन्थाः).
+
+Covered: पथिन्, अपथिन्, अतिपथिन्, ऋभुक्षिन्.
+
+Whole-db parity: **8,681/9,007** exact.
