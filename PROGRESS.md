@@ -1876,3 +1876,19 @@ plain form — the cat (द्वितीयाय-द्वितीयस्�
 Covered: द्वितीय, तृतीय (masculine and neuter).
 
 Whole-db parity: **8,669/9,007** exact.
+
+## 2026-10-21 (43) — the comparatives with the स्म-forms
+
+`AMo(AOpt::Comp)` and `ANo(ANOpt::Comp)` (अन्यतर; site @anyatara1/
+@anyatara2): the comparatives take the स्म-forms (अन्यतरस्मै,
+अन्यतरस्माद्-अन्यतरस्मात्, अन्यतरस्मिन्), the ए + the ण instrumental
+(अन्यतरेण), the ए-form in the genitive plural (अन्यतरेषाम्) and the
+ए-form in the nominative and vocative plurals (अन्यतरे). The neuter
+adds the द/त pair in the nominative, accusative and vocative singular
+(अन्यतरद्-अन्यतरत्). The `CompS` flavour keeps the plain instrumental
+(एकतमेन; site @ekatama1/@ekatama2), where the site writes it word by
+word.
+
+Covered: अन्यतर, एकतम, ततम, ततर, यतम, यतर.
+
+Whole-db parity: **8,675/9,007** exact.

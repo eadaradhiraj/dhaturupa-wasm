@@ -89,6 +89,15 @@ pub enum AOpt {
     /// ablative (द्वितीयाद्-द्वितीयस्माद्-द्वितीयस्मात्-द्वितीयात्)
     /// and the locative (द्वितीयये-द्वितीयस्मिन्).
     SmPairs,
+    /// The comparative flavour with the plain instrumental (एकतम; site
+    /// @ekatama1): as `Comp`, but the instrumental keeps the plain form
+    /// (एकतमेन).
+    CompS,
+    /// The comparative flavour (अन्यतर; site @anyatara1): the स्म-forms
+    /// (अन्यतरस्मै, अन्यतरस्माद्-अन्यतरस्मात्, अन्यतरस्मिन्), the
+    /// ए + the ण instrumental (अन्यतरेण), the ए-form in the genitive
+    /// plural and the nominative and vocative plurals (अन्यतरे).
+    Comp,
 }
 
 impl AOpt {
@@ -103,6 +112,8 @@ impl AOpt {
             Self::SmE => "sm-e",
             Self::SmEN => "sm-en",
             Self::SmPairs => "sm-pairs",
+            Self::Comp => "comp",
+            Self::CompS => "comps",
         }
     }
 }
@@ -262,6 +273,14 @@ pub enum ANOpt {
     /// the cat (द्वितीयाय-द्वितीयस्मै), the four-way ablative and the
     /// locative (द्वितीयये-द्वितीयस्मिन्).
     SmPairs,
+    /// The comparative flavour with the plain instrumental (एकतम; site
+    /// @ekatama2): as `Comp`, but the instrumental keeps the plain form
+    /// (एकतमेन).
+    CompS,
+    /// The comparative flavour (अन्यतर; site @anyatara2): as the
+    /// masculine, with the द/त pair in the nominative, accusative and
+    /// vocative singular (अन्यतरद्-अन्यतरत्).
+    Comp,
 }
 
 impl PronFlavour {
@@ -289,6 +308,8 @@ impl ANOpt {
             Self::Apara => "a",
             Self::Tara => "t",
             Self::SmPairs => "sm-pairs",
+            Self::Comp => "comp",
+            Self::CompS => "comps",
         }
     }
 }
@@ -827,6 +848,20 @@ pub fn decline(stem: &str, linga: Linga, class: &Class) -> Result<Paradigm, &'st
                     put(&mut cells, 6, 0, vec![f(p, "e"), f(p, "asmin")]);
                     cells[17].forms = vec![f(p, "ezAm")];
                 }
+                AOpt::Comp | AOpt::CompS => {
+                    // The comparative: the स्म-forms, the ए + the ण
+                    // instrumental, the ए-form in the genitive plural and
+                    // the nominative and vocative plurals.
+                    cells[2].forms = vec![f(p, "e")];
+                    cells[23].forms = vec![f(p, "e")];
+                    if !matches!(opt, AOpt::CompS) {
+                        cells[6].forms = vec![f(p, "eRa")];
+                    }
+                    cells[9].forms = vec![f(p, "asmE")];
+                    put(&mut cells, 4, 0, vec![f(p, "asmAd"), f(p, "asmAt")]);
+                    cells[17].forms = vec![f(p, "ezAm")];
+                    cells[18].forms = vec![f(p, "asmin")];
+                }
                 AOpt::SmPairs => {
                     // The स्म-alternant beside the plain form: the cat,
                     // the four-way ablative and the locative; the
@@ -1006,6 +1041,23 @@ pub fn decline(stem: &str, linga: Linga, class: &Class) -> Result<Paradigm, &'st
                     );
                     cells[17].forms = vec![f(p, "ezAm")];
                     put(&mut cells, 6, 0, vec![f(p, "e"), f(p, "asmin")]);
+                }
+                ANOpt::Comp | ANOpt::CompS => {
+                    // The comparative: the स्म-forms, the ए + the ण
+                    // instrumental, the ए-form in the genitive plural and
+                    // the द/त pair in the nominative, accusative and
+                    // vocative singular.
+                    let pair = vec![f(p, "ad"), f(p, "at")];
+                    cells[0].forms.clone_from(&pair);
+                    cells[3].forms.clone_from(&pair);
+                    cells[21].forms = pair;
+                    if !matches!(opt, ANOpt::CompS) {
+                        cells[6].forms = vec![f(p, "eRa")];
+                    }
+                    cells[9].forms = vec![f(p, "asmE")];
+                    put(&mut cells, 4, 0, vec![f(p, "asmAd"), f(p, "asmAt")]);
+                    cells[17].forms = vec![f(p, "ezAm")];
+                    cells[18].forms = vec![f(p, "asmin")];
                 }
                 ANOpt::SmPairs => {
                     // The स्म-alternant beside the plain form: the cat,
@@ -4826,6 +4878,8 @@ pub fn classes_for(stem: &str, linga: Linga) -> Vec<Class> {
                 out.push(Class::AMo(AOpt::SmE));
                 out.push(Class::AMo(AOpt::SmEN));
                 out.push(Class::AMo(AOpt::SmPairs));
+                out.push(Class::AMo(AOpt::Comp));
+                out.push(Class::AMo(AOpt::CompS));
             }
             Linga::N => {
                 out.push(Class::AN);
@@ -4834,6 +4888,8 @@ pub fn classes_for(stem: &str, linga: Linga) -> Vec<Class> {
                 out.push(Class::ANo(ANOpt::Apara));
                 out.push(Class::ANo(ANOpt::Tara));
                 out.push(Class::ANo(ANOpt::SmPairs));
+                out.push(Class::ANo(ANOpt::Comp));
+                out.push(Class::ANo(ANOpt::CompS));
                 out.push(Class::AsmN);
             }
             Linga::F => {}

@@ -581,6 +581,15 @@ fn sha_final_masks() {
     }
 }
 
+/// The comparatives (अन्यतर, एकतम; site @anyatara1/@anyatara2/
+/// @ekatama2): the स्म-forms beside the plain ones.
+#[test]
+fn comparative_pins() {
+    pin_word_any("अन्यतर", "P");
+    pin_word_any("अन्यतर", "N");
+    pin_word_any("एकतम", "N");
+}
+
 /// The ordinals with the स्म-alternant beside the plain form (द्वितीय;
 /// site @dvitIya1/@dvitIya2).
 #[test]
