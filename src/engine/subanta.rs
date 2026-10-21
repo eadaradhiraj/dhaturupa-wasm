@@ -647,6 +647,10 @@ pub enum Class {
     /// @tvat1): the nominative carries the द/त pair (त्वद्-त्वत्) and
     /// the rest keeps the plain stem (त्वतौ, त्वतः).
     VantMP,
+    /// The masculine अन्-stems of the ण-सर्वधातुकारी family (अर्यमन्;
+    /// site @aryaman1): the dual and plural take the ण-सर्वधातुकारी
+    /// (अर्यमणौ, अर्यमणः) and the oblique cases the ण-weak (अर्यम्णः).
+    AnV,
     /// `j`-stem masculine/feminine (नजिङ्): pausa `svapnag`/`svapnak`,
     /// `svapnagByAm`, `svapnakzu`.
     Jvs,
@@ -777,6 +781,7 @@ impl Class {
             Self::AtN(AtNStyle::BothDual) => "at-n-tudat".to_string(),
             Self::AtN(AtNStyle::Abhyasta) => "at-n-abhyasta".to_string(),
             Self::AnM => "an-m".to_string(),
+            Self::AnV => "an-v".to_string(),
             Self::AnF => "an-f".to_string(),
             Self::InM => "in-m".to_string(),
             Self::InV => "in-m-vr".to_string(),
@@ -2395,6 +2400,36 @@ pub fn decline(stem: &str, linga: Linga, class: &Class) -> Result<Paradigm, &'st
             if weak != stem {
                 put(&mut cells, 6, 0, vec![f(&weak, "i"), f(stem, "i")]);
             }
+            cells
+        }
+        Class::AnV => {
+            // The masculine अन्-stems of the ण-सर्वधातुकारी family
+            // (अर्यमन्; site @aryaman1): the dual and plural take the
+            // ण-सर्वधातुकारी (अर्यमणौ, अर्यमणः), the oblique cases the
+            // ण-weak (अर्यम्णः, अर्यम्णोः, अर्यम्णाम्), the locative
+            // singular both alternants (अर्यम्णि-अर्यमणि) and the
+            // भ-endings and the locative plural the plain stem
+            // (अर्यमभ्याम्, अर्यमसु).
+            if linga != Linga::M || !stem.ends_with("an") || stem.len() < 4 {
+                return Err(NOT_POSSIBLE);
+            }
+            let root = &stem[..stem.len() - 2];
+            // The ण-सर्वधातुकारी keeps the root's own vowel (अर्यमण-) and
+            // the ण-weak closes it (अर्यम्ण-).
+            let strong = format!("{root}aR");
+            let weak = format!("{root}R");
+            let plain = format!("{root}a");
+            let mut cells = table(&[
+                (f(root, "A"), f(&strong, "O"), f(&strong, "aH")),
+                (f(&strong, "am"), f(&strong, "O"), f(&weak, "aH")),
+                (f(&weak, "A"), f(&plain, "ByAm"), f(&plain, "BiH")),
+                (f(&weak, "e"), f(&plain, "ByAm"), f(&plain, "ByaH")),
+                (f(&weak, "aH"), f(&plain, "ByAm"), f(&plain, "ByaH")),
+                (f(&weak, "aH"), f(&weak, "oH"), f(&weak, "Am")),
+                (f(&weak, "i"), f(&weak, "oH"), f(&plain, "su")),
+                (stem.to_string(), f(&strong, "O"), f(&strong, "aH")),
+            ]);
+            put(&mut cells, 6, 0, vec![f(&weak, "i"), f(&strong, "i")]);
             cells
         }
         Class::AnF => {
@@ -5599,6 +5634,9 @@ pub fn classes_for(stem: &str, linga: Linga) -> Vec<Class> {
                 out.push(Class::VanM);
             } else {
                 out.push(Class::AnM);
+                // The ण-सर्वधातुकारी family (अर्यमणौ) — the site's grid
+                // decides.
+                out.push(Class::AnV);
             }
         } else if linga == Linga::N {
             // Every `-an` neuter follows the मनिन् shape (`nAman`/`karman`

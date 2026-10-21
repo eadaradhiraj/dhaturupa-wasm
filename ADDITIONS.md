@@ -26,7 +26,7 @@ Every item below is **delivered** — each with its own commit and a green
 | 3.2 | Seṭ/Karma filters | `#list-settva`, `#list-karma` dropdowns |
 | 4.1 | WASM size | release profile + tuned wasm-opt: 1.61MB → 1.03MB |
 
-Beyond the roadmap, the subanta engine now reproduces **8,808 of the
+Beyond the roadmap, the subanta engine now reproduces **8,810 of the
 9,007** grids the site lists (`node web/audit-site-grids.cjs`), and the
 new paradigms read back as well as decline.
 
@@ -74,6 +74,7 @@ The paradigms added after the roadmap:
 | the neuter i-stems with the ण-forms in the oblique cases | `INv` |
 | the masculine ज्-final of the ड/ट flavour | `JasM` |
 | the ऋ-स्वादि with the आ-form in the nominative | `RFA` |
+| the masculine अन्-stems of the ण-सर्वधातुकारी family | `AnV` |
 
 ---
 

@@ -2095,8 +2095,15 @@ reproduces every one of them. (Blanking the derived tables instead
 would cost the portal its reverse-analysis of those words, so the audit
 is the right place for it.)
 
+`AnV` (अर्यमन्; site @aryaman1) covers the ण-सर्वधातुकारी family of
+the masculine अन्-stems: the dual and plural take the ण-सर्वधातुकारी
+(अर्यमणौ, अर्यमणः), the oblique cases the ण-weak (अर्यम्णः, अर्यम्णोः,
+अर्यम्णाम्), the locative singular both alternants (अर्यम्णि-अर्यमणि) and
+the भ-endings and the locative plural the plain stem (अर्यमभ्याम्,
+अर्यमसु).
+
 Covered: राज्, देवेज्, परिमृज्, परिव्राज्, परेतराज्, यक्षराज्, यमराज्,
 सम्राज्, स्वाराज्, विभ्राज्; मातृ, पितृ, देवृ, भ्रातृ, दुहितृ, ननन्दृ,
-ननान्दृ, यातृ.
+ननान्दृ, यातृ; अर्यमन्, तमिस्रहन्.
 
-Whole-db parity: **8,808/9,007** exact.
+Whole-db parity: **8,810/9,007** exact.
