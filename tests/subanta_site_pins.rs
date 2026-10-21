@@ -805,3 +805,15 @@ fn anccha_swadi_neuter_pins() {
         pin_word_any(word, "N");
     }
 }
+
+/// The neuter i-stems with the ण-forms in the oblique cases (अक्षि;
+/// site @akSi1/@asthi1/@dadhi1/@sakthi1): the ष-final stems take the
+/// ण (अक्ष्णा), the others the न (अस्थ्ना), and the locative singular
+/// and the vocative carry both alternants (अक्ष्णि-अक्षणि).
+#[test]
+fn i_stem_neuter_na_forms_pins() {
+    for word in ["अक्षि", "अस्थि", "दधि", "सक्थि", "अतिदधि"]
+    {
+        pin_word_any(word, "N");
+    }
+}

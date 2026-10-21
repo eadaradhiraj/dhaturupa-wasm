@@ -467,6 +467,12 @@ pub enum Class {
     /// dvi/plural take the ण-forms (अतिस्त्रिणी) and the cat/paJ/sap carry
     /// both alternants (अतिस्त्रिणे-अतिस्त्रये).
     INu,
+    /// The neuter i-stems with the ण-forms in the oblique cases (अक्षि;
+    /// site @akSi1): the instrumental, dative, ablative, genitive and
+    /// locative take the ण-form (अक्ष्णा, अस्थ्ना) and the locative
+    /// singular and the vocative carry both alternants (अक्ष्णि-अक्षणि,
+    /// हे अक्षि-हे अक्षे).
+    INv,
     /// The masculine ह्-final nouns of the ड/ट flavour (लिह्; site @lih1):
     /// the ड/ट pair in the प्रथमा-एकवचन (लिड्-लिट्).
     HasM,
@@ -712,6 +718,7 @@ impl Class {
             Self::UvFd => "uv-f-d".to_string(),
             Self::UnN => "un-n".to_string(),
             Self::INu => "i-nu".to_string(),
+            Self::INv => "i-nv".to_string(),
             Self::HasM => "has-m".to_string(),
             Self::HasF => "has-f".to_string(),
             Self::RirF(v) => format!("rir-f-{v}"),
@@ -1313,6 +1320,42 @@ pub fn decline(stem: &str, linga: Linga, class: &Class) -> Result<Paradigm, &'st
             // The genitive and locative duals carry both alternants.
             put(&mut cells, 5, 1, vec![f(stem, "RoH"), f(stem, "yoH")]);
             put(&mut cells, 6, 1, vec![f(stem, "RoH"), f(stem, "yoH")]);
+            put(&mut cells, 7, 0, vec![stem.to_string(), f(p, "e")]);
+            cells
+        }
+        Class::INv => {
+            // The neuter i-stems with the ण-forms in the oblique cases
+            // (अक्षि; site @akSi1/@asthi1/@dadhi1): the ि → the ण
+            // (अक्ष्णा) or, where the न-स्वादि takes its place, the ि →
+            // the न with the ण inserted (अस्थ्ना); the nominative and
+            // accusative keep the plain stem, the locative singular and
+            // the vocative carry both alternants (अक्ष्णि-अक्षणि).
+            if linga != Linga::N || !stem.ends_with('i') || stem.len() < 3 {
+                return Err(NOT_POSSIBLE);
+            }
+            let p = &stem[..stem.len() - 1];
+            // The ष-final stems take the ण in the oblique cases
+            // (अक्ष्णा, अक्ष्णि), the others the न (अस्थ्ना, अस्थ्नि).
+            let zi = stem.ends_with("zi");
+            let rs = if zi { format!("{p}R") } else { format!("{p}n") };
+            let (dual, plural, alt) = if zi {
+                (f(stem, "RI"), f(p, "IRi"), format!("{p}aRi"))
+            } else {
+                (f(stem, "nI"), format!("{p}Ini"), format!("{p}ani"))
+            };
+            let mut cells = table(&[
+                (stem.to_string(), dual.clone(), plural.clone()),
+                (stem.to_string(), dual.clone(), plural.clone()),
+                (f(&rs, "A"), f(stem, "ByAm"), f(stem, "BiH")),
+                (f(&rs, "e"), f(stem, "ByAm"), f(stem, "ByaH")),
+                (f(&rs, "aH"), f(stem, "ByAm"), f(stem, "ByaH")),
+                (f(&rs, "aH"), f(&rs, "oH"), f(&rs, "Am")),
+                (f(&rs, "i"), f(&rs, "oH"), f(stem, "zu")),
+                (stem.to_string(), dual, plural),
+            ]);
+            // The locative singular and the vocative carry both
+            // alternants (अक्ष्णि-अक्षणि, हे अक्षि-हे अक्षे).
+            put(&mut cells, 6, 0, vec![f(&rs, "i"), alt]);
             put(&mut cells, 7, 0, vec![stem.to_string(), f(p, "e")]);
             cells
         }
@@ -5526,6 +5569,9 @@ pub fn classes_for(stem: &str, linga: Linga) -> Vec<Class> {
             Linga::N => {
                 out.push(Class::IN);
                 out.push(Class::INu);
+                // The ण-forms in the oblique cases (अक्ष्णा, अस्थ्ना) —
+                // the site's grid decides.
+                out.push(Class::INv);
                 // The same stems also carry the य-forms as alternants
                 // (अनादिने-अनादये) and the ऋ-form in the genitive dual
                 // (भूरिणोः-भूर्योः) — the site's grid decides.
