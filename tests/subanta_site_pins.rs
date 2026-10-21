@@ -300,6 +300,25 @@ fn ha_final_masks() {
     }
 }
 
+/// The u-stem neuter without the गुण/व् alternants (मधु), the i-stem
+/// neuter with the य-forms as alternants (अनादिने-अनादये) and the
+/// ऋ-form in the genitive dual (भूरिणोः-भूर्योः).
+#[test]
+fn u_and_i_stem_neuter_pins() {
+    for word in ["मधु", "कटु", "आशु", "अम्बु", "यातु", "वस्तु"]
+    {
+        pin_word_any(word, "N");
+    }
+    for word in ["अनादि", "शिति", "शुचि", "मौलि", "सृष्टि", "विविक्ति"]
+    {
+        pin_word_any(word, "N");
+    }
+    for word in ["भूरि", "सुरभि", "फलेग्रहि", "आत्मम्भरि", "कुक्षिम्भरि"]
+    {
+        pin_word_any(word, "N");
+    }
+}
+
 /// The a-stem masculine with the site's optional वृद्धि-forms: the
 /// ए-form as an alternant in the nominative plural (अर्धाः-अर्धे), the
 /// ए + the ण in the instrumental (चरमेण) and the स्म-forms

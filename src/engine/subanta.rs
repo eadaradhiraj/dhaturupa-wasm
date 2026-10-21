@@ -149,6 +149,15 @@ pub enum Class {
     UF,
     /// `u`-stem neuter (`maDu`).
     UN,
+    /// `u`-stem neuter without the गुण/व् alternants (मधु; site
+    /// @madhu1): the plain forms only.
+    UNp,
+    /// `i`-stem neuter with the य-forms as alternants (अनादि; site
+    /// @anAdi1): अनादिने-अनादये.
+    INy,
+    /// `i`-stem neuter with the ऋ-form in the genitive dual (भूरि; site
+    /// @bhUri1): भूरिणोः-भूर्योः.
+    INr,
     /// `U`-stem feminine कृदन्त/उगित् flavour (`vaDU`): prathamA-ekavacana
     /// is the bare stem.
     UUF,
@@ -344,6 +353,9 @@ impl Class {
             Self::UMF => "u-m/f".to_string(),
             Self::UF => "u-f".to_string(),
             Self::UN => "u-n".to_string(),
+            Self::UNp => "u-n-plain".to_string(),
+            Self::INy => "i-n-y".to_string(),
+            Self::INr => "i-n-r".to_string(),
             Self::UUF => "U-f".to_string(),
             Self::UUFN => "U-f-nadi".to_string(),
             Self::UUM => "U-m".to_string(),
@@ -1006,6 +1018,86 @@ pub fn decline(stem: &str, linga: Linga, class: &Class) -> Result<Paradigm, &'st
             ]);
             // Loc-pl alternant pair (आयुःषु-आयुष्षु).
             put(&mut cells, 6, 2, vec![f(root, "Hzu"), f(root, "zzu")]);
+            cells
+        }
+        Class::UNp => {
+            // The u-stem neuter without the गुण/व् alternants (मधु; site
+            // @madhu1): the plain forms only (मधु, मधुनी, मधूनि,
+            // मधुना, मधुने, मधुनः, मधूनाम्, मधुषु).
+            if linga != Linga::N || !stem.ends_with('u') {
+                return Err(NOT_POSSIBLE);
+            }
+            let p = &stem[..stem.len() - 1];
+            let mut cells = table(&[
+                (stem.to_string(), f(p, "unI"), f(p, "Uni")),
+                (stem.to_string(), f(p, "unI"), f(p, "Uni")),
+                (f(p, "unA"), f(p, "uByAm"), f(p, "uBiH")),
+                (f(p, "une"), f(p, "uByAm"), f(p, "uByaH")),
+                (f(p, "unaH"), f(p, "uByAm"), f(p, "uByaH")),
+                (f(p, "unaH"), f(p, "unoH"), f(p, "UnAm")),
+                (f(p, "uni"), f(p, "unoH"), f(p, "uzu")),
+                (f(p, "o"), f(p, "unI"), f(p, "Uni")),
+            ]);
+            // The vocative singular carries the stem and the ओ-form.
+            put(&mut cells, 7, 0, vec![stem.to_string(), f(p, "o")]);
+            cells
+        }
+        Class::INr => {
+            // The neuter i-stems in the ण-form with the ऋ-form in the
+            // genitive and locative duals (भूरि; site @bhUri1): the
+            // य-forms drop the stem's ि (the sandhi), so they build on
+            // the stem without it — भूरिणोः-भूर्योः.
+            if linga != Linga::N || !stem.ends_with('i') {
+                return Err(NOT_POSSIBLE);
+            }
+            let p = &stem[..stem.len() - 1];
+            let mut cells = table(&[
+                (stem.to_string(), f(stem, "RI"), f(p, "IRi")),
+                (stem.to_string(), f(stem, "RI"), f(p, "IRi")),
+                (f(stem, "RA"), f(stem, "ByAm"), f(stem, "BiH")),
+                (f(stem, "Re"), f(stem, "ByAm"), f(stem, "ByaH")),
+                (f(stem, "RaH"), f(stem, "ByAm"), f(stem, "ByaH")),
+                (f(stem, "RaH"), f(stem, "yoH"), f(p, "IRAm")),
+                (f(stem, "Ri"), f(p, "ayoH"), f(stem, "zu")),
+                (stem.to_string(), f(stem, "RI"), f(p, "IRi")),
+            ]);
+            put(&mut cells, 3, 0, vec![f(stem, "Re"), f(p, "aye")]);
+            put(&mut cells, 4, 0, vec![f(stem, "RaH"), f(p, "eH")]);
+            put(&mut cells, 5, 0, vec![f(stem, "RaH"), f(p, "eH")]);
+            put(&mut cells, 6, 0, vec![f(stem, "Ri"), f(p, "O")]);
+            // The genitive and locative duals carry both alternants, the
+            // य-form without the stem's ि.
+            put(&mut cells, 5, 1, vec![f(stem, "RoH"), f(p, "yoH")]);
+            put(&mut cells, 6, 1, vec![f(stem, "RoH"), f(p, "yoH")]);
+            put(&mut cells, 7, 0, vec![stem.to_string(), f(p, "e")]);
+            cells
+        }
+        Class::INy => {
+            // The i-stem neuter with the य-forms as alternants (अनादि;
+            // site @anAdi1): the locative singular carries the इ- and
+            // य-forms (अनादिने-अनादये) and the nominative the इ- and
+            // ए-forms (अनादिनः-अनादेः).
+            if linga != Linga::N || !stem.ends_with('i') {
+                return Err(NOT_POSSIBLE);
+            }
+            let p = &stem[..stem.len() - 1];
+            let mut cells = table(&[
+                (stem.to_string(), f(p, "inI"), f(p, "Ini")),
+                (stem.to_string(), f(p, "inI"), f(p, "Ini")),
+                (f(p, "inA"), f(p, "iByAm"), f(p, "iBiH")),
+                (f(p, "ine"), f(p, "iByAm"), f(p, "iByaH")),
+                (f(p, "inaH"), f(p, "iByAm"), f(p, "iByaH")),
+                (f(p, "inaH"), f(p, "inoH"), f(p, "InAm")),
+                (f(p, "ini"), f(p, "inoH"), f(p, "izu")),
+                (f(p, "e"), f(p, "inI"), f(p, "Ini")),
+            ]);
+            put(&mut cells, 7, 0, vec![stem.to_string(), f(p, "e")]);
+            put(&mut cells, 3, 0, vec![f(p, "ine"), f(p, "aye")]);
+            put(&mut cells, 4, 0, vec![f(p, "inaH"), f(p, "eH")]);
+            put(&mut cells, 5, 0, vec![f(p, "inaH"), f(p, "eH")]);
+            put(&mut cells, 5, 1, vec![f(p, "inoH"), f(p, "yoH")]);
+            put(&mut cells, 6, 0, vec![f(p, "ini"), f(p, "O")]);
+            put(&mut cells, 6, 1, vec![f(p, "inoH"), f(p, "yoH")]);
             cells
         }
         Class::UN => {
@@ -3687,6 +3779,11 @@ pub fn classes_for(stem: &str, linga: Linga) -> Vec<Class> {
             Linga::N => {
                 out.push(Class::IN);
                 out.push(Class::INu);
+                // The same stems also carry the य-forms as alternants
+                // (अनादिने-अनादये) and the ऋ-form in the genitive dual
+                // (भूरिणोः-भूर्योः) — the site's grid decides.
+                out.push(Class::INy);
+                out.push(Class::INr);
             }
         }
     } else if stem.ends_with('I') {
@@ -3712,6 +3809,8 @@ pub fn classes_for(stem: &str, linga: Linga) -> Vec<Class> {
             Linga::N => {
                 out.push(Class::UN);
                 out.push(Class::UnN);
+                // The plain u-stem neuter (मधु) has no गुण/व् alternants.
+                out.push(Class::UNp);
             }
         }
     } else if stem.ends_with('U') {

@@ -1629,3 +1629,24 @@ The plain `AM` and the `AsmM` (अनेक → अनेकस्मै) are un
 a-stems keep both readings as candidates and the site's grid decides.
 
 Whole-db parity: **8,450/9,007** exact. Gates green (browser 472).
+
+## 2026-10-21 (29) — the u-stem and i-stem neuters
+
+Three more neuter flavours, all of them candidates beside the corpus's
+own classes:
+
+- `UNp` (the u-stem neuter without the गुण/व् alternants; site
+  @madhu1): the plain forms only (मधु, मधुनी, मधूनि, मधुना, मधुने,
+  मधुनः, मधूनाम्, मधुषु). Covered: मधु, कटु, आशु, अम्बु, यातु, वस्तु
+  and the rest of the u-stem neuters.
+- `INy` (the i-stem neuter with the य-forms as alternants; site
+  @anAdi1): the locative and nominative singulars carry the इ- and
+  य/ए-forms (अनादिने-अनादये, अनादिनः-अनादेः) and the genitive and
+  locative duals the य-form (अनाद्योः). Covered: अनादि, शिति, शुचि,
+  मौलि, सृष्टि, विविक्ति and the rest.
+- `INr` (the i-stem neuter with the ऋ-form in the genitive and locative
+  duals; site @bhUri1): भूरिणोः-भूर्योः — the य-form drops the stem's
+  ि, so it builds on the stem without it. Covered: भूरि, सुरभि,
+  फलेग्रहि, आत्मम्भरि, कुक्षिम्भरि.
+
+Whole-db parity: **8,485/9,007** exact. Gates green (browser 472).
