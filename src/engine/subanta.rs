@@ -2239,14 +2239,14 @@ pub fn decline(stem: &str, linga: Linga, class: &Class) -> Result<Paradigm, &'st
             // The nominative singular drops the final न् again (पन्थाः).
             let vr_a = &vr[..vr.len() - 1];
             table(&[
-                (f(&vr_a, "H"), f(&vr, "O"), f(&vr, "aH")),
+                (f(vr_a, "H"), f(&vr, "O"), f(&vr, "aH")),
                 (f(&vr, "am"), f(&vr, "O"), f(root, "aH")),
                 (f(root, "A"), f(root, "iByAm"), f(root, "iBiH")),
                 (f(root, "e"), f(root, "iByAm"), f(root, "iByaH")),
                 (f(root, "aH"), f(root, "iByAm"), f(root, "iByaH")),
                 (f(root, "aH"), f(root, "oH"), f(root, "Am")),
                 (f(root, "i"), f(root, "oH"), f(root, "izu")),
-                (f(&vr_a, "H"), f(&vr, "O"), f(&vr, "aH")),
+                (f(vr_a, "H"), f(&vr, "O"), f(&vr, "aH")),
             ])
         }
         Class::InM => {
