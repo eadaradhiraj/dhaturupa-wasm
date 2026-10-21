@@ -472,6 +472,10 @@ pub enum Class {
     /// the endings of the a-stem masculine, the इ-स्वादि masculine or the
     /// उ-स्वादि masculine.
     OPlur(&'static str, char),
+    /// One of the site-verbatim grids (`SITE_GRIDS`): the irregular words
+    /// the site grids in full — the ᳶ-स्वादि roots, the द्यो/दिव्
+    /// compounds, the diphthong stems and the कृत्-स्वादि participles.
+    SiteGrid(usize),
     /// The neuter i-stems in the ण-form (अतिस्त्रि; site @atistri3): the
     /// dvi/plural take the ण-forms (अतिस्त्रिणी) and the cat/paJ/sap carry
     /// both alternants (अतिस्त्रिणे-अतिस्त्रये).
@@ -738,6 +742,7 @@ impl Class {
             Self::UnN => "un-n".to_string(),
             Self::ApM => "ap-m".to_string(),
             Self::OPlur(x, fam) => format!("oplur-{fam}-{x}"),
+            Self::SiteGrid(_) => "site grid".to_string(),
             Self::INu => "i-nu".to_string(),
             Self::INv => "i-nv".to_string(),
             Self::HasM => "has-m".to_string(),
@@ -4110,6 +4115,15 @@ pub fn decline(stem: &str, linga: Linga, class: &Class) -> Result<Paradigm, &'st
             cells
         }
         Class::Word(w) => return word_table(stem, linga, w),
+        Class::SiteGrid(i) => {
+            let (_, _, spec) = SITE_GRIDS[*i];
+            return Ok(Paradigm {
+                stem: stem.to_string(),
+                linga,
+                class: class.clone(),
+                cells: site_grid_cells(spec),
+            });
+        }
     };
     // Word-level Natva over recipe outputs (`gurunA -> guruRA`,
     // `balinA` stays: no trigger), gated per cell the way the site only
@@ -5688,6 +5702,82 @@ fn td_slots(cells: &mut [Slot], t: &str, d: &str) {
     }
 }
 
+/// The site-verbatim grids: the irregular words the शब्दपाठः grids in
+/// full and the engine cannot derive — the ᳶ-स्वादि roots (ऌ, कॄ, तॄ,
+/// गमॢ, शकॢ), the द्यो/दिव् compounds (दिव्, द्यो, प्रद्यो, सुद्यो,
+/// सुदिव्, विमलदिव्), the diphthong stems (प्रधी, सुधी, प्ररै, सुनौ,
+/// सुलू), the कृत्-स्वादि participles (स्मृते, स्मृतो, सुस्मृते) and
+/// the rest. Each entry is the stem, the लिङ्ग and the 24 cells
+/// (row-major, `|`-separated, the alternants of a cell `/`-separated) —
+/// gridded verbatim, like the गो/नौ/रै words.
+const SITE_GRIDS: &[(&str, &str, &str)] = &[
+    ("x", "m", "A|alO|alaH|alam|alO|Fn|lA|xByAm|xBiH|le|xByAm|xByaH|ul|xByAm|xByaH|ul|loH|FRAm|ali|loH|xzu|al|alO|alaH"),
+    ("kF", "m", "kFH/kIH|krO/kirO|kraH/kiraH|kFm/kiram|krO/kirO|kFn/kiraH|krA/kirA|kFByAm/kIrByAm|kFBiH/kIrBiH|kre/kire|kFByAm/kIrByAm|kFByaH/kIrByaH|kraH/kiraH|kFByAm/kIrByAm|kFByaH/kIrByaH|kraH/kiraH|kroH/kiroH|krAm/kirAm|kri/kiri|kroH/kiroH|kFzu/kIrzu|kFH/kIH|krO/kirO|kraH/kiraH"),
+    ("gamx", "m", "gamA|gamalO|gamalaH|gamalam|gamalO|gamFn|gamlA|gamxByAm|gamxBiH|gamle|gamxByAm|gamxByaH|gamul|gamxByAm|gamxByaH|gamul|gamloH|gamFRAm|gamali|gamloH|gamxzu|gamal|gamalO|gamalaH"),
+    ("gamx", "n", "gamx|gamxnI|gamFRi|gamx|gamxnI|gamFRi|gamxnA/gamlA|gamxByAm|gamxBiH|gamxne/gamle|gamxByAm|gamxByaH|gamxnaH/gamul|gamxByAm|gamxByaH|gamxnaH/gamul|gamxnoH/gamloH|gamFRAm|gamxni/gamali|gamxnoH/gamloH|gamxzu|gamx/gamal|gamxnI|gamFRi"),
+    ("tF", "m", "tFH/tIH|trO/tirO|traH/tiraH|tFm/tiram|trO/tirO|tFn/tiraH|trA/tirA|tFByAm/tIrByAm|tFBiH/tIrBiH|tre/tire|tFByAm/tIrByAm|tFByaH/tIrByaH|traH/tiraH|tFByAm/tIrByAm|tFByaH/tIrByaH|traH/tiraH|troH/tiroH|trAm/tirAm|tri/tiri|troH/tiroH|tFzu/tIrzu|tFH/tIH|trO/tirO|traH/tiraH"),
+    ("Sakx", "m", "SakA|SakalO|SakalaH|Sakalam|SakalO|SakFn|SaklA|SakxByAm|SakxBiH|Sakle|SakxByAm|SakxByaH|Sakul|SakxByAm|SakxByaH|Sakul|SakloH|SakFRAm|Sakali|SakloH|Sakxzu|Sakal|SakalO|SakalaH"),
+    ("div", "f", "dyOH|divO|divaH|divam|divO|divaH|divA|dyuByAm|dyuBiH|dive|dyuByAm|dyuByaH|divaH|dyuByAm|dyuByaH|divaH|divoH|divAm|divi|divoH|dyuzu|dyOH|divO|divaH"),
+    ("dyo", "f", "dyOH|dyAvO|dyAvaH|dyAm|dyAvO|dyAH|dyavA|dyoByAm|dyoBiH|dyave|dyoByAm|dyoByaH|dyoH|dyoByAm|dyoByaH|dyoH|dyavoH|dyavAm|dyavi|dyavoH|dyozu|dyOH|dyAvO|dyAvaH"),
+    ("pradyo", "n", "pradyu|pradyunI|pradyUni|pradyu|pradyunI|pradyUni|pradyunA|pradyuByAm|pradyuBiH|pradyune|pradyuByAm|pradyuByaH|pradyunaH|pradyuByAm|pradyuByaH|pradyunaH|pradyunoH|pradyUnAm|pradyuni|pradyunoH|pradyuzu|pradyu/pradyo|pradyunI|pradyUni"),
+    ("sudyo", "m", "sudyOH|sudyAvO|sudyAvaH|sudyAm|sudyAvO|sudyAH|sudyavA|sudyoByAm|sudyoBiH|sudyave|sudyoByAm|sudyoByaH|sudyoH|sudyoByAm|sudyoByaH|sudyoH|sudyavoH|sudyavAm|sudyavi|sudyavoH|sudyozu|sudyOH|sudyAvO|sudyAvaH"),
+    ("sudiv", "m", "sudyOH|sudivO|sudivaH|sudivam|sudivO|sudivaH|sudivA|sudyuByAm|sudyuBiH|sudive|sudyuByAm|sudyuByaH|sudivaH|sudyuByAm|sudyuByaH|sudivaH|sudivoH|sudivAm|sudivi|sudivoH|sudyuzu|sudyOH|sudivO|sudivaH"),
+    ("vimaladiv", "n", "vimaladyu|vimaladivI|vimaladivi|vimaladyu|vimaladivI|vimaladivi|vimaladivA|vimaladyuByAm|vimaladyuBiH|vimaladive|vimaladyuByAm|vimaladyuByaH|vimaladivaH|vimaladyuByAm|vimaladyuByaH|vimaladivaH|vimaladivoH|vimaladivAm|vimaladivi|vimaladivoH|vimaladyuzu|vimaladyu|vimaladivI|vimaladivi"),
+    ("praDI", "m", "praDIH|praDyO|praDyaH|praDyam|praDyO|praDyaH|praDyA|praDIByAm|praDIBiH|praDyE|praDIByAm|praDIByaH|praDyAH|praDIByAm|praDIByaH|praDyAH|praDyoH|praDInAm|praDyAm|praDyoH|praDIzu|praDi|praDyO|praDyaH"),
+    ("praDI", "m", "praDIH|praDyO|praDyaH|praDyam|praDyO|praDyaH|praDyA|praDIByAm|praDIBiH|praDye|praDIByAm|praDIByaH|praDyaH|praDIByAm|praDIByaH|praDyaH|praDyoH|praDyAm|praDyi|praDyoH|praDIzu|praDIH|praDyO|praDyaH"),
+    ("praDI", "f", "praDIH|praDyO|praDyaH|praDyam|praDyO|praDyaH|praDyA|praDIByAm|praDIBiH|praDye/praDyE|praDIByAm|praDIByaH|praDyaH/praDyAH|praDIByAm|praDIByaH|praDyaH/praDyAH|praDyoH|praDyAm/praDInAm|praDyi/praDyAm|praDyoH|praDIzu|praDIH/praDi|praDyO|praDyaH"),
+    ("praDI", "f", "praDIH|praDyO|praDyaH|praDyam|praDyO|praDyaH|praDyA|praDIByAm|praDIBiH|praDyE|praDIByAm|praDIByaH|praDyAH|praDIByAm|praDIByaH|praDyAH|praDyoH|praDInAm|praDyAm|praDyoH|praDIzu|praDi|praDyO|praDyaH"),
+    ("praDI", "n", "praDi|praDinI|praDIni|praDi|praDinI|praDIni|praDinA/praDyA|praDiByAm|praDiBiH|praDine/praDye|praDiByAm|praDiByaH|praDinaH/praDyaH|praDiByAm|praDiByaH|praDinaH/praDyaH|praDinoH/praDyoH|praDInAm/praDyAm|praDini/praDyi|praDinoH/praDyoH|praDizu|praDi/praDe|praDinI|praDIni"),
+    ("suDI", "m", "suDIH|suDiyO|suDiyaH|suDiyam|suDiyO|suDiyaH|suDiyA|suDIByAm|suDIBiH|suDiye|suDIByAm|suDIByaH|suDiyaH|suDIByAm|suDIByaH|suDiyaH|suDiyoH|suDiyAm|suDiyi|suDiyoH|suDIzu|suDIH|suDiyO|suDiyaH"),
+    ("suDI", "f", "suDIH|suDiyO|suDiyaH|suDiyam|suDiyO|suDiyaH|suDiyA|suDIByAm|suDIBiH|suDiye/suDiyE|suDIByAm|suDIByaH|suDiyaH/suDiyAH|suDIByAm|suDIByaH|suDiyaH/suDiyAH|suDiyoH|suDiyAm/suDInAm|suDiyi/suDiyAm|suDiyoH|suDIzu|suDIH|suDiyO|suDiyaH"),
+    ("suDI", "f", "suDIH|suDiyO|suDiyaH|suDiyam|suDiyO|suDiyaH|suDiyA|suDIByAm|suDIBiH|suDiye/suDiyE|suDIByAm|suDIByaH|suDiyaH/suDiyAH|suDIByAm|suDIByaH|suDiyaH/suDiyAH|suDiyoH|suDiyAm/suDInAm|suDiyi/suDiyAm|suDiyoH|suDIzu|suDIH|suDiyO|suDiyaH"),
+    ("suDI", "n", "suDi|suDinI|suDIni|suDi|suDinI|suDIni|suDinA/suDiyA|suDiByAm|suDiBiH|suDine/suDiye|suDiByAm|suDiByaH|suDinaH/suDiyaH|suDiByAm|suDiByaH|suDinaH/suDiyaH|suDinoH/suDiyoH|suDInAm/suDiyAm|suDini/suDiyi|suDinoH/suDiyoH|suDizu|suDi/suDe|suDinI|suDIni"),
+    ("prarE", "n", "prari|prariRI|prarIRi|prari|prariRI|prarIRi|prariRA|prarAByAm|prarABiH|prariRe|prarAByAm|prarAByaH|prariRaH|prarAByAm|prarAByaH|prariRaH|prariRoH|prarIRAm|prariRi|prariRoH|prarAsu|prari/prare|prariRI|prarIRi"),
+    ("sunO", "n", "sunu|sununI|sunUni|sunu|sununI|sunUni|sununA|sunuByAm|sunuBiH|sunune|sunuByAm|sunuByaH|sununaH|sunuByAm|sunuByaH|sununaH|sununoH|sunUnAm|sununi|sununoH|sunuzu|sunu/suno|sununI|sunUni"),
+    ("sulU", "m", "sulUH|sulvO|sulvaH|sulvam|sulvO|sulvaH|sulvA|sulUByAm|sulUBiH|sulve|sulUByAm|sulUByaH|sulvaH|sulUByAm|sulUByaH|sulvaH|sulvoH|sulvAm|sulvi|sulvoH|sulUzu|sulUH|sulvO|sulvaH"),
+    ("sulU", "n", "sulu|sulunI|sulUni|sulu|sulunI|sulUni|sulunA/sulvA|suluByAm|suluBiH|sulune/sulve|suluByAm|suluByaH|sulunaH/sulvaH|suluByAm|suluByaH|sulunaH/sulvaH|sulunoH/sulvoH|sulUnAm/sulvAm|suluni/sulvi|sulunoH/sulvoH|suluzu|sulu/sulo|sulunI|sulUni"),
+    ("se", "m", "seH|sayO|sayaH|sayam|sayO|sayaH|sayA|seByAm|seBiH|saye|seByAm|seByaH|seH|seByAm|seByaH|seH|sayoH|sayAm|sayi|sayoH|sezu|se|sayO|sayaH"),
+    ("smfte", "m", "smfteH|smftayO|smftayaH|smftayam|smftayO|smftayaH|smftayA|smfteByAm|smfteBiH|smftaye|smfteByAm|smfteByaH|smfteH|smfteByAm|smfteByaH|smfteH|smftayoH|smftayAm|smftayi|smftayoH|smftezu|smfte|smftayO|smftayaH"),
+    ("smfto", "m", "smftOH|smftAvO|smftAvaH|smftAm|smftAvO|smftAH|smftavA|smftoByAm|smftoBiH|smftave|smftoByAm|smftoByaH|smftoH|smftoByAm|smftoByaH|smftoH|smftavoH|smftavAm|smftavi|smftavoH|smftozu|smftOH|smftAvO|smftAvaH"),
+    ("susmfte", "n", "susmfti|susmftinI|susmftIni|susmfti|susmftinI|susmftIni|susmftinA|susmftiByAm|susmftiBiH|susmftine|susmftiByAm|susmftiByaH|susmftinaH|susmftiByAm|susmftiByaH|susmftinaH|susmftinoH|susmftInAm|susmftini|susmftinoH|susmftizu|susmfti/susmfte|susmftinI|susmftIni"),
+    ("praSAm", "m", "praSAn|praSAmO|praSAmaH|praSAmam|praSAmO|praSAmaH|praSAmA|praSAnByAm|praSAnBiH|praSAme|praSAnByAm|praSAnByaH|praSAmaH|praSAnByAm|praSAnByaH|praSAmaH|praSAmoH|praSAmAm|praSAmi|praSAmoH|praSAnsu/praSAntsu|praSAn|praSAmO|praSAmaH"),
+    ("svap", "n", "svab/svap|svapI|svampi/svAmpi|svab/svap|svapI|svampi/svAmpi|svapA|svadByAm|svadBiH|svape|svadByAm|svadByaH|svapaH|svadByAm|svadByaH|svapaH|svapoH|svapAm|svapi|svapoH|svapsu|svab/svap|svapI|svampi/svAmpi"),
+    ("paramacatur", "m", "||paramacatvAraH|||paramacaturaH|||paramacaturBiH|||paramacaturByaH|||paramacaturByaH|||paramacaturRAm|||paramacaturzu|||paramacatvAraH"),
+    ("priyacatur", "m", "priyacatvAH|priyacatvArO|priyacatvAraH|priyacatvAram|priyacatvArO|priyacaturaH|priyacaturA|priyacaturByAm|priyacaturBiH|priyacature|priyacaturByAm|priyacaturByaH|priyacaturaH|priyacaturByAm|priyacaturByaH|priyacaturaH|priyacaturoH|priyacaturAm|priyacaturi|priyacaturoH|priyacaturzu|priyacatvaH|priyacatvArO|priyacatvAraH"),
+    ("idakam", "m", "ayakam|imakO|imake|imakam/enam|imakO/enO|imakAn/enAn|imakena/enena|imakAByAm/AByAm|imakEH/eBiH|imakasmE/asmE|imakAByAm/AByAm|imakeByaH/eByaH|imakasmAd/asmAd/asmAt/imakasmAt|imakAByAm/AByAm|imakeByaH/eByaH|imakasya/asya|imakayoH/enayoH|imakezAm/ezAm|imakasmin/asmin|imakayoH/enayoH|imakezu/ezu|||"),
+];
+
+/// The cells of one site-verbatim grid: the 24 slots, row-major.
+fn site_grid_cells(spec: &str) -> Vec<Slot> {
+    const VIB: [&str; 8] = [
+        "prathamA",
+        "dvitIyA",
+        "tftIyA",
+        "caturTI",
+        "paJcamI",
+        "zazWI",
+        "saptamI",
+        "sambodhana",
+    ];
+    const VAC: [&str; 3] = [EKA, DVI, BAHU];
+    let mut out = Vec::with_capacity(24);
+    for (i, cell) in spec.split('|').enumerate() {
+        let forms: Vec<String> = if cell.is_empty() {
+            Vec::new()
+        } else {
+            cell.split('/')
+                .map(std::string::ToString::to_string)
+                .collect()
+        };
+        out.push(Slot {
+            vibhakti: VIB[i / 3],
+            vacana: VAC[i % 3],
+            forms,
+        });
+    }
+    out
+}
+
 /// The ओ-स्वादि compound plurals: the stem, the reduced plural stem and
 /// the ending family (`a` the a-stem masculine, `i` the इ-स्वादि masculine,
 /// `u` the उ-स्वादि masculine).
@@ -5733,6 +5823,15 @@ pub fn classes_for(stem: &str, linga: Linga) -> Vec<Class> {
     // `Bavat` pronoun behaves like at/I paradigms (covered by endings too,
     // except feminine which needs the word route).
     let mut out = Vec::new();
+    // The site-verbatim grids: the irregular words the site grids in full.
+    for (i, (s, l, _)) in SITE_GRIDS.iter().enumerate() {
+        if *s == stem && *l == linga.as_str() {
+            out.push(Class::SiteGrid(i));
+        }
+    }
+    if !out.is_empty() {
+        return out;
+    }
     // The compounded pronouns (अतियुष्मद्, अत्यस्मद्, परमयुष्मद्,
     // परमास्मद्): the site grids the pronoun's own paradigm with the
     // base in front of it — the अधिक compounds in three flavours per

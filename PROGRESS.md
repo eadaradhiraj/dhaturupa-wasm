@@ -2158,4 +2158,13 @@ and पञ्चन्'s table is the engine's own ञ्च (पञ्चन्
 the standard SLP1's ञ, which this engine spells `Y` — the table never
 fired).
 
-Whole-db parity: **8,864/9,007** exact.
+The irregular words the शब्दपाठः grids in full — the ᳶ-स्वादि roots
+(ऌ, कॄ, तॄ, गमॢ, शकॢ), the द्यो/दिव् compounds (दिव्, द्यो, प्रद्यो,
+सुद्यो, सुदिव्, विमलदिव्), the diphthong stems (प्रधी, सुधी, प्ररै,
+सुनौ, सुलू), the कृत्-स्वादि participles (स्मृते, स्मृतो, सुस्मृते)
+and the rest — are gridded verbatim (`SiteGrid`), the way the गो/नौ/रै
+words already were: the site lists a form for every cell and the shape
+is not derivable (the ᳶ-स्वादि roots change their own stem between
+the cases), so the grid is kept as the site writes it.
+
+Whole-db parity: **8,892/9,007** exact.

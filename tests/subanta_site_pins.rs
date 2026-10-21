@@ -961,3 +961,39 @@ fn known_word_numeral_pins() {
         pin_word_listed_any(word);
     }
 }
+
+/// The site-verbatim grids: the irregular words the शब्दपाठः grids in
+/// full — the ᳶ-स्वादि roots, the द्यो/दिव् compounds, the diphthong
+/// stems and the कृत्-स्वादि participles.
+#[test]
+fn site_verbatim_grid_pins() {
+    for word in [
+        "ऌ",
+        "कॄ",
+        "गमॢ",
+        "तॄ",
+        "शकॢ",
+        "दिव्",
+        "द्यो",
+        "प्रद्यो",
+        "सुद्यो",
+        "सुदिव्",
+        "विमलदिव्",
+        "प्रधी",
+        "सुधी",
+        "प्ररै",
+        "सुनौ",
+        "सुलू",
+        "से",
+        "स्मृते",
+        "स्मृतो",
+        "सुस्मृते",
+        "प्रशाम्",
+        "स्वप्",
+        "परमचतुर्",
+        "प्रियचतुर्",
+        "इदकम्",
+    ] {
+        pin_word_listed_any(word);
+    }
+}
