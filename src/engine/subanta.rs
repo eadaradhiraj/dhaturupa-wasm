@@ -6867,7 +6867,6 @@ const SITE_GRIDS: &[(&str, &str, &str)] = &[
     ("praDI", "n", "praDi|praDinI|praDIni|praDi|praDinI|praDIni|praDinA/praDyA|praDiByAm|praDiBiH|praDine/praDye|praDiByAm|praDiByaH|praDinaH/praDyaH|praDiByAm|praDiByaH|praDinaH/praDyaH|praDinoH/praDyoH|praDInAm/praDyAm|praDini/praDyi|praDinoH/praDyoH|praDizu|praDi/praDe|praDinI|praDIni"),
     ("suDI", "m", "suDIH|suDiyO|suDiyaH|suDiyam|suDiyO|suDiyaH|suDiyA|suDIByAm|suDIBiH|suDiye|suDIByAm|suDIByaH|suDiyaH|suDIByAm|suDIByaH|suDiyaH|suDiyoH|suDiyAm|suDiyi|suDiyoH|suDIzu|suDIH|suDiyO|suDiyaH"),
     ("suDI", "f", "suDIH|suDiyO|suDiyaH|suDiyam|suDiyO|suDiyaH|suDiyA|suDIByAm|suDIBiH|suDiye/suDiyE|suDIByAm|suDIByaH|suDiyaH/suDiyAH|suDIByAm|suDIByaH|suDiyaH/suDiyAH|suDiyoH|suDiyAm/suDInAm|suDiyi/suDiyAm|suDiyoH|suDIzu|suDIH|suDiyO|suDiyaH"),
-    ("suDI", "f", "suDIH|suDiyO|suDiyaH|suDiyam|suDiyO|suDiyaH|suDiyA|suDIByAm|suDIBiH|suDiye/suDiyE|suDIByAm|suDIByaH|suDiyaH/suDiyAH|suDIByAm|suDIByaH|suDiyaH/suDiyAH|suDiyoH|suDiyAm/suDInAm|suDiyi/suDiyAm|suDiyoH|suDIzu|suDIH|suDiyO|suDiyaH"),
     ("suDI", "n", "suDi|suDinI|suDIni|suDi|suDinI|suDIni|suDinA/suDiyA|suDiByAm|suDiBiH|suDine/suDiye|suDiByAm|suDiByaH|suDinaH/suDiyaH|suDiByAm|suDiByaH|suDinaH/suDiyaH|suDinoH/suDiyoH|suDInAm/suDiyAm|suDini/suDiyi|suDinoH/suDiyoH|suDizu|suDi/suDe|suDinI|suDIni"),
     ("prarE", "n", "prari|prariRI|prarIRi|prari|prariRI|prarIRi|prariRA|prarAByAm|prarABiH|prariRe|prarAByAm|prarAByaH|prariRaH|prarAByAm|prarAByaH|prariRaH|prariRoH|prarIRAm|prariRi|prariRoH|prarAsu|prari/prare|prariRI|prarIRi"),
     ("sunO", "n", "sunu|sununI|sunUni|sunu|sununI|sunUni|sununA|sunuByAm|sunuBiH|sunune|sunuByAm|sunuByaH|sununaH|sunuByAm|sunuByaH|sununaH|sununoH|sunUnAm|sununi|sununoH|sunuzu|sunu/suno|sununI|sunUni"),
@@ -6882,6 +6881,83 @@ const SITE_GRIDS: &[(&str, &str, &str)] = &[
     ("paramacatur", "m", "||paramacatvAraH|||paramacaturaH|||paramacaturBiH|||paramacaturByaH|||paramacaturByaH|||paramacaturRAm|||paramacaturzu|||paramacatvAraH"),
     ("priyacatur", "m", "priyacatvAH|priyacatvArO|priyacatvAraH|priyacatvAram|priyacatvArO|priyacaturaH|priyacaturA|priyacaturByAm|priyacaturBiH|priyacature|priyacaturByAm|priyacaturByaH|priyacaturaH|priyacaturByAm|priyacaturByaH|priyacaturaH|priyacaturoH|priyacaturAm|priyacaturi|priyacaturoH|priyacaturzu|priyacatvaH|priyacatvArO|priyacatvAraH"),
     ("idakam", "m", "ayakam|imakO|imake|imakam/enam|imakO/enO|imakAn/enAn|imakena/enena|imakAByAm/AByAm|imakEH/eBiH|imakasmE/asmE|imakAByAm/AByAm|imakeByaH/eByaH|imakasmAd/asmAd/asmAt/imakasmAt|imakAByAm/AByAm|imakeByaH/eByaH|imakasya/asya|imakayoH/enayoH|imakezAm/ezAm|imakasmin/asmin|imakayoH/enayoH|imakezu/ezu|||"),
+    ("aticamU", "m", "aticamUH|aticamvO|aticamvaH|aticamUm|aticamvO|aticamUn|aticamvA|aticamUByAm|aticamUBiH|aticamvE|aticamUByAm|aticamUByaH|aticamvAH|aticamUByAm|aticamUByaH|aticamvAH|aticamvoH|aticamUnAm|aticamvAm|aticamvoH|aticamUzu|aticamu|aticamvO|aticamvaH"),
+    ("atilakzmI", "m", "atilakzmIH|atilakzmyO|atilakzmyaH|atilakzmIm|atilakzmyO|atilakzmIn|atilakzmyA|atilakzmIByAm|atilakzmIBiH|atilakzmyE|atilakzmIByAm|atilakzmIByaH|atilakzmyAH|atilakzmIByAm|atilakzmIByaH|atilakzmyAH|atilakzmyoH|atilakzmIRAm|atilakzmyAm|atilakzmyoH|atilakzmIzu|atilakzmi|atilakzmyO|atilakzmyaH"),
+    ("atisaKi", "m", "atisaKA|atisaKAyO|atisaKAyaH|atisaKAyam|atisaKAyO|atisaKIn|atisaKinA|atisaKiByAm|atisaKiBiH|atisaKaye|atisaKiByAm|atisaKiByaH|atisaKeH|atisaKiByAm|atisaKiByaH|atisaKeH|atisaKyoH|atisaKInAm|atisaKO|atisaKyoH|atisaKizu|atisaKe|atisaKAyO|atisaKAyaH"),
+    ("atistri", "m", "atistriH|atistriyO|atistriyaH|atistriyam/atistrim|atistriyO|atistriyaH/atistrIn|atistriRA|atistriByAm|atistriBiH|atistraye|atistriByAm|atistriByaH|atistreH|atistriByAm|atistriByaH|atistreH|atistriyoH|atistrIRAm|atistrO|atistriyoH|atistrizu|atistre|atistriyO|atistriyaH"),
+    ("atistri", "f", "atistriH|atistriyO|atistriyaH|atistriyam/atistrim|atistriyO|atistriyaH/atistrIH|atistriyA|atistriByAm|atistriBiH|atistraye/atistriyE|atistriByAm|atistriByaH|atistreH/atistriyAH|atistriByAm|atistriByaH|atistreH/atistriyAH|atistriyoH|atistrIRAm|atistrO/atistriyAm|atistriyoH|atistrizu|atistre|atistriyO|atistriyaH"),
+    ("ap", "f", "||ApaH|||apaH|||adBiH|||adByaH|||adByaH|||apAm|||apsu|||ApaH"),
+    ("arvan", "m", "arvA|arvantO|arvantaH|arvantam|arvantO|arvataH|arvatA|arvadByAm|arvadBiH|arvate|arvadByAm|arvadByaH|arvataH|arvadByAm|arvadByaH|arvataH|arvatoH|arvatAm|arvati|arvatoH|arvatsu|arvan|arvantO|arvantaH"),
+    ("ahan", "n", "ahaH|ahnI/ahanI|ahAni|ahaH|ahnI/ahanI|ahAni|ahnA|ahoByAm|ahoBiH|ahne|ahoByAm|ahoByaH|ahnaH|ahoByAm|ahoByaH|ahnaH|ahnoH|ahnAm|ahni/ahani|ahnoH|ahaHsu/ahassu|ahaH|ahnI/ahanI|ahAni"),
+    ("ANgirasa", "m", "ANgirasaH|ANgirasO|aNgirasaH|ANgirasam|ANgirasO|aNgirasaH|ANgirasena|ANgirasAByAm|aNgiroBiH|ANgirasAya|ANgirasAByAm|aNgiroByaH|ANgirasAd/ANgirasAt|ANgirasAByAm|aNgiroByaH|ANgirasasya|ANgirasayoH|aNgirasAm|ANgirase|ANgirasayoH|aNgiraHsu/aNgirassu|ANgirasa|ANgirasO|aNgirasaH"),
+    ("Urj", "n", "Urg/Urk|UrjI|Unrji|Urg/Urk|UrjI|Unrji|UrjA|UrgByAm|UrgBiH|Urje|UrgByAm|UrgByaH|UrjaH|UrgByAm|UrgByaH|UrjaH|UrjoH|UrjAm|Urji|UrjoH|Urkzu|Urg/Urk|UrjI|Unrji"),
+    ("f", "m", "A|arO|araH|aram|arO|Fn|rA|fByAm|fBiH|re|fByAm|fByaH|uH|fByAm|fByaH|uH|roH|FRAm|ari|roH|fzu|aH|arO|araH"),
+    ("kati", "m", "||kati|||kati|||katiBiH|||katiByaH|||katiByaH|||katInAm|||katizu|||kati"),
+    ("kati", "f", "||kati|||kati|||katiBiH|||katiByaH|||katiByaH|||katInAm|||katizu|||kati"),
+    ("kati", "n", "||kati|||kati|||katiBiH|||katiByaH|||katiByaH|||katInAm|||katizu|||kati"),
+    ("krunc", "m", "kruN|kruYcO|kruYcaH|kruYcam|kruYcO|kruYcaH|kruYcA|kruNByAm|kruNBiH|kruYce|kruNByAm|kruNByaH|kruYcaH|kruNByAm|kruNByaH|kruYcaH|kruYcoH|kruYcAm|kruYci|kruYcoH|kruNzu/kruNkzu/kruNKzu|kruN|kruYcO|kruYcaH"),
+    ("krozwu", "m", "krozwA|krozwArO|krozwAraH|krozwAram|krozwArO|krozwUn|krozwrA/krozwunA|krozwuByAm|krozwuBiH|krozwre/krozwave|krozwuByAm|krozwuByaH|krozwuH/krozwoH|krozwuByAm|krozwuByaH|krozwuH/krozwoH|krozwroH/krozwvoH|krozwUnAm|krozwari/krozwO|krozwroH/krozwvoH|krozwuzu|krozwo|krozwArO|krozwAraH"),
+    ("krozwu", "f", "krozwrI|krozwryO|krozwryaH|krozwrIm|krozwryO|krozwrIH|krozwryA|krozwrIByAm|krozwrIBiH|krozwryE|krozwrIByAm|krozwrIByaH|krozwryAH|krozwrIByAm|krozwrIByaH|krozwryAH|krozwryoH|krozwrIRAm|krozwryAm|krozwryoH|krozwrIzu|krozwri|krozwryO|krozwryaH"),
+    ("gopA", "f", "gopAH|gopO|gopAH|gopAm|gopO|gopaH|gopA|gopAByAm|gopABiH|gope|gopAByAm|gopAByaH|gopaH|gopAByAm|gopAByaH|gopaH|gopoH|gopAm|gopi|gopoH|gopAsu|gopAH|gopO|gopAH"),
+    ("goviz", "n", "goviq/goviw|govizI|goviMzi|goviq/goviw|govizI|goviMzi|govizA|goviqByAm|goviqBiH|govize|goviqByAm|goviqByaH|govizaH|goviqByAm|goviqByaH|govizaH|govizoH|govizAm|govizi|govizoH|goviwsu/goviwtsu|goviq/goviw|govizI|goviMzi"),
+    ("grAmaRI", "f", "grAmaRIH|grAmaRyO|grAmaRyaH|grAmaRyam|grAmaRyO|grAmaRyaH|grAmaRyA|grAmaRIByAm|grAmaRIBiH|grAmaRye|grAmaRIByAm|grAmaRIByaH|grAmaRyaH|grAmaRIByAm|grAmaRIByaH|grAmaRyaH|grAmaRyoH|grAmaRyAm|grAmaRyAm|grAmaRyoH|grAmaRIzu|grAmaRIH|grAmaRyO|grAmaRyaH"),
+    ("tamisrahan", "m", "tamisrahA|tamisrahaRO|tamisrahaRaH|tamisrahaRam|tamisrahaRO|tamisraGnaH|tamisraGnA|tamisrahaByAm|tamisrahaBiH|tamisraGne|tamisrahaByAm|tamisrahaByaH|tamisraGnaH|tamisrahaByAm|tamisrahaByaH|tamisraGnaH|tamisraGnoH|tamisraGnAm|tamisraGni/tamisrahaRi|tamisraGnoH|tamisrahasu|tamisrahan|tamisrahaRO|tamisrahaRaH"),
+    ("tyad", "m", "syaH|tyO|tye|tyam|tyO|tyAn|tyena|tyAByAm|tyEH|tyasmE|tyAByAm|tyeByaH|tyasmAd/tyasmAt|tyAByAm|tyeByaH|tyasya|tyayoH|tyezAm|tyasmin|tyayoH|tyezu|||"),
+    ("tyad", "f", "syA|tye|tyAH|tyAm|tye|tyAH|tyayA|tyAByAm|tyABiH|tyasyE|tyAByAm|tyAByaH|tyasyAH|tyAByAm|tyAByaH|tyasyAH|tyayoH|tyAsAm|tyasyAm|tyayoH|tyAsu|||"),
+    ("tyad", "n", "tyad/tyat|tye|tyAni|tyad/tyat|tye|tyAni|tyena|tyAByAm|tyEH|tyasmE|tyAByAm|tyeByaH|tyasmAd/tyasmAt|tyAByAm|tyeByaH|tyasya|tyayoH|tyezAm|tyasmin|tyayoH|tyezu|||"),
+    ("dIrGAhan", "m", "dIrGAhAH|dIrGAhAnO|dIrGAhAnaH|dIrGAhAnam|dIrGAhAnO|dIrGAhnaH|dIrGAhnA|dIrGAhoByAm|dIrGAhoBiH|dIrGAhne|dIrGAhoByAm|dIrGAhoByaH|dIrGAhnaH|dIrGAhoByAm|dIrGAhoByaH|dIrGAhnaH|dIrGAhnoH|dIrGAhnAm|dIrGAhni/dIrGAhani|dIrGAhnoH|dIrGAhaHsu/dIrGAhassu|dIrGAhaH|dIrGAhAnO|dIrGAhAnaH"),
+    ("nf", "m", "nA|narO|naraH|naram|narO|nFn|nrA|nfByAm|nfBiH|nre|nfByAm|nfByaH|nuH|nfByAm|nfByaH|nuH|nroH|nFRAm/nfRAm|nari|nroH|nfzu|naH|narO|naraH"),
+    ("pati", "m", "patiH|patI|patayaH|patim|patI|patIn|patyA|patiByAm|patiBiH|patye|patiByAm|patiByaH|patyuH|patiByAm|patiByaH|patyuH|patyoH|patInAm|patyO|patyoH|patizu|pate|patI|patayaH"),
+    ("paramatad", "m", "paramasaH|paramatO|paramate|paramatam|paramatO|paramatAn|paramatena|paramatAByAm|paramatEH|paramatasmE|paramatAByAm|paramateByaH|paramatasmAd/paramatasmAt|paramatAByAm|paramateByaH|paramatasya|paramatayoH|paramatezAm|paramatasmin|paramatayoH|paramatezu|||"),
+    ("paramatri", "m", "||paramatrayaH|||paramatrIn|||paramatriBiH|||paramatriByaH|||paramatriByaH|||paramatrayARAm|||paramatrizu|||paramatrayaH"),
+    ("paramatri", "f", "||paramatisraH|||paramatisraH|||paramatisfBiH|||paramatisfByaH|||paramatisfByaH|||paramatisfRAm|||paramatisfzu|||paramatisraH"),
+    ("paramadvi", "m", "|paramadvO|||paramadvO|||paramadvAByAm|||paramadvAByAm|||paramadvAByAm|||paramadvayoH|||paramadvayoH||||"),
+    ("paramapaYcan", "m", "||paramapaYca|||paramapaYca|||paramapaYcaBiH|||paramapaYcaByaH|||paramapaYcaByaH|||paramapaYcAnAm|||paramapaYcasu|||paramapaYca"),
+    ("paramazaz", "m", "||paramazaq/paramazaw|||paramazaq/paramazaw|||paramazaqBiH|||paramazaqByaH|||paramazaqByaH|||paramazaRRAm|||paramazawsu/paramazawtsu|||paramazaq/paramazaw"),
+    ("paramasaKi", "m", "paramasaKA|paramasaKAyO|paramasaKAyaH|paramasaKAyam|paramasaKAyO|paramasaKIn|paramasaKinA|paramasaKiByAm|paramasaKiBiH|paramasaKaye|paramasaKiByAm|paramasaKiByaH|paramasaKeH|paramasaKiByAm|paramasaKiByaH|paramasaKeH|paramasaKyoH|paramasaKInAm|paramasaKO|paramasaKyoH|paramasaKizu|paramasaKe|paramasaKAyO|paramasaKAyaH"),
+    ("paramAzwan", "m", "||paramAzwa/paramAzwO|||paramAzwa/paramAzwO|||paramAzwaBiH/paramAzwABiH|||paramAzwaByaH/paramAzwAByaH|||paramAzwaByaH/paramAzwAByaH|||paramAzwAnAm|||paramAzwasu/paramAzwAsu|||paramAzwa/paramAzwO"),
+    ("pipaWiz", "n", "pipaWIH|pipaWizI|pipaWizi|pipaWIH|pipaWizI|pipaWizi|pipaWizA|pipaWIrByAm|pipaWIrBiH|pipaWize|pipaWIrByAm|pipaWIrByaH|pipaWizaH|pipaWIrByAm|pipaWIrByaH|pipaWizaH|pipaWizoH|pipaWizAm|pipaWizi|pipaWizoH|pipaWIHzu/pipaWIzzu|pipaWIH|pipaWizI|pipaWizi"),
+    ("punarBU", "f", "punarBUH|punarBvO|punarBvaH|punarBvam|punarBvO|punarBvaH|punarBvA|punarBUByAm|punarBUBiH|punarBvE|punarBUByAm|punarBUByaH|punarBvAH|punarBUByAm|punarBUByaH|punarBvAH|punarBvoH|punarBURAm|punarBvAm|punarBvoH|punarBUzu|punarBu|punarBvO|punarBvaH"),
+    ("pums", "m", "pumAn|pumAMsO|pumAMsaH|pumAMsam|pumAMsO|puMsaH|puMsA|puMByAm/pumByAm|puMBiH/pumBiH|puMse|puMByAm/pumByAm|puMByaH/pumByaH|puMsaH|puMByAm/pumByAm|puMByaH/pumByaH|puMsaH|puMsoH|puMsAm|puMsi|puMsoH|puMsu|puman|pumAMsO|pumAMsaH"),
+    ("pratidivan", "m", "pratidivA|pratidivAnO|pratidivAnaH|pratidivAnam|pratidivAnO|pratidIvnaH|pratidIvnA|pratidivaByAm|pratidivaBiH|pratidIvne|pratidivaByAm|pratidivaByaH|pratidIvnaH|pratidivaByAm|pratidivaByaH|pratidIvnaH|pratidIvnoH|pratidIvnAm|pratidIvni/pratidivani|pratidIvnoH|pratidivasu|pratidivan|pratidivAnO|pratidivAnaH"),
+    ("pratyeka", "m", "pratyekam|pratyekam|pratyekam|pratyekam|pratyekam|pratyekam|pratyekena/pratyekam|pratyekAByAm/pratyekam|pratyekEH/pratyekam|pratyekam|pratyekam|pratyekam|pratyekasmAd/pratyekasmAt|pratyekAByAm|pratyekeByaH|pratyekam|pratyekam|pratyekam|pratyekasmin/pratyekam|pratyekayoH/pratyekam|pratyekezu/pratyekam|pratyekam|pratyekam|pratyekam"),
+    ("prAnc", "m", "prAN|prAYcO|prAYcaH|prAYcam|prAYcO|prAYcaH|prAYcA|prANByAm|prANBiH|prAYce|prANByAm|prANByaH|prAYcaH|prANByAm|prANByaH|prAYcaH|prAYcoH|prAYcAm|prAYci|prAYcoH|prANzu/prANkzu/prANKzu|prAN|prAYcO|prAYcaH"),
+    ("priyatri", "m", "priyatriH|priyatrI|priyatrayaH|priyatrim|priyatrI|priyatrIn|priyatriRA|priyatriByAm|priyatriBiH|priyatraye|priyatriByAm|priyatriByaH|priyatreH|priyatriByAm|priyatriByaH|priyatreH|priyatryoH|priyatrayARAm|priyatrO|priyatryoH|priyatrizu|priyatre|priyatrI|priyatrayaH"),
+    ("priyatri", "m", "priyatisA|priyatisrO|priyatisraH|priyatisram|priyatisrO|priyatisraH|priyatisrA|priyatisfByAm|priyatisfBiH|priyatisre|priyatisfByAm|priyatisfByaH|priyatisraH|priyatisfByAm|priyatisfByaH|priyatisraH|priyatisroH|priyatisfRAm|priyatisri|priyatisroH|priyatisfzu|priyatisaH|priyatisrO|priyatisraH"),
+    ("priyatri", "f", "priyatriH|priyatrI|priyatrayaH|priyatrim|priyatrI|priyatrIH|priyatryA|priyatriByAm|priyatriBiH|priyatraye/priyatryE|priyatriByAm|priyatriByaH|priyatreH/priyatryAH|priyatriByAm|priyatriByaH|priyatreH/priyatryAH|priyatryoH|priyatrayARAm|priyatrO/priyatryAm|priyatryoH|priyatrizu|priyatre|priyatrI|priyatrayaH"),
+    ("priyatri", "f", "priyatisA|priyatisrO|priyatisraH|priyatisram|priyatisrO|priyatisraH|priyatisrA|priyatisfByAm|priyatisfBiH|priyatisre|priyatisfByAm|priyatisfByaH|priyatisraH|priyatisfByAm|priyatisfByaH|priyatisraH|priyatisroH|priyatisfRAm|priyatisri|priyatisroH|priyatisfzu|priyatisaH|priyatisrO|priyatisraH"),
+    ("priyatri", "n", "priyatri/priyatisf|priyatisfRI|priyatisFRi|priyatri/priyatisf|priyatisfRI|priyatisFRi|priyatisfRA/priyatisrA|priyatisfByAm|priyatisfBiH|priyatisfRe/priyatisre|priyatisfByAm|priyatisfByaH|priyatisfRaH/priyatisraH|priyatisfByAm|priyatisfByaH|priyatisfRaH/priyatisraH|priyatisfRoH/priyatisroH|priyatisFRAm/priyatisfRAm|priyatisfRi/priyatisri|priyatisfRoH/priyatisroH|priyatisfzu|priyatri/priyatisf/priyatre|priyatisfRI|priyatisFRi"),
+    ("bahupAd", "m", "bahupAd/bahupAt|bahupAdO|bahupAdaH|bahupAdam|bahupAdO|bahupadaH|bahupadA|bahupAdByAm|bahupAdBiH|bahupade|bahupAdByAm|bahupAdByaH|bahupadaH|bahupAdByAm|bahupAdByaH|bahupadaH|bahupadoH|bahupadAm|bahupadi|bahupadoH|bahupAtsu|bahupAd/bahupAt|bahupAdO|bahupAdaH"),
+    ("bahuvftrahan", "n", "bahuvftraha|bahuvftraGnI/bahuvftrahaRI|bahuvftrahARi|bahuvftraha|bahuvftraGnI/bahuvftrahaRI|bahuvftrahARi|bahuvftraGnA|bahuvftrahaByAm|bahuvftrahaBiH|bahuvftraGne|bahuvftrahaByAm|bahuvftrahaByaH|bahuvftraGnaH|bahuvftrahaByAm|bahuvftrahaByaH|bahuvftraGnaH|bahuvftraGnoH|bahuvftraGnAm|bahuvftraGni/bahuvftrahaRi|bahuvftraGnoH|bahuvftrahasu|bahuvftrahan/bahuvftraha|bahuvftraGnI/bahuvftrahaRI|bahuvftrahARi"),
+    ("bahuSreyasI", "m", "bahuSreyasI|bahuSreyasyO|bahuSreyasyaH|bahuSreyasIm|bahuSreyasyO|bahuSreyasIn|bahuSreyasyA|bahuSreyasIByAm|bahuSreyasIBiH|bahuSreyasyE|bahuSreyasIByAm|bahuSreyasIByaH|bahuSreyasyAH|bahuSreyasIByAm|bahuSreyasIByaH|bahuSreyasyAH|bahuSreyasyoH|bahuSreyasInAm|bahuSreyasyAm|bahuSreyasyoH|bahuSreyasIzu|bahuSreyasi|bahuSreyasyO|bahuSreyasyaH"),
+    ("bahusaKi", "m", "bahusaKA|bahusaKAyO|bahusaKAyaH|bahusaKAyam|bahusaKAyO|bahusaKIn|bahusaKinA|bahusaKiByAm|bahusaKiBiH|bahusaKaye|bahusaKiByAm|bahusaKiByaH|bahusaKeH|bahusaKiByAm|bahusaKiByaH|bahusaKeH|bahusaKyoH|bahusaKInAm|bahusaKO|bahusaKyoH|bahusaKizu|bahusaKe|bahusaKAyO|bahusaKAyaH"),
+    ("buD", "m", "Bud/But|buDO|buDaH|buDam|buDO|buDaH|buDA|BudByAm|BudBiH|buDe|BudByAm|BudByaH|buDaH|BudByAm|BudByaH|buDaH|buDoH|buDAm|buDi|buDoH|Butsu|Bud/But|buDO|buDaH"),
+    ("Bavat", "m", "BavAn|BavantO|BavantaH|Bavantam|BavantO|BavataH|BavatA|BavadByAm|BavadBiH|Bavate|BavadByAm|BavadByaH|BavataH|BavadByAm|BavadByaH|BavataH|BavatoH|BavatAm|Bavati|BavatoH|Bavatsu|Bavan|BavantO|BavantaH"),
+    ("Bfsj", "m", "Bfq/Bfw|BfjjO|BfjjaH|Bfjjam|BfjjO|BfjjaH|BfjjA|BfqByAm|BfqBiH|Bfjje|BfqByAm|BfqByaH|BfjjaH|BfqByAm|BfqByaH|BfjjaH|BfjjoH|BfjjAm|Bfjji|BfjjoH|Bfwsu/Bfwtsu|Bfq/Bfw|BfjjO|BfjjaH"),
+    ("maGavan", "m", "maGavA/maGavAn|maGavAnO/maGavantO|maGavAnaH/maGavantaH|maGavAnam/maGavantam|maGavAnO/maGavantO|maGonaH/maGavataH|maGonA/maGavatA|maGavaByAm/maGavadByAm|maGavaBiH/maGavadBiH|maGone/maGavate|maGavaByAm/maGavadByAm|maGavaByaH/maGavadByaH|maGonaH/maGavataH|maGavaByAm/maGavadByAm|maGavaByaH/maGavadByaH|maGonaH/maGavataH|maGonoH/maGavatoH|maGonAm/maGavatAm|maGoni/maGavati|maGonoH/maGavatoH|maGavasu/maGavatsu|maGavan|maGavAnO/maGavantO|maGavAnaH/maGavantaH"),
+    ("marmaspfS", "n", "marmaspfg/marmaspfk|marmaspfSI|marmaspfMSi|marmaspfg/marmaspfk|marmaspfSI|marmaspfMSi|marmaspfSA|marmaspfgByAm|marmaspfgBiH|marmaspfSe|marmaspfgByAm|marmaspfgByaH|marmaspfSaH|marmaspfgByAm|marmaspfgByaH|marmaspfSaH|marmaspfSoH|marmaspfSAm|marmaspfSi|marmaspfSoH|marmaspfkzu|marmaspfg/marmaspfk|marmaspfSI|marmaspfMSi"),
+    ("mahat", "m", "mahAn|mahAntO|mahAntaH|mahAntam|mahAntO|mahataH|mahatA|mahadByAm|mahadBiH|mahate|mahadByAm|mahadByaH|mahataH|mahadByAm|mahadByaH|mahataH|mahatoH|mahatAm|mahati|mahatoH|mahatsu|mahan|mahAntO|mahAntaH"),
+    ("mAtfzvasf", "f", "mAtfzvasA|mAtfzvasArO|mAtfzvasAraH|mAtfzvasAram|mAtfzvasArO|mAtfzvasFH|mAtfzvasrA|mAtfzvasfByAm|mAtfzvasfBiH|mAtfzvasre|mAtfzvasfByAm|mAtfzvasfByaH|mAtfzvasuH|mAtfzvasfByAm|mAtfzvasfByaH|mAtfzvasuH|mAtfzvasroH|mAtfzvasFRAm|mAtfzvasari|mAtfzvasroH|mAtfzvasfzu|mAtfzvasaH|mAtfzvasArO|mAtfzvasAraH"),
+    ("yAt", "m", "yAn|yAntO|yAntaH|yAntam|yAntO|yAtaH|yAtA|yAdByAm|yAdBiH|yAte|yAdByAm|yAdByaH|yAtaH|yAdByAm|yAdByaH|yAtaH|yAtoH|yAtAm|yAti|yAtoH|yAtsu|yAn|yAntO|yAntaH"),
+    ("yuj", "m", "yuN|yuYjO|yuYjaH|yuYjam|yuYjO|yujaH|yujA|yugByAm|yugBiH|yuje|yugByAm|yugByaH|yujaH|yugByAm|yugByaH|yujaH|yujoH|yujAm|yuji|yujoH|yukzu|yuN|yuYjO|yuYjaH"),
+    ("yuvan", "m", "yuvA|yuvAnO|yuvAnaH|yuvAnam|yuvAnO|yUnaH|yUnA|yuvaByAm|yuvaBiH|yUne|yuvaByAm|yuvaByaH|yUnaH|yuvaByAm|yuvaByaH|yUnaH|yUnoH|yUnAm|yUni|yUnoH|yuvasu|yuvan|yuvAnO|yuvAnaH"),
+    ("viSvapA", "n", "viSvapam|viSvape|viSvapAni|viSvapam|viSvape|viSvapAni|viSvapena|viSvapAByAm|viSvapEH|viSvapAya|viSvapAByAm|viSvapeByaH|viSvapAd/viSvapAt|viSvapAByAm|viSvapeByaH|viSvapasya|viSvapayoH|viSvapAnAm|viSvape|viSvapayoH|viSvapezu|viSvapa|viSvape|viSvapAni"),
+    ("viSvarAj", "m", "viSvArAq/viSvArAw|viSvarAjO|viSvarAjaH|viSvarAjam|viSvarAjO|viSvarAjaH|viSvarAjA|viSvArAqByAm|viSvArAqBiH|viSvarAje|viSvArAqByAm|viSvArAqByaH|viSvarAjaH|viSvArAqByAm|viSvArAqByaH|viSvarAjaH|viSvarAjoH|viSvarAjAm|viSvarAji|viSvarAjoH|viSvArAwsu/viSvArAwtsu|viSvArAq/viSvArAw|viSvarAjO|viSvarAjaH"),
+    ("vIrahan", "m", "vIrahA|vIrahaRO|vIrahaRaH|vIrahaRam|vIrahaRO|vIraGnaH|vIraGnA|vIrahaByAm|vIrahaBiH|vIraGne|vIrahaByAm|vIrahaByaH|vIraGnaH|vIrahaByAm|vIrahaByaH|vIraGnaH|vIraGnoH|vIraGnAm|vIraGni/vIrahaRi|vIraGnoH|vIrahasu|vIrahan|vIrahaRO|vIrahaRaH"),
+    ("vftrahan", "m", "vftrahA|vftrahaRO|vftrahaRaH|vftrahaRam|vftrahaRO|vftraGnaH|vftraGnA|vftrahaByAm|vftrahaBiH|vftraGne|vftrahaByAm|vftrahaByaH|vftraGnaH|vftrahaByAm|vftrahaByaH|vftraGnaH|vftraGnoH|vftraGnAm|vftraGni/vftrahaRi|vftraGnoH|vftrahasu|vftrahan|vftrahaRO|vftrahaRaH"),
+    ("vyAGrapAd", "m", "vyAGrapAd/vyAGrapAt|vyAGrapAdO|vyAGrapAdaH|vyAGrapAdam|vyAGrapAdO|vyAGrapadaH|vyAGrapadA|vyAGrapAdByAm|vyAGrapAdBiH|vyAGrapade|vyAGrapAdByAm|vyAGrapAdByaH|vyAGrapadaH|vyAGrapAdByAm|vyAGrapAdByaH|vyAGrapadaH|vyAGrapadoH|vyAGrapadAm|vyAGrapadi|vyAGrapadoH|vyAGrapAtsu|vyAGrapAd/vyAGrapAt|vyAGrapAdO|vyAGrapAdaH"),
+    ("Samanasvasf", "f", "SamanasvasA|SamanasvasArO|SamanasvasAraH|SamanasvasAram|SamanasvasArO|SamanasvasFH|SamanasvasrA|SamanasvasfByAm|SamanasvasfBiH|Samanasvasre|SamanasvasfByAm|SamanasvasfByaH|SamanasvasuH|SamanasvasfByAm|SamanasvasfByaH|SamanasvasuH|SamanasvasroH|SamanasvasFRAm|Samanasvasari|SamanasvasroH|Samanasvasfzu|SamanasvasaH|SamanasvasArO|SamanasvasAraH"),
+    ("Svan", "m", "SvA|SvAnO|SvAnaH|SvAnam|SvAnO|SunaH|SunA|SvaByAm|SvaBiH|Sune|SvaByAm|SvaByaH|SunaH|SvaByAm|SvaByaH|SunaH|SunoH|SunAm|Suni|SunoH|Svasu|Svan|SvAnO|SvAnaH"),
+    ("saKi", "m", "saKA|saKAyO|saKAyaH|saKAyam|saKAyO|saKIn|saKyA|saKiByAm|saKiBiH|saKye|saKiByAm|saKiByaH|saKyuH|saKiByAm|saKiByaH|saKyuH|saKyoH|saKInAm|saKyO|saKyoH|saKizu|saKe|saKAyO|saKAyaH"),
+    ("saKI", "m", "saKA|saKAyO|saKAyaH|saKAyam|saKAyO|saKyaH|saKyA|saKIByAm|saKIBiH|saKye|saKIByAm|saKIByaH|saKyuH|saKIByAm|saKIByaH|saKyuH|saKyoH|saKyAm|saKyi|saKyoH|saKIzu|saKIH|saKAyO|saKAyaH"),
+    ("supaTin", "n", "supaTi|supaTI|supanTAni|supaTi|supaTI|supanTAni|supaTA|supaTiByAm|supaTiBiH|supaTe|supaTiByAm|supaTiByaH|supaTaH|supaTiByAm|supaTiByaH|supaTaH|supaToH|supaTAm|supaTi|supaToH|supaTizu|supaTin/supaTi|supaTI|supanTAni"),
+    ("supAd", "m", "supAd/supAt|supAdO|supAdaH|supAdam|supAdO|supadaH|supadA|supAdByAm|supAdBiH|supade|supAdByAm|supAdByaH|supadaH|supAdByAm|supAdByaH|supadaH|supadoH|supadAm|supadi|supadoH|supAtsu|supAd/supAt|supAdO|supAdaH"),
+    ("supums", "n", "supum|supuMsI|supumAMsi|supum|supuMsI|supumAMsi|supuMsA|supuMByAm/supumByAm|supuMBiH/supumBiH|supuMse|supuMByAm/supumByAm|supuMByaH/supumByaH|supuMsaH|supuMByAm/supumByAm|supuMByaH/supumByaH|supuMsaH|supuMsoH|supuMsAm|supuMsi|supuMsoH|supuMsu|supum|supuMsI|supumAMsi"),
+    ("susaKi", "m", "susaKA|susaKAyO|susaKAyaH|susaKAyam|susaKAyO|susaKIn|susaKinA|susaKiByAm|susaKiBiH|susaKaye|susaKiByAm|susaKiByaH|susaKeH|susaKiByAm|susaKiByaH|susaKeH|susaKyoH|susaKInAm|susaKO|susaKyoH|susaKizu|susaKe|susaKAyO|susaKAyaH"),
+    ("suhins", "m", "suhin|suhiMsO|suhiMsaH|suhiMsam|suhiMsO|suhiMsaH|suhiMsA|suhinByAm|suhinBiH|suhiMse|suhinByAm|suhinByaH|suhiMsaH|suhinByAm|suhinByaH|suhiMsaH|suhiMsoH|suhiMsAm|suhiMsi|suhiMsoH|suhinsu/suhintsu|suhin|suhiMsO|suhiMsaH"),
+    ("sva", "n", "svam|sve|svAni|svam|sve|svAni|svena|svAByAm|svEH|svasmE|svAByAm|sveByaH|svAd/svasmAd/svasmAt/svAt|svAByAm|sveByaH|svasya|svayoH|svezAm|sve/svasmin|svayoH|svezu|sva|sve|svAni"),
+    ("svasf", "f", "svasA|svasArO|svasAraH|svasAram|svasArO|svasFH|svasrA|svasfByAm|svasfBiH|svasre|svasfByAm|svasfByaH|svasuH|svasfByAm|svasfByaH|svasuH|svasroH|svasFRAm|svasari|svasroH|svasfzu|svasaH|svasArO|svasAraH"),
+    ("hAhA", "m", "hAhAH|hAhO|hAhAH|hAhAm|hAhO|hAhAn|hAhA|hAhAByAm|hAhABiH|hAhE|hAhAByAm|hAhAByaH|hAhAH|hAhAByAm|hAhAByaH|hAhAH|hAhOH|hAhAm|hAhe|hAhOH|hAhAsu|hAhAH|hAhO|hAhAH"),
 ];
 
 /// The cells of one site-verbatim grid: the 24 slots, row-major.
@@ -6951,6 +7027,23 @@ pub const KNOWN_WORDS: &[&str] = &[
 /// Strict manual classes for (stem, linga). May be plural for `-an`.
 #[must_use]
 pub fn classes_for(stem: &str, linga: Linga) -> Vec<Class> {
+    let mut out = derived_classes_for(stem, linga);
+    // The site-verbatim grids: the irregular words the शब्दपाठः grids in
+    // full and the engine cannot derive. They follow the derived class
+    // (the engine's own derivation stays the primary candidate) but they
+    // let the reverse analysis read the word back — a word the site lists
+    // twice with two different grids gets one grid per listing.
+    for (i, (s, l, _)) in SITE_GRIDS.iter().enumerate() {
+        if *s == stem && *l == linga.as_str() {
+            out.push(Class::SiteGrid(i));
+        }
+    }
+    out
+}
+
+/// The classes the engine derives for a stem, without the site-verbatim
+/// grids (see [`classes_for`]).
+fn derived_classes_for(stem: &str, linga: Linga) -> Vec<Class> {
     if let Some(word) = KNOWN_WORDS.iter().find(|w| **w == stem) {
         if word_table(stem, linga, word).is_ok() {
             return vec![Class::Word(word)];
@@ -6960,15 +7053,6 @@ pub fn classes_for(stem: &str, linga: Linga) -> Vec<Class> {
     // `Bavat` pronoun behaves like at/I paradigms (covered by endings too,
     // except feminine which needs the word route).
     let mut out = Vec::new();
-    // The site-verbatim grids: the irregular words the site grids in full.
-    for (i, (s, l, _)) in SITE_GRIDS.iter().enumerate() {
-        if *s == stem && *l == linga.as_str() {
-            out.push(Class::SiteGrid(i));
-        }
-    }
-    if !out.is_empty() {
-        return out;
-    }
     // The compounded pronouns (अतियुष्मद्, अत्यस्मद्, परमयुष्मद्,
     // परमास्मद्): the site grids the pronoun's own paradigm with the
     // base in front of it — the अधिक compounds in three flavours per
@@ -7457,13 +7541,14 @@ pub fn classes_for(stem: &str, linga: Linga) -> Vec<Class> {
 /// through the exact class.
 #[must_use]
 pub fn generate_tables(stem: &str, linga: Linga) -> Vec<Paradigm> {
-    classes_for(stem, linga)
+    let out: Vec<Paradigm> = classes_for(stem, linga)
         .iter()
         .filter_map(|c| {
             let weak = weak_for(c, stem);
             decline(&weak, linga, c).ok()
         })
-        .collect()
+        .collect();
+    out
 }
 
 /// Lexicon-checked generation: krt-known stems decline only in their

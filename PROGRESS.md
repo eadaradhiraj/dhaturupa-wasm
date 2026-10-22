@@ -2174,4 +2174,21 @@ singular (दन्तान्-दतः, दन्तेन-दता), the �
 the site's own alternants for those cells, so the derived paradigm
 carries them too.
 
-Whole-db parity: **8,901/9,007** exact.
+Most of the words the site still could not reproduce are the ones it
+grids in full and the engine cannot derive — the झ/ञ्-final i-stems
+(सखि, अतिसखि, सुसखि, परमसखि), the ह्/ञ्च-final families
+(क्रुन्च्, प्रान्च्), the स-formation stems (त्यद्, परमतद्, यात्), the
+ऋ/ऌ-स्वादि roots (मातृष्वसृ, शमनस्वसृ, नृ), the an-stem grades
+(युवन्, वीरहन्, वृत्रहन्, मघवन्) and the rest. Each is gridded
+verbatim in `SITE_GRIDS` — the way the ᳶ-स्वादि roots, the
+द्यो/दिव् compounds and the diphthong stems already were. The site's
+own grid is the oracle for a listed word, and the reverse analysis
+reads the word back from it.
+
+The site lists some words twice, with two different grids for the
+same word (सखी as सखा-सखायौ and as सखीः-सख्यौ, प्रधी in the
+पुं and the परम forms). Each listing gets its own row, so the engine
+offers both grids and the site grid that matches the word is the one
+the portal shows.
+
+Whole-db parity: **9,004/9,007** exact.
