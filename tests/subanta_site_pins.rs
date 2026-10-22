@@ -1007,3 +1007,36 @@ fn cell_alternant_pins() {
         pin_word_listed_any(word);
     }
 }
+
+/// The words whose cells carry the site's own second form: the
+/// reduced-stem alternants (दन्तान्-दतः, आस्यानि-आसानि), the ड/ट pairs
+/// (स्नुड्-स्नुग्-स्नुक्-स्नुट्) and the ण-form of the instrumental.
+#[test]
+fn site_cell_alternant_pins() {
+    for word in [
+        "अजर",
+        "अदद्र्यच्",
+        "आस्य",
+        "उदक",
+        "तृतीया",
+        "दक्षिण",
+        "दन्त",
+        "दोष",
+        "दोष्",
+        "द्वितीया",
+        "नश्",
+        "निर्जर",
+        "पाद",
+        "प्रियक्रोष्टु",
+        "भ्रू",
+        "मांस",
+        "मास",
+        "यूष",
+        "सानु",
+        "सुभ्रू",
+        "स्नुह्",
+        "हृदय",
+    ] {
+        pin_word_listed_any(word);
+    }
+}
