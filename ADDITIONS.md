@@ -25,6 +25,8 @@ Every item below is **delivered** — each with its own commit and a green
 | 3.1 | English gloss search | `#list-q` falls back to `artha_english` |
 | 3.2 | Seṭ/Karma filters | `#list-settva`, `#list-karma` dropdowns |
 | 4.1 | WASM size | release profile + tuned wasm-opt: 1.61MB → 1.03MB |
+| 4.2 | Artifact freshness guard | `build.rs` stamp → `manifest.json` beside blobs/shards; `artifact_stamp` test + web-shell warning |
+| 4.3 | First-load trim | `build-list` → `dhatu_data_lite.json` (409KB raw / 50KB gz; boots −84% parse) |
 
 Beyond the roadmap, the subanta engine now reproduces **all 9,007 of
 the 9,007** grids the site lists (`node web/audit-site-grids.cjs`),

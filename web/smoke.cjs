@@ -6,10 +6,21 @@ const path = require('path');
 const D = path.join(__dirname, '..', 'dist');
 const ok = (t) => { const p = JSON.parse(t); if (!p.ok) throw new Error(p.error); return p; };
 
-const dhatuList = JSON.parse(fs.readFileSync(path.join(D, 'data/dhatu_data.json'), 'utf8'));
-const names = [...new Set(dhatuList.data.flatMap((e) => (e.upasargas || []).map((u) => u.name)))];
+const dq = JSON.parse(fs.readFileSync(path.join(D, 'data/dhatu_data_lite.json'), 'utf8'));
+const names = dq.upasarga_names;
 
 console.log('to_devanagari(dA)        ->', ok(w.to_devanagari('dA')).deva);
+console.log('engine_stamp            ->', w.engine_stamp());
+const D_STAMP = w.engine_stamp();
+const manifestStamp = (p) => {
+  try { return JSON.parse(fs.readFileSync(path.join(D, p), 'utf8')).stamp || ''; }
+  catch { return ''; } // absent manifest: unknown freshness, not staleness
+};
+for (const p of ['data/blobs/manifest.json', 'data/shards/manifest.json']) {
+  const s = manifestStamp(p);
+  if (s && s !== D_STAMP) throw new Error(`stale ${p} (${s} vs engine ${D_STAMP})`);
+  console.log(`manifest ${p} -> ${s || '(absent: unknown freshness)'}`);
+}
 console.log('query_candidates(bhavati)->', ok(w.query_candidates('bhavati')).deva.join(','));
 console.log('engine_category(shuddha,krut) ->', ok(w.engine_category('shuddha', 'krut')).category);
 console.log('prefixed_table_ctx(प्र,ददत्) ->',

@@ -17,7 +17,11 @@ fn blobs() -> &'static HashMap<String, serde_json::Value> {
         std::fs::read_dir(dir)
             .expect("blobs dir")
             .filter_map(std::result::Result::ok)
-            .filter(|e| e.path().extension().is_some_and(|x| x == "json"))
+            // manifest.json carries the freshness stamp, not a dhatu blob
+            .filter(|e| {
+                e.path().extension().is_some_and(|x| x == "json")
+                    && e.path().file_name().is_some_and(|n| n != "manifest.json")
+            })
             .map(|e| {
                 let text = std::fs::read_to_string(e.path()).expect("blob loads");
                 let v: serde_json::Value = serde_json::from_str(&text).expect("blob parses");

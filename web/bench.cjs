@@ -56,7 +56,7 @@ console.table(rows);
 // ---- payload comparison -------------------------------------------------
 const ours = [
   'index.html', 'app.js', 'render.js', 'sw.js',
-  'pkg/dhaturupa_wasm.js', 'pkg/dhaturupa_wasm_bg.wasm', 'data/dhatu_data.json',
+  'pkg/dhaturupa_wasm.js', 'pkg/dhaturupa_wasm_bg.wasm', 'data/dhatu_data_lite.json',
 ];
 const site = [
   ['bundle', 'https://ashtadhyayi.com/ashtadhyayi-1786933362.js'],

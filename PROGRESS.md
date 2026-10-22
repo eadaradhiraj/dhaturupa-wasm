@@ -6,9 +6,12 @@ prayoga/prakriya**, plus: prefix search, search over the declined subanta
 forms of krdantas, and **faster than the site**. Fully standalone (no site
 dependency). Prefixed tiṅanta views derive from the pinned Vidyuṭ engine
 (byte-exact with the site: backfilled from skt-morph-data for listed
-stacks, live-derived for unlisted); prefixed krdanta still cell-prefixes
-our vendored cells (the `स्य-*` derivation-tag divergence from the site is
-accepted per user call). Devanagari + Harvard-Kyoto in, Devanagari out,
+stacks, live-derived for unlisted); prefixed krdanta views derive live
+through the pinned engine from the site's `kritPratyayaOrder` rows —
+the base no-stack view keeps the vendored dump cells (the site does
+the same; its dump's `स्य-*`/`भावकर्म-*` लृङ् cells are stale against
+the site's own live derivation, so stack views render those rows
+engine-only). Devanagari + Harvard-Kyoto in, Devanagari out,
 SLP1 backend-only.
 
 > Handover note (for a future LLM): read this file first, then README.md,
@@ -2264,4 +2267,73 @@ them by hand.
 
 Whole-db parity: **9,007/9,007** exact — every listed word reproduced.
 All exhaustive audits green (`./check.sh --full`).
+
+## 2026-10-22 (51) — prefixed `स्य-*` krdantas: engine-only, site parity closed
+
+The site's bundle never sends a kṛ row's derivation tags to Vidyuṭ
+(`r=s.lakara||null` reads the tag map, not the row object), so live
+`स्य-शतृ`/`स्य-शानच्` derive as plain वर्तमान-शतृ/शानच् and
+`भावकर्म-शानच्` as plain कर्तरि-शानच्. The shipped dump's लृङ् cells
+for those rows are stale (an older build); the site's own base view
+shows the dump verbatim, so the base no-stack view keeps them, and a
+selected stack must not fall back to them any more.
+
+`src/derive_krut.rs`: `special_tag` is a kṛ-name mapping only — the
+Lakara/Prayoga plumbing is gone; `स्य-*` rows are engine-only (no
+corpus supplement, no pinned/legacy fallback) and the शतृ feminine
+comes from the stem since Vidyuṭ's stryanta yields nothing for them:
+t-final (अत्) stems try `{stem+ntI, stem+tI}` (भवन्ती/भवती), शानच्
+n-final (अन्) stems `{stem+A}` (एधमाना). `web/app.js`: the same rows
+skip the corpus-`pre` and legacy paths, and an engine-empty row is
+hidden (the site hides empty rows too).
+
+Live rows scraped and compared (`01.0001/0002/0008/0016/0039` with प्र,
+`01.0002` with `aDi`, `01.0016` with `A`+`anu`): exact everywhere except
+the known classes — the क्वसु-एध् engine/corpus ए-variant stems the
+live Vidyuṭ omits (corpus-backed, kept), क्वसु feminine षी-alternants
+(प्रदेधुषी vs प्रदेध्युषी), the live bundle merging variant stems into
+one comma-joined row (ours one row per stem), and क्त्वा rows the app
+masks whenever a stack is selected.
+
+Whole-db engine-vs-dump rerun: 0 row-set gaps in all 5 families; the
+remaining cell divergences class out as स्य/भावकर्म 25,316 (the stale
+dump लृङ् cells vs live वर्तमान), our-forms-subset 5,037, ल्यप् 626,
+our-extra 484, क्त्वा 475. Exhaustive audits re-green: derive-krut
+427,610/427,610, prefixed-krut 1,346,863/1,346,863, backfill
+1,704,343/1,704,343. SLP1 note: the site stack code `aDi` is अधि
+(द=d, ध=D). pkg-node rebuilt; `dist/data/shards` still rebuilds by
+hand after engine changes.
+
+## 2026-10-22 (52) — artifact freshness stamp + a 409KB first-load list
+
+Freshness guard: `build.rs` hashes the engine sources
+(`src/stamp.rs`: `ENGINE_SOURCES`, FNV-1a over the ordered list, watched
+via `cargo:rerun-if-changed`) into `DHATURUPA_ENGINE_STAMP`; both
+artifact writers stamp `<out>/manifest.json` with it and the `stamp`
+command prints build-vs-sources drift (exit 3). The web shell compares
+its manifests against the wasm (`engine_stamp` export) and warns loudly
+in console when the served artifacts came from another engine build; a
+*missing* manifest is unknown freshness, not staleness. The
+`artifact_stamp` integration test reds on drift: an engine-source edit
+moves the compiled stamp, a present-but-stale manifest is a hard error
+(also "half stamped" — blobs stamped and shards not), and a missing
+manifest skips with notice, never a false green. `dist/data/blobs` +
+`dist/data/shards` rebuilt by the usual commands so the manifests are
+live (stamp `v1:6f463d78ee658ce9:918894`, the `v1` prefix pinned by a
+unit test). The `""stamp""`-keyed first draft of the writer is exactly
+what the drift tests would have caught — the smoke gate now also asserts
+manifest stamps equal the wasm's.
+
+First-load trim: the full `dhatu_data.json` (2.5MB raw, 258KB gzipped) is a
+builder input now; the portal boots on `dhatu_data_lite.json` (`build-list`):
+only the fields the list/search views read plus the global upasarga names
+(the stack dropdown and the prefix splitter both need only the unique name
+set). 409KB raw / 50KB gzipped — first load (raw sum) 3.74MB → 1.78MB. The
+wasm stays at 1.21MB: the release profile already has opt-z/LTO/strip, and
+a second `wasm-opt -Oz` pass nets −327 bytes, so the growth from 1.03MB is
+real engine code (the word route, the new subanta classes, the sy rules).
+Selftest +1 check (freshness flag lands empty on fresh dist); smoke asserts
+manifest stamps equal the wasm's. Gates green.
+
+
 

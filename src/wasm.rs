@@ -163,6 +163,14 @@ fn hits_json(indexes: &[&RevIndex], query: &str) -> String {
     ok_envelope(serde_json::json!({"query": query, "total": total, "hits": shown}))
 }
 
+/// The engine stamp this wasm was built from (see `src/stamp.rs`); the
+/// web shell compares it with the served artifacts' `manifest.json` and
+/// warns on a mismatch.
+#[wasm_bindgen]
+pub fn engine_stamp() -> String {
+    crate::ENGINE_STAMP.to_string()
+}
+
 /// Search-box readings for `query` (Devanagari candidates for table lookup),
 /// each labeled with its scheme.
 #[wasm_bindgen]

@@ -23,6 +23,8 @@ fn print_usage() {
          \tdhaturupa-wasm build-site --out DIR\n\
          \tdhaturupa-wasm build-index --out DIR [--family F] [--shards N]\n\
          \tdhaturupa-wasm build-subanta-index --out DIR [--shards N]\n\
+         \tdhaturupa-wasm build-list --out FILE            (first-load dhatu_data_lite.json)\n\
+         \tdhaturupa-wasm stamp                          (show artifact freshness stamp)\n\
          \tdhaturupa-wasm subanta <stem> <m|f|n> [--slp1]         (SLP1 or Devanagari in, Devanagari out)\n\
          \tdhaturupa-wasm krttable <family> <krt> <m|f|n> <value> [--slp1]\n\
          \tdhaturupa-wasm prefix <stack> <base> [--slp1]         (e.g. 'वि + अति' भवति)\n\
@@ -656,6 +658,33 @@ fn load_chandrika_map(
     }
 }
 
+/// Stamp manifest writer shared by the two artifact commands: `<out>/manifest.json`
+/// naming the engine stamp this build ran with. The web shell reads it and
+/// warns when the served artifacts came from a different engine build.
+fn write_stamp_manifest(
+    out: &str,
+    kind: &str,
+    extra: impl IntoIterator<Item = (&'static str, String)>,
+) {
+    use dhaturupa_wasm::{stamp, ENGINE_STAMP as BUILD_STAMP};
+    let mut pairs: Vec<(&str, String)> = vec![("stamp", stamp::manifest_str(BUILD_STAMP))];
+    pairs.extend(extra);
+    // Stable key order for byte-identical manifests (stamp first by
+    // construction; the rest alphabetically).
+    pairs[1..].sort();
+    let text = stamp::manifest_json(kind, &pairs);
+    let path = std::path::Path::new(out).join("manifest.json");
+    if let Err(err) = std::fs::write(&path, text) {
+        eprintln!("cannot write {}: {err}", path.display());
+        std::process::exit(1);
+    }
+    println!(
+        "manifest: stamp={} -> {}",
+        dhaturupa_wasm::ENGINE_STAMP,
+        path.display()
+    );
+}
+
 /// Build one compact portal JSON per dhatu (`<out>/<baseindex>.json`).
 fn cmd_build_blobs(args: &[String]) {
     let Some(out) = opt_value(args, "--out") else {
@@ -714,6 +743,17 @@ fn cmd_build_blobs(args: &[String]) {
         bytes,
         start.elapsed().as_secs_f64()
     );
+    // Freshness manifest: the web shell compares this stamp against the
+    // wasm engine's and warns when the served blobs are from another
+    // engine build.
+    write_stamp_manifest(
+        &out,
+        "dhaturupa-blobs",
+        [
+            ("count", blobs.len().to_string()),
+            ("skipped", skipped.to_string()),
+        ],
+    );
     let stats = sources.backfill_stats.borrow();
     if sources.morphdata_root.is_none() {
         eprintln!(
@@ -725,6 +765,77 @@ fn cmd_build_blobs(args: &[String]) {
             stats.lakaras, stats.from_corpus, stats.engine_fallback, stats.missing
         );
     }
+}
+
+/// Build the portal's first-load list artifact (`dhatu_data_lite.json`):
+/// only the fields the list/search views read. The full `dhatu_data.json`
+/// (with per-entry upasarga arrays, sutra refs, notes) stays a builder
+/// input; the detail page runs on the per-dhatu blobs. The unique
+/// upasarga names (singles + combos) move to the top level because both
+/// consumers (stack dropdown, prefix splitter) only need the global set.
+#[derive(serde::Serialize)]
+struct LiteRow<'a> {
+    baseindex: &'a str,
+    dhatu: &'a str,
+    artha: &'a str,
+    artha_english: &'a str,
+    gana: &'a str,
+    pada: &'a str,
+    settva: &'a str,
+    karma: &'a str,
+}
+
+fn cmd_build_list(args: &[String]) {
+    let Some(out) = opt_value(args, "--out") else {
+        eprintln!("usage: dhaturupa-wasm build-list --out FILE");
+        std::process::exit(2);
+    };
+    let dhatu = load_or_exit(&data_path(args));
+    let mut singles: Vec<String> = Vec::new();
+    let mut names: Vec<String> = Vec::new();
+    for entry in &dhatu.data {
+        for u in &entry.upasargas {
+            if !names.contains(&u.name) {
+                names.push(u.name.clone());
+            }
+            if !u.name.contains(" + ") && !singles.contains(&u.name) {
+                singles.push(u.name.clone());
+            }
+        }
+    }
+    singles.sort();
+    names.sort();
+    let rows: Vec<LiteRow> = dhatu
+        .data
+        .iter()
+        .map(|e| LiteRow {
+            baseindex: &e.baseindex,
+            dhatu: &e.dhatu,
+            artha: &e.artha,
+            artha_english: &e.artha_english,
+            gana: &e.gana,
+            pada: &e.pada,
+            settva: &e.settva,
+            karma: &e.karma,
+        })
+        .collect();
+    let text = serde_json::json!({
+        "count": rows.len(),
+        "upasarga_names": names,
+        "upasarga_singles": singles,
+        "data": rows,
+    })
+    .to_string();
+    if let Err(err) = std::fs::write(&out, text) {
+        eprintln!("cannot write {out}: {err}");
+        std::process::exit(1);
+    }
+    println!(
+        "list-lite: rows={} upasarga_singles={} upasarga_names={} -> {out}",
+        dhatu.data.len(),
+        singles.len(),
+        names.len()
+    );
 }
 
 /// Assemble the static portal: web shell + data + blobs under `<out>/`.
@@ -1052,6 +1163,16 @@ fn cmd_build_index(args: &[String]) {
         }
         println!("shards={shards}: forms={forms} postings={postings} -> {out}/shard-*.index.json");
     }
+    // Freshness manifest beside the indexes; the web shell compares the
+    // stamp against the wasm engine's.
+    if shards > 0 {
+        write_stamp_manifest(&out, "dhaturupa-index", [("shards", shards.to_string())]);
+    } else {
+        let families = only
+            .clone()
+            .unwrap_or_else(|| dhaturupa_wasm::forms::KRUT_FAMILIES.join("+"));
+        write_stamp_manifest(&out, "dhaturupa-index", [("families", families)]);
+    }
     println!("elapsed={:.1}s", start.elapsed().as_secs_f64());
 }
 
@@ -1216,8 +1337,24 @@ fn main() {
         "build-site" => cmd_build_site(rest),
         "build-index" => cmd_build_index(rest),
         "build-subanta-index" => cmd_build_subanta_index(rest),
+        "build-list" => cmd_build_list(rest),
         "translit" => cmd_translit(rest),
         "slp1" => cmd_slp1(rest),
+        "stamp" => {
+            // Both values derive from the same fingerprint code: a
+            // mismatch means build.rs is hashing a different tree than
+            // this binary sees — rebuild anything.
+            let root = Path::new(env!("CARGO_MANIFEST_DIR"));
+            let fresh = dhaturupa_wasm::stamp::fingerprint(root)
+                .unwrap_or_else(|| "<missing sources>".to_string());
+            let stale = dhaturupa_wasm::stamp::is_stale(&fresh, dhaturupa_wasm::ENGINE_STAMP);
+            println!("build {}", dhaturupa_wasm::ENGINE_STAMP);
+            println!("sources {fresh}");
+            println!("stale {stale}");
+            if stale {
+                std::process::exit(3);
+            }
+        }
         _ => print_usage(),
     }
 }

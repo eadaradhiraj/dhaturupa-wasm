@@ -144,23 +144,29 @@ override with `--forms` / `--krut` paths.
    blobs (5.9KB gzipped), prebuilt per-family index artifacts (2.6–5MB
    gzipped), offline-first service worker.
 
-Remaining polish (not scope): first-load UX, `tfc.n` click-through policy,
-broader `GenCtx` validation against site prefixed tables.
+Remaining polish (not scope): first-load UX, broader `GenCtx` validation
+against site prefixed tables. (The `tfc.n` click-through policy is done —
+the तृच् m/n site refs are classes now, pinned in `tests/krt_site_pin.rs`.)
 
 ## Portal blobs
 
 One compact JSON per dhatu for lazy portal fetches (detail page = one fetch):
 
 ```bash
-cargo run -q --release -- build-blobs --out dist/dhatu
-# 2229 blobs, 30 tableless rows skipped, ~1s
-cargo run -q --release -- build-index --out dist/indexes
-# 5 family artifacts (54-70MB raw, 2.6-5MB gzipped each), ~18s
+cargo run -q --release -- build-blobs --out dist/data/blobs
+# 2229 blobs + manifest.json (freshness stamp), ~1s
+cargo run -q --release -- build-list --out dist/data/dhatu_data_lite.json
+# first-load list: list/search fields + global upasarga names only
 cargo run -q --release -- build-index --out dist/shards --shards 256
-# 256 hash shards (4.4MB raw, ~0.5MB gzipped each), ~150s — what the portal ships
+# 256 hash shards (~4.4MB raw, ~0.5MB gzipped each) + manifest.json
 cargo run -q --release -- build-subanta-index --out dist/shards --shards 256
-# 256 subanta shards (18,028,702 declined forms, ~5.6MB raw, ~1.5MB gzipped each), ~257s
+# 256 subanta shards (18,028,702 declined forms) — same dir, one manifest
 ```
+
+Every `manifest.json` names the engine stamp (`build.rs` hashes
+`src/stamp.rs:ENGINE_SOURCES`); the web shell warns (console) and the
+`artifact_stamp` test fails when an artifact family was built by a different
+engine — rebuild the family before releasing.
 
 Measured: 69KB raw / **5.9KB gzipped average** per blob (13.2MB gzipped for
 all; ~280KB on average now with the chandrika section). Shape:

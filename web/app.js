@@ -8,6 +8,7 @@ import init, {
   split_init, split_query, verify_split,
   search_prefixed_dhatu, search_subanta_dhatu,
   subanta_analyze, subanta_table,
+  engine_stamp,
 } from '../pkg/dhaturupa_wasm.js';
 import {
   escapeHtml, renderTingTables, renderKrutTables, renderParadigm,
@@ -76,6 +77,28 @@ let dhatuList = null;
 let blob = null;
 let baseindex = null;
 
+// Compares the served artifacts' manifest stamps against the wasm engine's
+// and records the outcome for diagnostics + the self-test: nothing on
+// fresh dist, `window._dhatuStaleArtifacts` listing paths otherwise.
+async function checkArtifactFreshness() {
+  // plain string export, not a result envelope
+  const current = engine_stamp();
+  const staleList = [];
+  for (const pathName of ['data/blobs/manifest.json', 'data/shards/manifest.json']) {
+    try {
+      const m = JSON.parse(await fetchText(pathName));
+      if (m.stamp && m.stamp !== current) {
+        staleList.push(`${pathName}: ${m.stamp}`);
+        console.warn(`dhatu: stale ${pathName} (built with ${m.stamp}, engine is ${current}) — rebuild build-blobs/build-index`);
+      }
+    } catch {
+      // absent manifest → unknown freshness
+    }
+  }
+  // selftest asserts on this window flag; underscore keeps it console-only
+  window._dhatuStaleArtifacts = staleList;
+}
+
 const el = (id) => document.getElementById(id);
 
 function status(msg) {
@@ -90,7 +113,11 @@ function show(view) {
 
 async function ensureList() {
   if (!dhatuList) {
-    dhatuList = await fetch('data/dhatu_data.json').then((r) => r.json());
+    // First-load trim: the lite list carries only the fields the list/search
+    // views read (build-list); the full site dump keeps feeding the builders.
+    dhatuList = await fetch('data/dhatu_data_lite.json')
+      .then((r) => (r.ok ? r : null))
+      .then((r) => (r ? r.json() : fetch('data/dhatu_data.json').then((rr) => rr.json())));
   }
   return dhatuList;
 }
@@ -118,6 +145,13 @@ async function fetchText(path, timeoutMs = 20000) {
 
 async function main() {
   await init();
+
+  // Artifact freshness (src/stamp.rs): served artifacts stamp the engine
+  // build they came from; a mismatch says the heavy rebuild step was
+  // skipped after an engine change. A missing manifest is unknown
+  // freshness (first deployment) — never reported as staleness. Runs
+  // unfenced: a console warning, not a UI gate.
+  checkArtifactFreshness().catch(() => {});
 
   // fill gana/pada dropdowns
   const ganaSelect = el('list-gana');
@@ -259,13 +293,11 @@ async function openDhatu(id, stackWanted, famWanted) {
   const stack = el('detail-stack');
   await ensureList().catch(() => {});
   const names = new Set(blob.stacks);
-  if (dhatuList) {
-    for (const entry of dhatuList.data) {
-      for (const u of entry.upasargas) {
-        if (!u.name.includes(' + ')) names.add(u.name);
-      }
-    }
-  }
+  const singles = dhatuList.upasarga_singles
+    // full-dump fallback (transition state): sweep the entries instead
+    || [...new Set(dhatuList.data.flatMap((e) =>
+      (e.upasargas || []).map((u) => u.name)))].filter((n) => !n.includes(' + '));
+  for (const name of singles) names.add(name);
   stack.innerHTML = '<option value="">—</option>' +
     [...names].sort((a, b) => a.localeCompare(b, 'sa'))
       .map((name) => `<option>${escapeHtml(name)}</option>`).join('');
@@ -423,38 +455,31 @@ function renderCellPrefixedTing(stack, tingTables, family) {
 }
 
 function renderCellPrefixedKrut(stack, krutTables, family) {
-  // Backfilled corpus rows (byte-exact) when this stack is covered.
+  // The site derives its prefixed kṛdanta view live
+  // (`generateKridantaFormsWithUpasarga` → the same vidyuṭ engine, the
+  // same six special tags) over ITS OWN row set — the base table's rows.
+  // The corpus-pinned rows are a post-hoc prefixed approximation: they
+  // miss the स्य-*/भावकर्म-* rows entirely and their स्य-* forms lack the
+  // लृङ् lakāra override, so they are the fallback, never the source.
   const pre = blob.krut_prefixed && blob.krut_prefixed[stack] && blob.krut_prefixed[stack][family];
-  if (pre) {
-    const tables = {};
-    Object.entries(pre).forEach(([krt, v]) => {
-      const rows = String(v).split(';')
-        .map((r) => r.split(','))
-        .filter((p) => p.length === 4)
-        .map((p) => ({ base: p[0], m: p[1], f: p[2], n: p[3] }));
-      if (rows.length > 0) tables[krt] = rows;
-    });
-    el('detail-krut').innerHTML =
-      Object.keys(tables).length === 0
-        ? '<p class="muted">No krt forms for this stack/family.</p>'
-        : renderKrutTables(tables, family);
-    addCopyButtons(el('detail-krut'));
-    return;
-  }
-  // Live engine derivation (same engine + mapping as the backfill source).
-  // Falls back to cell-prefixing only when derivation yields nothing
-  // (kṛts unknown to the engine).
   const category = ok(engine_category(family, 'krut'), 'category').category;
+  // स्य-*/भावकर्म-* rows derive engine-only (live-site behaviour: the
+  // deriver's own stems, no lakāra/prayoga, no corpus cells; a row the
+  // engine cannot derive is simply absent there). Their corpus pieces
+  // carry the stale लृङ् dump build — never shown prefixed.
+  const SYA_KRTS = new Set(['स्य-शतृ', 'स्य-शानच्', 'भावकर्म-शानच्', 'स्य-भावकर्म-शानच्']);
   const pKrut = {};
   Object.entries(krutTables).forEach(([krt, rows]) => {
     if (!rows || rows.length === 0) return;
+    // The site drops क्त्वा once an upasarga is selected
+    // (`0<n.length&&"क्त्वा"==e`).
+    if (krt === 'क्त्वा' && stack) return;
     let derived = null;
     try {
       const res = ok(derive_prefixed_krut(
         stack, baseindex, family, krt,
         JSON.stringify(rows.map((r) => ({ base: r.base, m: r.m, f: r.f, n: r.n }))),
-        blob.slp1, category, blob.note || '',
-        (pre && pre[krt]) || ''), 'derive-krut');
+        blob.slp1, category, blob.note || '', ''), 'derive-krut');
       if (res.rows && res.rows.length > 0) derived = res.rows;
     } catch (e) {
       status(String(e));
@@ -476,11 +501,30 @@ function renderCellPrefixedKrut(stack, krutTables, family) {
       }));
       return;
     }
+    if (SYA_KRTS.has(krt)) return;
+    // The corpus's own row for this kṛt, when the engine cannot derive
+    // it (unādi gaps) and the corpus carries it.
+    const pinned = pre && pre[krt];
+    if (pinned) {
+      const rowsPinned = String(pinned).split(';')
+        .map((r) => r.split(','))
+        .filter((p) => p.length === 4)
+        .map((p) => ({ base: p[0], m: p[1], f: p[2], n: p[3] }));
+      if (rowsPinned.length > 0) {
+        pKrut[krt] = rowsPinned.map((r) => ({
+          base: r.base || '—',
+          m: r.m || '—',
+          f: r.f || '—',
+          n: r.n || '—',
+        }));
+        return;
+      }
+    }
     const rowsJson = JSON.stringify(rows.map((r) => ({ base: r.base, m: r.m, f: r.f, n: r.n })));
     const renderRow = (krt, r, i) => {
       const res = ok(prefixed_krut_row(
         stack, krt, rowsJson, i,
-        blob.slp1, category, blob.note || '', (pre && pre[krt]) || ''), 'prefixed-krut');
+        blob.slp1, category, blob.note || '', ''), 'prefixed-krut');
       const cell = (v) => (v && v.length ? v.join('/') : '—');
       return {
         base: cell(res.row.base),
@@ -696,8 +740,9 @@ async function runFormSearch() {
     // (upasarga, base) candidates and soundness-verify each by exact
     // regeneration — this also covers unlisted stacks.
     if (!splitterReady) {
-      const names = [...new Set(dhatuList.data.flatMap((e) =>
-        (e.upasargas || []).map((u) => u.name)))];
+      const names = dhatuList.upasarga_names
+        || [...new Set(dhatuList.data.flatMap((e) =>
+          (e.upasargas || []).map((u) => u.name)))];
       ok(split_init(JSON.stringify(names)), 'splitter');
       splitterReady = true;
     }

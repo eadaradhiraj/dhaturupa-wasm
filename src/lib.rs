@@ -24,9 +24,15 @@ pub mod morphdata;
 pub mod prefix_krut;
 pub mod revindex;
 pub mod slp1;
+pub mod stamp;
 pub mod translit;
 pub mod vidyut;
 pub mod wasm;
+
+/// Which engine version this build was compiled from (build.rs hash over
+/// `stamp::ENGINE_SOURCES`). The artifact writers stamp their manifests
+/// with it; a served artifact whose manifest stamp differs is stale.
+pub const ENGINE_STAMP: &str = env!("DHATURUPA_ENGINE_STAMP");
 
 /// Top-level wrapper in `dhatu/data.txt`: `{"name":"dhatu","data":[...]}`.
 #[derive(Debug, Clone, Deserialize, Serialize)]

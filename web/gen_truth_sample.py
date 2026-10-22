@@ -40,7 +40,7 @@ def main():
     if not os.path.isdir(cor):
         print(f"gen_truth_sample: no corpus at {cor}, skipping")
         return 0
-    binary = os.path.join(root, "target", "release", "ashtahyayirev")
+    binary = os.path.join(root, "target", "release", "dhaturupa-wasm")
     if not os.path.isfile(binary):
         print("gen_truth_sample: no release binary (run cargo build --release), skipping")
         return 0

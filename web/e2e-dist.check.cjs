@@ -16,8 +16,8 @@ const check = (name, cond) => {
   console.log(`ok ${pass}: ${name}`);
 };
 
-// 1. list source
-const list = JSON.parse(fs.readFileSync(`${D}data/dhatu_data.json`, 'utf8'));
+// 1. list source (the full builder input from the repo, not the served lite)
+const list = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'data/dhatu_data.json'), 'utf8'));
 check('list has 2259 entries', list.data.length === 2259);
 
 // 2. blob shape

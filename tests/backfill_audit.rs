@@ -77,7 +77,9 @@ fn blob_paths(step: usize) -> Vec<std::path::PathBuf> {
         .map(|dir| {
             dir.filter_map(std::result::Result::ok)
                 .map(|e| e.path())
+                // manifest.json carries the freshness stamp, not a blob
                 .filter(|p| p.extension().is_some_and(|x| x == "json"))
+                .filter(|p| p.file_name().is_some_and(|n| n != "manifest.json"))
                 .collect()
         })
         .unwrap_or_default();

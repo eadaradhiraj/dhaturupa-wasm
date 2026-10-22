@@ -52,6 +52,13 @@ try {
   step('boot');
   ok('boot: list count is 2259', text($('list-count')) === '2259 / 2259', text($('list-count')));
 
+  // ---- artifact freshness: dist manifests stamp this engine build
+  // (src/stamp.rs; absent manifests would leave the flag unset → hard fail)
+  ok('artifacts: stamped by this engine build',
+    await waitFor(() => Array.isArray(window._dhatuStaleArtifacts)
+      && window._dhatuStaleArtifacts.length === 0, { timeout: 2000 }),
+    (window._dhatuStaleArtifacts || ['freshness check never ran']).join(' ; '));
+
   // ---- list filters: exact dhātu (Devanagari + HK), pada, and no upasarga box
   $('list-q').value = 'दा'; $('list-go').click();
   ok('list: दा exact match (3)', text($('list-count')) === '3 / 2259', text($('list-count')));
