@@ -9,10 +9,13 @@
 ///
 /// Tinanta forms use `A-Za-z` only; krdanta cells add `/` for alternants
 /// (`Bavat/Bavad`); upasarga stacks join with `;` (`vi;ati`).
-/// `/` and `;` are separators, not SLP1.
+/// `/` and `;` are separators, not SLP1. The site's compound joint in a
+/// word itself (`अतिथीनां_सपर्या`, db id `@atithInAM_saparyA1`) does
+/// pass through SLP1 as `_` — it is part of the citation form, and the
+/// joint word's grid is keyed with it (see `SITE_GRIDS`).
 #[must_use]
 pub const fn is_slp1_letter_byte(b: u8) -> bool {
-    b.is_ascii_alphabetic()
+    b.is_ascii_alphabetic() || b == b'_'
 }
 
 /// Byte-exact equality. No normalization.

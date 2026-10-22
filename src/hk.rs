@@ -78,15 +78,24 @@ fn hk_token(rest: &[u8]) -> Option<(&'static str, usize)> {
         'S' => "z",
         's' => "s",
         'h' => "h",
+        // The site's compound joint: `atithInAM_saparyA` carries `_`
+        // through to key the verbatim grid.
+        '_' => "_",
         _ => return None,
     };
     Some((slp, 1))
 }
 
 /// Harvard-Kyoto → SLP1 (`bhavati` → `Bavati`, `kRSNa` → `kfzRa`).
+/// The site's compound joint `_` exceeds HK's alphabet, but it is part
+/// of the citation (`atithInAM_saparyA`), so it passes through.
 #[must_use]
 pub fn hk_to_slp1(text: &str) -> Option<String> {
-    if text.is_empty() || !text.bytes().all(|byte| byte.is_ascii_alphabetic()) {
+    if text.is_empty()
+        || !text
+            .bytes()
+            .all(|byte| byte.is_ascii_alphabetic() || byte == b'_')
+    {
         return None;
     }
     let bytes = text.as_bytes();
@@ -107,7 +116,7 @@ pub fn slp1_to_hk(text: &str) -> Option<String> {
     if text.is_empty()
         || !text
             .bytes()
-            .all(|byte| byte.is_ascii_alphabetic() || byte == b'\'')
+            .all(|byte| byte.is_ascii_alphabetic() || byte == b'\'' || byte == b'_')
     {
         return None;
     }
@@ -165,6 +174,7 @@ pub fn slp1_to_hk(text: &str) -> Option<String> {
             'z' => "S",
             's' => "s",
             'h' => "h",
+            '_' => "_",
             _ => return None,
         };
         out.push_str(hk);
@@ -205,6 +215,21 @@ mod tests {
             let slp = hk_to_slp1(word).expect("decodes");
             assert_eq!(slp1_to_hk(&slp).as_deref(), Some(word), "roundtrip {word}");
         }
+    }
+
+    #[test]
+    fn compound_joint_passes_through() {
+        // The site's compound joint (`atithInAM_saparyA`) is outside HK's
+        // alphabet but part of the citation, so it passes through both
+        // ways (HK थ = SLP1 T: `atithInAM` → `atiTInAM`).
+        assert_eq!(
+            hk_to_slp1("atithInAM_saparyA").as_deref(),
+            Some("atiTInAM_saparyA")
+        );
+        assert_eq!(
+            slp1_to_hk("atiTInAM_saparyA").as_deref(),
+            Some("atithInAM_saparyA")
+        );
     }
 
     #[test]

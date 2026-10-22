@@ -791,3 +791,26 @@ fn subanta_analyze_new_paradigm_readings() {
         a["stem"] == "गो" && a["class"] == "known word" && a["vibhakti"] == "tftIyA"
     }));
 }
+
+/// The site's compound-joint citation (`@atithInAM_saparyA1`): the word
+/// carries the joint `_` in itself (`अतिथीनां_सपर्या`), and both the
+/// word view and the declined forms go through it — the word view
+/// declinable (the corpus grid keys on the citation) and the चतुर्थी
+/// form reading back to the joint word.
+#[test]
+fn subanta_analyze_compound_joint_pin() {
+    let payload = ok(&wasm::subanta_analyze("अतिथीनां_सपर्या"));
+    assert_eq!(payload["word"].as_str(), Some("अतिथीनां_सपर्या"));
+    let tables = payload["tables"].as_array().expect("array");
+    assert!(!tables.is_empty(), "the joint word declines");
+    let payload = ok(&wasm::subanta_analyze("अतिथीनां_सपर्यायै"));
+    let analyses = payload["analyses"].as_array().expect("array");
+    assert!(
+        analyses.iter().any(|a| {
+            a["stem"] == "अतिथीनां_सपर्या"
+                && a["vibhakti"] == "caturTI"
+                && a["vacana"] == "ekavacanam"
+        }),
+        "caturTI.eka reads back to the joint word"
+    );
+}

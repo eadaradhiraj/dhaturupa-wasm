@@ -2224,7 +2224,44 @@ drifted from the grid the site writes: the any-gender grid is the
 source of truth for both, so the tables now come from it and the
 hand-written copies are gone.
 
-Still one word short: `अतिथीनां_सपर्या`, whose key carries the
-site's compound joint (`_`) — the one entry the transliterator
-cannot read, since the SLP1 alphabet has no `_`.
+Whole-db parity: **9,006/9,007** exact.
+
+## 2026-10-22 (50) — the compound joint, parity 9,007/9,007
+
+The one word still short was `अतिथीनां_सपर्या` (db id
+`@atithInAM_saparyA1`): the site's citation carries the compound joint
+`_` in the word itself, and the SLP1 alphabet has no `_`. It is the
+only `_` word in the db.
+
+The joint is part of the word, so the boundary layer now passes it
+through byte-exact: `deva_to_slp1`, `slp1_to_deva`, HK both ways
+(`atithInAM_saparyA` ↔ `atiTInAM_saparyA`) and
+`slp1::is_slp1_letter_byte`. The cell-internal separators (`; , / +`
+space) stay caller-handled and rejected — the joint is not one of
+them, it is word content.
+
+With the joint surviving to the engine, the joint stem
+`atiTInAM_saparyA` is simply a declinable stem that ends in the
+आ of the second member: the engine's own आ-स्वादि (AAF) derivation
+runs over the whole compound and reproduces the site's 24 cells
+verbatim, joint included (सपर्यया, सपर्यायै, सपर्याणाम्'s ण) — no
+site-verbatim grid needed. The word view answers both ways: the
+citation word declines, and the चतुर्थी-एकवचन form
+`अतिथीनां_सपर्यायै` reads back to the joint word.
+
+Pins: `compound_joint_pins` (site grid vs the derived table), the
+word-view pin `subanta_analyze_compound_joint_pin`, and the boundary
+round-trips (`translit`/`hk` compound-joint tests).
+
+The `--full` gate surfaced a stale-artifact tail from the visarga
+work: `dist/data/blobs` still carried the old rendering (`pitH` →
+पित्ः) for 7 yangluk/plang cells — `backfill_exhaustive` flagged them
+(1,704,336/1,704,343). The blobs were rebuilt (`build-blobs`, 2229
+files, kesari-prefix backfill and all) and the exhaustive audit is now
+0 misses byte-exact. Blob rebuilds after an engine-rendering change
+stay outside `./check.sh` (documented) — this is the reminder to run
+them by hand.
+
+Whole-db parity: **9,007/9,007** exact — every listed word reproduced.
+All exhaustive audits green (`./check.sh --full`).
 

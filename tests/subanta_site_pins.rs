@@ -954,6 +954,17 @@ fn o_swadi_plural_pins() {
     }
 }
 
+/// The site's compound-joint citation (db id `@atithInAM_saparyA1`):
+/// `अतिथीनां_सपर्या` carries the joint `_` in the word itself, and the
+/// SLP1 alphabet has no `_` — the boundary layer passes the joint
+/// through byte-exact (`atiTInAM_saparyA`), and the second member's
+/// आ-stem inflection then derives the site's grid over the whole
+/// compound, joint included (सपर्यया, सपर्यायै, सपर्याणाम्'s ण).
+#[test]
+fn compound_joint_pins() {
+    pin_word_any("अतिथीनां_सपर्या", "S");
+}
+
 /// The known-word tables: the numerals, the pronouns and the ष्/ञ्च
 /// stems the site grids in full (एकैः, एकेषाम्, तिसृणाम्, त्रयाणाम्,
 /// षड्-षट्, पञ्च).

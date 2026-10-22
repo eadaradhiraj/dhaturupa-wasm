@@ -26,9 +26,12 @@ Every item below is **delivered** — each with its own commit and a green
 | 3.2 | Seṭ/Karma filters | `#list-settva`, `#list-karma` dropdowns |
 | 4.1 | WASM size | release profile + tuned wasm-opt: 1.61MB → 1.03MB |
 
-Beyond the roadmap, the subanta engine now reproduces **9,006 of the
-9,007** grids the site lists (`node web/audit-site-grids.cjs`), and the
-new paradigms read back as well as decline.
+Beyond the roadmap, the subanta engine now reproduces **all 9,007 of
+the 9,007** grids the site lists (`node web/audit-site-grids.cjs`),
+and the new paradigms read back as well as decline (the last one,
+`@atithInAM_saparyA1`, was the site's compound-joint citation — the
+joint `_` passes through the boundary byte-exact and the second
+member's आ-stem derivation covers the grid).
 
 The paradigms added after the roadmap:
 

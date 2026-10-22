@@ -11,8 +11,10 @@
 //! Scope: classical Sanskrit aksharas observed in the dhatu tables
 //! (vowels, matras, consonants, virama clusters, anusvara/visarga,
 //! avagraha). Separators (`;`, `,`, `/`, `+`, space) are handled by the
-//! callers, not here — every function below rejects them. Unknown
-//! characters (nukta, Vedic accents, Latin, digits) yield `None`.
+//! callers, not here — every function below rejects them. Unknown characters
+//! (nukta, Vedic accents, Latin digits) yield `None`. The site's compound
+//! joint `_` (`अतिथीनां_सपर्या`) is the exception: it belongs to the
+//! word itself, so it passes through in both directions byte-exact.
 
 const VIRAMA: char = '\u{094D}';
 const AVAGRAHA: char = '\u{093D}';
@@ -152,6 +154,12 @@ pub fn deva_to_slp1(text: &str) -> Option<String> {
         } else if ch == AVAGRAHA {
             out.push('\'');
             idx += 1;
+        } else if ch == '_' {
+            // The site's compound joint (`अतिथीनां_सपर्या`): part of
+            // the citation form, so it keys the verbatim grid and renders
+            // back byte-exact.
+            out.push('_');
+            idx += 1;
         } else {
             // Stray virama/matra, separator, or unmapped character.
             return None;
@@ -232,7 +240,7 @@ pub fn slp1_to_deva(text: &str) -> Option<String> {
     if text.is_empty()
         || !text
             .bytes()
-            .all(|byte| byte.is_ascii_alphabetic() || byte == b'\'')
+            .all(|byte| byte.is_ascii_alphabetic() || byte == b'\'' || byte == b'_')
     {
         return None;
     }
@@ -277,6 +285,11 @@ pub fn slp1_to_deva(text: &str) -> Option<String> {
             idx += 1;
         } else if ch == '\'' {
             out.push(AVAGRAHA);
+            idx += 1;
+        } else if ch == '_' {
+            // The site's compound joint (`अतिथीनां_सपर्या`): part of
+            // the citation form, byte-exact both directions.
+            out.push('_');
             idx += 1;
         } else {
             return None;
@@ -392,6 +405,24 @@ mod tests {
                 "roundtrip {word}"
             );
         }
+    }
+
+    #[test]
+    fn compound_joint_passes_through() {
+        // The site's compound joint (`अतिथीनां_सपर्या`) is part of the
+        // word itself — unlike the cell-internal separators, it passes
+        // through byte-exact in both directions and keys the word's grid.
+        assert_eq!(
+            deva_to_slp1("अतिथीनां_सपर्या").as_deref(),
+            Some("atiTInAM_saparyA")
+        );
+        assert_eq!(
+            slp1_to_deva("atiTInAM_saparyAyE").as_deref(),
+            Some("अतिथीनां_सपर्यायै")
+        );
+        let word = "अतिथीनां_सपर्या";
+        let slp = deva_to_slp1(word).expect("converts");
+        assert_eq!(slp1_to_deva(&slp).as_deref(), Some(word), "roundtrip");
     }
 
     #[test]
