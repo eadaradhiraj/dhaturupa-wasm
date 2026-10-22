@@ -46,7 +46,10 @@ fn site_entries(word: &str) -> Vec<(&'static str, Vec<String>)> {
 
 fn linga_from_marker(mark: &str) -> Linga {
     let code = match mark {
-        "P" => "m",
+        // "A" is the site's any-gender slot (the सर्वनाम entries): the
+        // engine's possessive-pronoun table is gender-independent, so
+        // the masculine request carries the merged grid.
+        "P" | "A" => "m",
         "S" => "f",
         "N" => "n",
         _ => panic!("unknown db linga marker {mark}"),
@@ -1134,5 +1137,15 @@ fn site_verbatim_grid_pins() {
         ("हाहा", "P"),
     ] {
         pin_word_any(word, mark);
+    }
+}
+
+/// The सर्वनाम entries the site lists once in its any-gender slot:
+/// अस्मद् and युष्मद् carry the masculine and the neuter forms side
+/// by side (माम्-मा, आवाम्-नौ, अस्मान्-नः, मद्-मत्, मम-मे).
+#[test]
+fn any_gender_pronoun_pins() {
+    for word in ["अस्मद्", "युष्मद्"] {
+        pin_word_any(word, "A");
     }
 }

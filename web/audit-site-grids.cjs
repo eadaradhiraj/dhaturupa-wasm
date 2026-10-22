@@ -18,7 +18,12 @@ const wasm = require(path.join(__dirname, '..', 'pkg-node', 'dhaturupa_wasm.js')
 
 // Citations the Cons class claims: the finals त्/द्/ध्/भ्/च्/थ्/श्.
 const CONS_FINALS = ['त्', 'द्', 'ध्', 'भ्', 'च्', 'थ्', 'श्'];
-const LINGA_CODE = { P: 'm', S: 'f', N: 'n' };
+// The db's लिङ्ग markers: P/S/N are the site's three genders, A its
+// any-gender slot (the सर्वनाम entries अस्मद्/युष्मद्, listed once
+// with the masculine and the neuter forms side by side). The engine's
+// possessive-pronoun table is gender-independent — it is that merged
+// grid — so the masculine request carries it.
+const LINGA_CODE = { P: 'm', S: 'f', N: 'n', A: 'm' };
 const VIB = ['prathamA', 'dvitIyA', 'tftIyA', 'caturTI', 'paJcamI', 'zazWI',
   'saptamI', 'sambodhana'];
 const VAC = ['ekavacanam', 'dvivacanam', 'bahuvacanam'];

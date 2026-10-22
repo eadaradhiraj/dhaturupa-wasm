@@ -4579,6 +4579,31 @@ const ASMAD_PARA_GRID: [&[&str]; 21] = [
     &["asmAsu"],
 ];
 
+/// The possessive pronoun's own grid: the site lists अस्मद् and
+/// युष्मद् once, in an any-gender slot, with the masculine and the
+/// neuter forms side by side (माम्-मा, आवाम्-नौ, अस्मान्-नः,
+/// मद्-मत्, अस्मद्-अस्मत्, मम-मे, आवयोः-नौ, अस्माकम्-नः). The
+/// सम्बोधना row is empty on the site.
+fn pron_any_cells(pron: &str) -> Vec<Slot> {
+    let grid: &[&[&str]] = if pron == "yuzmad" {
+        &YUZMAD_PARA_GRID
+    } else {
+        &ASMAD_PARA_GRID
+    };
+    let empty: Vec<(String, String, String)> = (0..8)
+        .map(|_| (String::new(), String::new(), String::new()))
+        .collect();
+    let mut cells = table(&empty);
+    for (i, alternatives) in grid.iter().enumerate() {
+        let forms: Vec<String> = alternatives.iter().map(|alt| (*alt).to_string()).collect();
+        put(&mut cells, i / 3, i % 3, forms);
+    }
+    put(&mut cells, 7, 0, Vec::new());
+    put(&mut cells, 7, 1, Vec::new());
+    put(&mut cells, 7, 2, Vec::new());
+    cells
+}
+
 /// The पुरुष-compounded pronouns (परमयुष्मद्, परमास्मद्): the
 /// pronoun's own grid with its alternants, the base on every
 /// alternative. The सम्बोधना row is empty on the site.
@@ -5564,72 +5589,20 @@ fn rows_to_slots(rows: &[(Vec<String>, Vec<String>, Vec<String>)]) -> Vec<Slot> 
 }
 
 fn yuzmad_table(_linga: Linga) -> Paradigm {
-    let cells = vec![
-        (EKA, vec!["tvam"]),
-        (DVI, vec!["yuvAm"]),
-        (BAHU, vec!["yUyam"]),
-        (EKA, vec!["tvAm", "tvA"]),
-        (DVI, vec!["yuvAm"]),
-        (BAHU, vec!["yuzmAn"]),
-        (EKA, vec!["tvayA"]),
-        (DVI, vec!["yuvAByAm"]),
-        (BAHU, vec!["yuzmABiH"]),
-        (EKA, vec!["tuByam"]),
-        (DVI, vec!["yuvAByAm"]),
-        (BAHU, vec!["yuzmaByam"]),
-        (EKA, vec!["tvat"]),
-        (DVI, vec!["yuvAByAm"]),
-        (BAHU, vec!["yuzmat"]),
-        (EKA, vec!["tava"]),
-        (DVI, vec!["yuvayoH"]),
-        (BAHU, vec!["yuzmAkam"]),
-        (EKA, vec!["tvayi"]),
-        (DVI, vec!["yuvayoH"]),
-        (BAHU, vec!["yuzmAsu"]),
-        (EKA, vec!["tvam"]),
-        (DVI, vec!["yuvAm"]),
-        (BAHU, vec!["yUyam"]),
-    ];
     Paradigm {
         stem: "yuzmad".to_string(),
         linga: Linga::M,
         class: Class::Word("yuzmad"),
-        cells: vib_slots(&cells),
+        cells: pron_any_cells("yuzmad"),
     }
 }
 
 fn asmad_table(_linga: Linga) -> Paradigm {
-    let cells = vec![
-        (EKA, vec!["aham"]),
-        (DVI, vec!["AvAm"]),
-        (BAHU, vec!["vayam"]),
-        (EKA, vec!["mAm", "mA"]),
-        (DVI, vec!["AvAm"]),
-        (BAHU, vec!["asmAn"]),
-        (EKA, vec!["mayA"]),
-        (DVI, vec!["AvAByAm"]),
-        (BAHU, vec!["asmABiH"]),
-        (EKA, vec!["maHyam"]),
-        (DVI, vec!["AvAByAm"]),
-        (BAHU, vec!["asmaByam"]),
-        (EKA, vec!["mat"]),
-        (DVI, vec!["AvAByAm"]),
-        (BAHU, vec!["asmat"]),
-        (EKA, vec!["mama"]),
-        (DVI, vec!["AvayoH"]),
-        (BAHU, vec!["asmAkam"]),
-        (EKA, vec!["mayi"]),
-        (DVI, vec!["AvayoH"]),
-        (BAHU, vec!["asmAsu"]),
-        (EKA, vec!["aham"]),
-        (DVI, vec!["AvAm"]),
-        (BAHU, vec!["vayam"]),
-    ];
     Paradigm {
         stem: "asmad".to_string(),
         linga: Linga::M,
         class: Class::Word("asmad"),
-        cells: vib_slots(&cells),
+        cells: pron_any_cells("asmad"),
     }
 }
 
@@ -5673,30 +5646,6 @@ fn dvi_table(linga: Linga) -> Paradigm {
         class: Class::Word("dvi"),
         cells,
     }
-}
-
-/// Slots from an explicit 24-cell (vacana, forms) list in vibhakti ×
-/// vacana order (prathamA.eka … sambodhana.bahu).
-fn vib_slots(cells: &[(&'static str, Vec<&'static str>)]) -> Vec<Slot> {
-    const VIB: [&str; 8] = [
-        "prathamA",
-        "dvitIyA",
-        "tftIyA",
-        "caturTI",
-        "paJcamI",
-        "zazWI",
-        "saptamI",
-        "sambodhana",
-    ];
-    cells
-        .iter()
-        .enumerate()
-        .map(|(i, (vac, forms))| Slot {
-            vibhakti: VIB[i / 3],
-            vacana: vac,
-            forms: forms.iter().map(|s| (*s).to_string()).collect(),
-        })
-        .collect()
 }
 
 /// Add the `d`-final twin to `t`-final nom/acc/voc singular slots

@@ -2191,4 +2191,40 @@ same word (सखी as सखा-सखायौ and as सखीः-सख्�
 offers both grids and the site grid that matches the word is the one
 the portal shows.
 
-Whole-db parity: **9,004/9,007** exact.
+The site also lists a word in a slot of its own: `A`, the any-gender
+one, which अस्मद् and युष्मद् take. The grid there is the pronoun's
+own with the masculine and the neuter forms side by side (माम्-मा,
+आवाम्-नौ, अस्मान्-नः, मद्-मत्, अस्मद्-अस्मत्, मम-मे, आवयोः-नौ,
+अस्माकम्-नः) — the same grid the परम- compounds take, without the
+base. The engine's possessive-pronoun table now is that grid, so the
+site's any-gender listing is reproduced and the neuter forms of the
+सर्वनाम (नः, नौ, मे, मत्, अस्मत्) read back to their own word.
+
+Whole-db parity: **9,006/9,007** exact.
+
+## 2026-10-22 (49) — the site's any-gender slot
+
+The audit's `LINGA_CODE` maps the db's लिङ्ग markers to the engine's
+requests: `P`/`S`/`N` to `m`/`f`/`n`. The db has a fourth marker,
+`A` — the site's any-gender slot, which only अस्मद् and युष्मद् take.
+Without a code for it the audit skipped both entries, and the engine's
+own possessive-pronoun table was the masculine-only grid, which
+reproduces neither the site's any-gender grid nor the neuter forms
+the site lists in it (नः, नौ, मे, मत्, अस्मत्).
+
+The pronoun's grid is now the merged one the site writes — the
+`ASMAD_PARA_GRID`/`YUZMAD_PARA_GRID` the परम- compounds already used,
+without the base — so the any-gender listing is exact, and the audit
+asks for it with the masculine request (the table is
+gender-independent: the site lists the masculine and the neuter forms
+of one word in a single row).
+
+The `asmad_table`/`yuzmad_table` tables were hand-written and had
+drifted from the grid the site writes: the any-gender grid is the
+source of truth for both, so the tables now come from it and the
+hand-written copies are gone.
+
+Still one word short: `अतिथीनां_सपर्या`, whose key carries the
+site's compound joint (`_`) — the one entry the transliterator
+cannot read, since the SLP1 alphabet has no `_`.
+
