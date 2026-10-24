@@ -160,6 +160,9 @@ pub fn deva_to_slp1(text: &str) -> Option<String> {
             // back byte-exact.
             out.push('_');
             idx += 1;
+        } else if ch == '-' {
+            out.push('-');
+            idx += 1;
         } else {
             // Stray virama/matra, separator, or unmapped character.
             return None;
@@ -240,7 +243,7 @@ pub fn slp1_to_deva(text: &str) -> Option<String> {
     if text.is_empty()
         || !text
             .bytes()
-            .all(|byte| byte.is_ascii_alphabetic() || byte == b'\'' || byte == b'_')
+            .all(|byte| byte.is_ascii_alphabetic() || byte == b'\'' || byte == b'_' || byte == b'-')
     {
         return None;
     }
@@ -271,6 +274,11 @@ pub fn slp1_to_deva(text: &str) -> Option<String> {
                     idx += 1;
                 }
             }
+        } else if ch == '-' {
+            // The site's `aBi-AN` typo-stack keeps the hyphen in the
+            // word itself (समभि-आङ्दान).
+            out.push('-');
+            idx += 1;
         } else if ch == 'a' {
             out.push('अ');
             idx += 1;
@@ -308,7 +316,18 @@ pub fn deva_stack_to_slp1(stack: &str) -> Option<String> {
         if t.is_empty() {
             continue;
         }
-        toks.push(deva_to_slp1(t)?);
+        // The site's `सम् + अभि-आङ्` list entry keeps a literal hyphen
+        // inside the token (`aBi-AN`); sandhi::join passes it through
+        // verbatim, so only the transliteration needs to allow it.
+        if t.contains('-') {
+            let mut segs = Vec::new();
+            for seg in t.split('-') {
+                segs.push(deva_to_slp1(seg)?);
+            }
+            toks.push(segs.join("-"));
+        } else {
+            toks.push(deva_to_slp1(t)?);
+        }
     }
     if toks.is_empty() {
         return None;

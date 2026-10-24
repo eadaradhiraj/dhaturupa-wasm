@@ -83,8 +83,10 @@ pub(crate) fn suppress_na_twins(forms: &[String]) -> Vec<String> {
 /// each member arrived in — so callers apply this to the whole set (all
 /// rows of one (dhātu, stack, family, kṛt)) rather than per row.
 pub(crate) fn suppress_twins(forms: &[String]) -> Vec<String> {
-    let na_kept = suppress_na_twins(forms);
-    suppress_unvoiced_twins(&na_kept)
+    // The corpus's prefixed rows keep BOTH the dental and retroflex rows
+    // (दुर्निमात्री AND दुर्णिमात्री), so only the vowel-grade twin
+    // suppression applies here.
+    suppress_unvoiced_twins(forms)
 }
 
 /// Vṛddhi/guṇa (voicing) twin pairs where the corpus keeps only the voiced
@@ -113,9 +115,20 @@ pub(crate) fn suppress_unvoiced_twins(forms: &[String]) -> Vec<String> {
             !forms.iter().any(|other| {
                 other.as_str() != form.as_str()
                     && other.len() == form.len()
-                    && other.as_bytes().iter().zip(bytes).all(|(o, f)| {
-                        o == f || (!strong_slots(*f).is_empty() && strong_slots(*f).contains(o))
-                    })
+                    && other
+                        .as_bytes()
+                        .iter()
+                        .zip(bytes)
+                        .enumerate()
+                        // A first-syllable grade difference (अपाजुषी vs
+                        // आपाजुषी) marks two prefix variants, not one
+                        // cell's weak/strong pair — keep both rows' forms.
+                        .all(|(i, (o, f))| {
+                            o == f
+                                || (i > 0
+                                    && !strong_slots(*f).is_empty()
+                                    && strong_slots(*f).contains(o))
+                        })
             })
         })
         .cloned()

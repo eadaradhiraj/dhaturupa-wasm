@@ -283,6 +283,16 @@ fn pronominal_word_pins() {
     }
 }
 
+/// The a-stem pronominals with स्म- and ए-alternants (ततम, त्व, यतम, विश्व, सम, सिम)
+/// carry both nominal and pronominal candidate grids (e.g. सम has both @sama1 and @sama2).
+#[test]
+fn pronominal_a_stem_pins() {
+    for word in ["ततम", "त्व", "यतम", "विश्व", "सम", "सिम"] {
+        pin_word_any(word, "P");
+        pin_word_any(word, "N");
+    }
+}
+
 /// The feminine अस्-स्वादि (सदस् → सदाः, site @sadas2) and the
 /// वस्-स्वादि (विद्वस् → विद्वान्/विद्वांसः, site @vidvas1/@vidvas2).
 #[test]

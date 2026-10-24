@@ -8,7 +8,7 @@
 //! so this is site parity by construction.
 //!
 //! Corpus: `SKT_MORPH_DATA` (default
-//! `/home/edhiraj/Documents/projs/pypanini/skt-morph-data`). Missing corpus
+//! `/home/edhiraj/Documents/projs/skt-morph-data/data`). Missing corpus
 //! or missing blobs dir → skip with notice, never false-green.
 //!
 //! Sampled tier runs in plain `cargo test`; exhaustive is `#[ignore]`d:
@@ -19,9 +19,17 @@ use std::sync::OnceLock;
 
 fn corpus_root() -> Option<std::path::PathBuf> {
     let root = std::env::var("SKT_MORPH_DATA")
-        .unwrap_or_else(|_| "/home/edhiraj/Documents/projs/pypanini/skt-morph-data".to_string());
+        .unwrap_or_else(|_| "/home/edhiraj/Documents/projs/skt-morph-data/data".to_string());
     let path = std::path::PathBuf::from(root);
-    path.is_dir().then_some(path)
+    if path.join("01").is_dir() {
+        Some(path)
+    } else if path.join("data/01").is_dir() {
+        Some(path.join("data"))
+    } else if path.is_dir() {
+        Some(path)
+    } else {
+        None
+    }
 }
 
 /// Corpus SLP1 key for an offered display name: exact transliteration

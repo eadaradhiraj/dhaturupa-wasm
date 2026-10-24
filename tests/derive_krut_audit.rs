@@ -12,7 +12,7 @@
 //! m/f/n comparison uses the portal's avyaya rule: fields empty upstream
 //! stay empty; all-empty rows are dropped on both sides (the blob format
 //! drops them). Corpus: `SKT_MORPH_DATA` (default
-//! `/home/edhiraj/Documents/projs/pypanini/skt-morph-data`); absent → skip
+//! `/home/edhiraj/Documents/projs/skt-morph-data/data`); absent → skip
 //! with notice, never false-green.
 //!
 //! Sampled tier runs in plain `cargo test`; exhaustive is `#[ignore]`d:
@@ -33,9 +33,17 @@ const FAMILIES: [(&str, &str); 5] = [
 
 fn corpus_root() -> Option<std::path::PathBuf> {
     let root = std::env::var("SKT_MORPH_DATA")
-        .unwrap_or_else(|_| "/home/edhiraj/Documents/projs/pypanini/skt-morph-data".to_string());
+        .unwrap_or_else(|_| "/home/edhiraj/Documents/projs/skt-morph-data/data".to_string());
     let path = std::path::PathBuf::from(root);
-    path.is_dir().then_some(path)
+    if path.join("01").is_dir() {
+        Some(path)
+    } else if path.join("data/01").is_dir() {
+        Some(path.join("data"))
+    } else if path.is_dir() {
+        Some(path)
+    } else {
+        None
+    }
 }
 
 fn stack_deva_display(stack_slp: &str) -> Option<String> {
@@ -179,6 +187,16 @@ fn audit(step: usize) -> (u64, u64, u64, u64, Vec<String>) {
                     let Some(krt_deva) = slp1_to_deva(krt_slp) else {
                         continue;
                     };
+                    // स्य-*/भावकर्म-* rows derive engine-only in production
+                    // (the corpus-pinned cells for them are a different build's
+                    // stale लृङ् data; see `src/derive_krut.rs`); they are not
+                    // pinned against the corpus dump.
+                    if matches!(
+                        krt_deva.as_str(),
+                        "स्य-शतृ" | "स्य-शानच्" | "भावकर्म-शानच्" | "स्य-भावकर्म-शानच्"
+                    ) {
+                        continue;
+                    }
                     let Some(truth_rows) = truth_rows.as_array() else {
                         continue;
                     };

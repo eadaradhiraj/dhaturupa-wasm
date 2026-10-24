@@ -244,7 +244,7 @@ test('siteTables maps the शब्द dump to site-exact grids', () => {
   assert.equal(t.stem, 'गति');
   assert.equal(t.linga, 'f');
   assert.equal(t.lingaLabel, 'feminine');
-  assert.equal(t.class, 'ashtadhyayi.com @gati1');
+  assert.equal(t.class, '');
   assert.equal(t.cells.length, 24);
   assert.equal(t.cells[0].vibhakti, 'prathamA');
   assert.equal(t.cells[2].vacana, 'bahuvacanam');
@@ -269,10 +269,12 @@ test('siteTables collapses cell-identical entries, labels every लिङ्ग'
   const tables = siteTables(byWord, 'ग्रामणी');
   assert.equal(tables.length, 1);
   assert.equal(tables[0].lingaLabel, 'masculine, feminine');
-  assert.equal(tables[0].class, 'ashtadhyayi.com @grAmaNI1 @grAmaNI2');
-  assert.match(renderWordTables(tables),
-    /masculine, feminine \(ashtadhyayi\.com @grAmaNI1 @grAmaNI2\)/);
-  assert.equal(siteTables(byWord, 'अस्मद्')[0].lingaLabel, 'any gender');
+  assert.equal(tables[0].class, '');
+  assert.match(renderWordTables(tables), /masculine, feminine<\/h4>/);
+  const asmad = siteTables(byWord, 'अस्मद्');
+  assert.equal(asmad[0].lingaLabel, 'any gender');
+  assert.equal(asmad[0].class, 'सर्वनाम');
+  assert.match(renderWordTables(asmad), /any gender \(सर्वनाम\)<\/h4>/);
 });
 
 test('renderSearchReadings lists base-word readings and links to the word view', () => {

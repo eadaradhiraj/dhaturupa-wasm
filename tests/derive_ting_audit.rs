@@ -12,7 +12,7 @@
 //! each is a 9-slot SLP1 array (prathama-eka … uttama-bahu).
 //!
 //! The corpus lives outside this repo:
-//! `SKT_MORPH_DATA=/home/edhiraj/Documents/projs/pypanini/skt-morph-data`
+//! `SKT_MORPH_DATA=/home/edhiraj/Documents/projs/skt-morph-data/data`
 //! (default). Missing corpus → test skips with a notice, never false-green.
 //!
 //! Sampled tier runs in plain `cargo test`; exhaustive is `#[ignore]`d:
@@ -32,9 +32,17 @@ const FAMILIES: [(&str, &str, &str); 5] = [
 
 fn corpus_root() -> Option<std::path::PathBuf> {
     let root = std::env::var("SKT_MORPH_DATA")
-        .unwrap_or_else(|_| "/home/edhiraj/Documents/projs/pypanini/skt-morph-data".to_string());
+        .unwrap_or_else(|_| "/home/edhiraj/Documents/projs/skt-morph-data/data".to_string());
     let path = std::path::PathBuf::from(root);
-    path.is_dir().then_some(path)
+    if path.join("01").is_dir() {
+        Some(path)
+    } else if path.join("data/01").is_dir() {
+        Some(path.join("data"))
+    } else if path.is_dir() {
+        Some(path)
+    } else {
+        None
+    }
 }
 
 fn stack_deva_display(stack_slp: &str) -> Option<String> {

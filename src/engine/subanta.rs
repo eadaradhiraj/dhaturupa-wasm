@@ -880,7 +880,33 @@ const BAHU: &str = "bahuvacanam";
 /// `stem` is the declension stem (weak `Bavat` for at-stems, full `rAjan`
 /// for an-stems). Returns [`NOT_POSSIBLE`] for ending/class mismatches.
 pub fn decline(stem: &str, linga: Linga, class: &Class) -> Result<Paradigm, &'static str> {
-    if stem.is_empty() || !stem.bytes().all(crate::slp1::is_slp1_letter_byte) {
+    decline_inner(stem, linga, class, true)
+}
+
+/// Decline for a कृत् table: same engine table, but without the शब्द-page
+/// word alternants in [`CELL_ALTS`]. The site's कृत् rows carry the plain
+/// reference paradigm (`@mAlA1`, `@deva1`): जरा's अच् row is जरे/जराः, not
+/// the शब्द page's जरे/जरसौ, and उत्तर's rows are nominal, not the
+/// उत्तरस्मात्/उत्तरस्मिन् word alternants.
+pub(crate) fn decline_krt(
+    stem: &str,
+    linga: Linga,
+    class: &Class,
+) -> Result<Paradigm, &'static str> {
+    decline_inner(stem, linga, class, false)
+}
+
+fn decline_inner(
+    stem: &str,
+    linga: Linga,
+    class: &Class,
+    site_alts: bool,
+) -> Result<Paradigm, &'static str> {
+    if stem.is_empty()
+        || !stem
+            .bytes()
+            .all(|b| crate::slp1::is_slp1_letter_byte(b) || b == b'-')
+    {
         return Err(NOT_POSSIBLE);
     }
     let cells = match class {
@@ -3967,7 +3993,9 @@ pub fn decline(stem: &str, linga: Linga, class: &Class) -> Result<Paradigm, &'st
             cells
         }
         Class::VasM => {
-            if linga != Linga::M || !stem.ends_with("vas") || stem.len() < 4 {
+            // √अव् क्वसु weak stem is the three-letter `vas` (vān/uṣā…);
+            // the old `len < 4` guard rejected it.
+            if linga != Linga::M || !stem.ends_with("vas") {
                 return Err(NOT_POSSIBLE);
             }
             let p = &stem[..stem.len() - 2];
@@ -3990,7 +4018,7 @@ pub fn decline(stem: &str, linga: Linga, class: &Class) -> Result<Paradigm, &'st
         Class::VasN => {
             // क्वसु neuter (site @vidvas2): `-vat` nominative, यण् weak dual,
             // `-vAMs` plural.
-            if linga != Linga::N || !stem.ends_with("vas") || stem.len() < 4 {
+            if linga != Linga::N || !stem.ends_with("vas") {
                 return Err(NOT_POSSIBLE);
             }
             let core = &stem[..stem.len() - 2];
@@ -4133,13 +4161,15 @@ pub fn decline(stem: &str, linga: Linga, class: &Class) -> Result<Paradigm, &'st
     let cells = natva_cells(cells, stem, linga, class);
     // The site's own alternants for the cells it lists two forms in.
     let mut cells = cells;
-    for (s, l, idx, forms) in CELL_ALTS {
-        if *s == stem && *l == linga.as_str() {
-            if let Some(cell) = cells.get_mut(*idx) {
-                cell.forms = forms
-                    .split('/')
-                    .map(std::string::ToString::to_string)
-                    .collect();
+    if site_alts {
+        for (s, l, idx, forms) in CELL_ALTS {
+            if *s == stem && *l == linga.as_str() {
+                if let Some(cell) = cells.get_mut(*idx) {
+                    cell.forms = forms
+                        .split('/')
+                        .map(std::string::ToString::to_string)
+                        .collect();
+                }
             }
         }
     }
@@ -4252,7 +4282,21 @@ fn natva_cells(cells: Vec<Slot>, stem: &str, linga: Linga, class: &Class) -> Vec
                     if !allow || s == stem {
                         s
                     } else if nan_pos.is_empty() {
-                        site_natva(&s, ru_tva)
+                        // Only a suffix न is re-voiced: the site's step
+                        // aims at the ending's न, which sits within the last
+                        // three letters (…ण, …णे, …णि, …णाम्). An internal
+                        // stem न (परिववन्द्वांसि, प्रोन्नत्ति) stays dental
+                        // even with a trigger in the prefix.
+                        match s
+                            .as_bytes()
+                            .iter()
+                            .enumerate()
+                            .rev()
+                            .find(|(i, b)| **b == b'n' && s.len() - *i <= 3)
+                        {
+                            Some((pos, _)) => site_natva_at(&s, ru_tva, pos),
+                            None => s,
+                        }
                     } else {
                         match s.rfind('n') {
                             Some(q) if nan_pos.contains(&q) => site_natva_at(&s, ru_tva, q),
@@ -4296,6 +4340,29 @@ fn site_natva_at(s: &str, ru_tva: bool, pos: usize) -> String {
         return s.to_string();
     }
     if pos == s.len() - 1 {
+        return s.to_string();
+    }
+    // The site voices the न only before a vowel/य्/व्; a न before a
+    // consonant keeps (परिववन्द्वांसि with the न before द्, while
+    // पराभावकेण voices the suffix न before ए).
+    if !matches!(
+        s.as_bytes()[pos + 1],
+        b'a' | b'A'
+            | b'i'
+            | b'I'
+            | b'u'
+            | b'U'
+            | b'e'
+            | b'E'
+            | b'o'
+            | b'O'
+            | b'f'
+            | b'F'
+            | b'x'
+            | b'X'
+            | b'y'
+            | b'v'
+    ) {
         return s.to_string();
     }
     if pos > 0 && s.as_bytes()[pos - 1] == b'h' {
@@ -6990,6 +7057,50 @@ pub fn classes_for(stem: &str, linga: Linga) -> Vec<Class> {
     out
 }
 
+/// The a-stem नामs the site treats with the सर्वनाम flavours (the
+/// @ardha1/@apara1/@aneka1… grids): the ए-alternant in the nominative
+/// plural, the ए-ण् instrumental, the स्म-forms and their combinations.
+/// Only these get those candidates; ordinary a-stems — and every a-final
+/// कृदन्त — decline plainly.
+const A_SARVANAMA: &[&str] = &[
+    "aDara",
+    "alpa",
+    "aneka",
+    "antara",
+    "anyatara",
+    "apara",
+    "arDa",
+    "avara",
+    "carama",
+    "dakziRa",
+    "dvaya",
+    "dvitaya",
+    "dvitIya",
+    "ekatama",
+    "ekatara",
+    "nema",
+    "para",
+    "paramasarva",
+    "praTama",
+    "pUrva",
+    "pUrvapara",
+    "sama",
+    "sima",
+    "sva",
+    "tatama",
+    "tatara",
+    "tva",
+    "uttara",
+    "varRASrametara",
+    "viSva",
+    "yatama",
+    "yatara",
+];
+
+fn a_sarvanama(stem: &str) -> bool {
+    A_SARVANAMA.contains(&stem)
+}
+
 /// The classes the engine derives for a stem, without the site-verbatim
 /// grids (see [`classes_for`]).
 fn derived_classes_for(stem: &str, linga: Linga) -> Vec<Class> {
@@ -7035,37 +7146,46 @@ fn derived_classes_for(stem: &str, linga: Linga) -> Vec<Class> {
         }
     }
     if stem.ends_with('a') && !stem.ends_with("an") {
+        // Only सर्वनाम/सर्वनामादि a-stems carry the optional वृद्धि/स्म
+        // flavours (अर्ध, अपर, अनेक, …). Ordinary a-stems — including every
+        // a-final kṛdanta — decline plainly; offering those flavours to
+        // them invented alternant tables the corpus does not have.
+        let sarvanama = a_sarvanama(stem);
         match linga {
             Linga::M => {
                 out.push(Class::AM);
-                // The स्म-ending variant (अनेक → अनेकस्मै) is the other
-                // candidate: a bare stem cannot say whether the word is a
-                // primary (अनेक) or a compound (कीलालपा, which keeps the
-                // plain cat) — the site picks one, we offer both.
-                out.push(Class::AsmM);
-                // The same stems also carry the ए-form as an alternant
-                // (अर्धाः-अर्धे) and the ए- plus स्म-forms (अपराः-अपरे,
-                // अपरस्मै) — the site's grid decides which.
-                out.push(Class::AMo(AOpt::E));
-                out.push(Class::AMo(AOpt::EN));
-                out.push(Class::AMo(AOpt::ENSm));
-                out.push(Class::AMo(AOpt::Sm));
-                out.push(Class::AMo(AOpt::SmE));
-                out.push(Class::AMo(AOpt::SmEN));
-                out.push(Class::AMo(AOpt::SmPairs));
-                out.push(Class::AMo(AOpt::Comp));
-                out.push(Class::AMo(AOpt::CompS));
+                if sarvanama {
+                    // The स्म-ending variant (अनेक → अनेकस्मै) is the other
+                    // candidate: a bare stem cannot say whether the word is a
+                    // primary (अनेक) or a compound (कीलालपा, which keeps the
+                    // plain cat) — the site picks one, we offer both.
+                    out.push(Class::AsmM);
+                    // The same stems also carry the ए-form as an alternant
+                    // (अर्धाः-अर्धे) and the ए- plus स्म-forms (अपराः-अपरे,
+                    // अपरस्मै) — the site's grid decides which.
+                    out.push(Class::AMo(AOpt::E));
+                    out.push(Class::AMo(AOpt::EN));
+                    out.push(Class::AMo(AOpt::ENSm));
+                    out.push(Class::AMo(AOpt::Sm));
+                    out.push(Class::AMo(AOpt::SmE));
+                    out.push(Class::AMo(AOpt::SmEN));
+                    out.push(Class::AMo(AOpt::SmPairs));
+                    out.push(Class::AMo(AOpt::Comp));
+                    out.push(Class::AMo(AOpt::CompS));
+                }
             }
             Linga::N => {
                 out.push(Class::AN);
-                // The same stems also come in the वृद्धि-flavours (अधर,
-                // एकतम) — the site's grid decides.
-                out.push(Class::ANo(ANOpt::Apara));
-                out.push(Class::ANo(ANOpt::Tara));
-                out.push(Class::ANo(ANOpt::SmPairs));
-                out.push(Class::ANo(ANOpt::Comp));
-                out.push(Class::ANo(ANOpt::CompS));
-                out.push(Class::AsmN);
+                if sarvanama {
+                    // The same stems also come in the वृद्धि-flavours
+                    // (अधर, एकतम) — the site's grid decides.
+                    out.push(Class::ANo(ANOpt::Apara));
+                    out.push(Class::ANo(ANOpt::Tara));
+                    out.push(Class::ANo(ANOpt::SmPairs));
+                    out.push(Class::ANo(ANOpt::Comp));
+                    out.push(Class::ANo(ANOpt::CompS));
+                    out.push(Class::AsmN);
+                }
             }
             Linga::F => {}
         }
@@ -7662,7 +7782,12 @@ impl KrtParadigm {
                     || bare.ends_with("ant")
                     || bare.ends_with("Ant")
             }
-            Self::DadatM => bare.ends_with('t') || bare.ends_with('d'),
+            Self::DadatM => {
+                bare.ends_with('t')
+                    || bare.ends_with('d')
+                    || bare.ends_with("an")
+                    || bare.ends_with("An")
+            }
             Self::BhavatM => v.ends_with("vAn") || v.ends_with("vant") || v.ends_with("vat"),
             Self::SedivasM => v.ends_with('s') || v.ends_with("An"),
             Self::VidvasN => v.ends_with('s') || v.ends_with("at") || v.ends_with("ad"),
@@ -7672,7 +7797,11 @@ impl KrtParadigm {
             Self::ManN => v.ends_with("an") || v.ends_with('a'),
             Self::InM | Self::InN => v.ends_with("in") || v.ends_with('i') || v.ends_with('I'),
         };
-        shaped.then(|| weak_for(&self.class(), v))
+        // Strip the citation visarga before shaping: the weak-stem
+        // helpers look at the bare stem (`BUtiH` -> `BUti`), otherwise the
+        // slot silently falls back to the generic class (`IMF`) and the
+        // इ-stem alternants (भूत्या, भूत्यै…) are lost.
+        shaped.then(|| weak_for(&self.class(), bare))
     }
 }
 
@@ -7807,6 +7936,144 @@ fn krt_ref_slot(family: &str, krt: &str, field: &str, baseindex: &str) -> Option
     })
 }
 
+/// The site's @deva1/@phala1 table when the row value is an आ-final stem
+/// (`upasaryA`, `vrajyA`; the यत्/ण्यत्-type कृत्स carry the feminine
+/// आ-stem in the m/n cells too): the site keeps the full आ before the
+/// consonant-initial endings and drops it before the vowel-initial ones.
+fn a_value_table(kind: KrtParadigm, value: &str) -> Option<Vec<Slot>> {
+    if !value.ends_with('A') {
+        return None;
+    }
+    let p = &value[..value.len() - 1];
+    let rows = match kind {
+        KrtParadigm::DevaM => vec![
+            (f(value, "H"), f(p, "O"), f(value, "H")),
+            (f(value, "m"), f(p, "O"), f(value, "n")),
+            (value.to_string(), f(value, "ByAm"), f(value, "BiH")),
+            (f(p, "E"), f(value, "ByAm"), f(value, "ByaH")),
+            (f(value, "H"), f(value, "ByAm"), f(value, "ByaH")),
+            (f(value, "H"), f(p, "OH"), f(value, "m")),
+            (f(p, "e"), f(p, "OH"), f(value, "su")),
+            (f(value, "H"), f(p, "O"), f(value, "H")),
+        ],
+        KrtParadigm::PhalaN => {
+            // The -āni suffix runs the site's णत्व (उपसर्याणि, but
+            // व्रज्यानि — the ज् blocks).
+            let ni = site_natva(&f(value, "ni"), false);
+            vec![
+                (value.to_string(), f(p, "e"), ni.clone()),
+                (value.to_string(), f(p, "e"), ni.clone()),
+                (value.to_string(), f(value, "ByAm"), f(value, "BiH")),
+                (f(p, "E"), f(value, "ByAm"), f(value, "ByaH")),
+                (f(value, "H"), f(value, "ByAm"), f(value, "ByaH")),
+                (f(value, "H"), f(p, "OH"), f(value, "m")),
+                (f(p, "e"), f(p, "OH"), f(value, "su")),
+                (value.to_string(), f(p, "e"), ni),
+            ]
+        }
+        _ => return None,
+    };
+    Some(table(&rows))
+}
+
+/// The site's @mAlA1 table when the row value ends in ई (`sftvarI`): the
+/// site mixes the आ-stem and ई-stem endings (dvi/acc-sg keep the bare ई,
+/// the vowel-initial cells drop it to य्, the भ-cells attach to the ई).
+fn i_value_mala_table(value: &str) -> Option<Vec<Slot>> {
+    if !value.ends_with('I') {
+        return None;
+    }
+    let p = format!("{}y", &value[..value.len() - 1]);
+    Some(table(&[
+        (value.to_string(), value.to_string(), f(&p, "aH")),
+        (f(value, "m"), value.to_string(), f(value, "H")),
+        (f(&p, "A"), f(value, "ByAm"), f(value, "BiH")),
+        (f(&p, "e"), f(value, "ByAm"), f(value, "ByaH")),
+        (f(&p, "aH"), f(value, "ByAm"), f(value, "ByaH")),
+        // Genitive plural: णत्व only when the value supplies a trigger
+        // (स्फुट्वरीणाम्); a triggerless ई-stem keeps नाम्.
+        (
+            f(&p, "aH"),
+            f(value, "os"),
+            site_natva(&f(value, "nAm"), false),
+        ),
+        (value.to_string(), f(value, "os"), f(value, "zu")),
+        (f(value, "H"), value.to_string(), f(&p, "aH")),
+    ]))
+}
+
+/// The site's @mAlA1 table when the value ends in a short अ (`dhAka`):
+/// the site treats it as an आ-stem for the vowel cells (…e, …E, …AH,
+/// `…AnAm`) but keeps the short-a nominative/accusative/vocative (…aH,
+/// …am) — the वुन्/वुञ् strī rows.
+fn a_short_mala_table(value: &str) -> Option<Vec<Slot>> {
+    if !value.ends_with('a') {
+        return None;
+    }
+    let p = &value[..value.len() - 1];
+    Some(table(&[
+        (f(p, "aH"), f(p, "e"), f(p, "AH")),
+        (f(p, "am"), f(p, "e"), f(p, "AH")),
+        (f(p, "A"), f(p, "AByAm"), f(p, "EH")),
+        (f(p, "E"), f(p, "AByAm"), f(p, "eByaH")),
+        (f(p, "AH"), f(p, "AByAm"), f(p, "eByaH")),
+        // Genitive plural: the site re-runs णत्व on the suffix नाम्, so a
+        // prefix carrying र् voices it (प्रभाकाणाम्, निर्भाकाणाम्) while
+        // the unprefixed भाकानाम् keeps the dental.
+        (f(p, "AH"), f(p, "ayoH"), site_natva(&f(p, "AnAm"), false)),
+        (f(p, "e"), f(p, "ayoH"), f(p, "ezu")),
+        (f(p, "aH"), f(p, "e"), f(p, "AH")),
+    ]))
+}
+
+/// The site's @devI1 table when the row value ends in आ (`anusarA`): the
+/// feminine ref keeps the bare आ in the prathamā/तृतीया/पञ्चमी cells,
+/// voices the rest like the a-stem dual/plural (`anusarO`, `anusarE`),
+/// The site's @bhavat2 table applied to the अथुच् u-stem (नन्दथु →
+/// नन्दथू/नन्दथूनौ/…): the strong cases lengthen the u and take the
+/// bhavat न् (नन्दथून्), the weak cases keep the bare u (→ व् before a
+/// vowel), and the vocative keeps the short u + न् (हे नन्दथुन्).
+fn atuc_m_table(value: &str) -> Option<Vec<Slot>> {
+    let p = value.strip_suffix('u')?;
+    let strong = format!("{p}Un");
+    Some(table(&[
+        (f(p, "U"), f(&strong, "O"), f(&strong, "aH")),
+        (f(&strong, "am"), f(&strong, "O"), strong.clone()),
+        (f(p, "vA"), f(p, "uByAm"), f(p, "uBiH")),
+        (f(p, "ve"), f(p, "uByAm"), f(p, "uByaH")),
+        (f(p, "vaH"), f(p, "uByAm"), f(p, "uByaH")),
+        (f(p, "vaH"), f(p, "voH"), f(&strong, "Am")),
+        (f(p, "vi"), f(p, "voH"), f(p, "uzu")),
+        (f(p, "un"), f(&strong, "O"), f(&strong, "aH")),
+    ]))
+}
+
+/// keeps the आ-stem genitive plural/locative singular (`anusarARAm`,
+/// `anusarAm`) and takes the bare stem for the vocative (`anusara`).
+fn a_value_devif_table(value: &str) -> Option<Vec<Slot>> {
+    if !value.ends_with('A') {
+        return None;
+    }
+    let p = &value[..value.len() - 1];
+    Some(table(&[
+        (value.to_string(), f(p, "O"), f(value, "H")),
+        (f(value, "m"), f(p, "O"), f(value, "H")),
+        (value.to_string(), f(value, "ByAm"), f(value, "BiH")),
+        (f(p, "E"), f(value, "ByAm"), f(value, "ByaH")),
+        (f(value, "H"), f(value, "ByAm"), f(value, "ByaH")),
+        // Genitive plural: the site runs णत्व on the suffix नाम्, so a
+        // preceding र् voices it (उपसर्याणाम्) but a retroflex ण् in the
+        // value does not (प्रणदानाम्).
+        (
+            f(value, "H"),
+            f(p, "OH"),
+            site_natva(&f(value, "nAm"), false),
+        ),
+        (f(value, "m"), f(p, "OH"), f(value, "su")),
+        (f(p, "a"), f(p, "O"), f(value, "H")),
+    ]))
+}
+
 /// Reference-paradigm class + declension stem for a कृत् cell, with the
 /// site's value conventions (m/n: row base; f: f-form when it ends आ/ई).
 #[must_use]
@@ -7842,8 +8109,44 @@ pub fn krt_table(
     let linga = Linga::parse(field)?;
     match krt_ref_slot(family, krt, field, baseindex) {
         Some(KrtRefSlot::Paradigm(kind)) => {
+            // अथुच् u-stems are typed `Bavat` on the site; its @bhavat2
+            // substitution yields the lengthened-u strong stem.
+            if krt == "aTuc" && field == "m" {
+                if let Some(cells) = atuc_m_table(value) {
+                    return Some(Paradigm {
+                        stem: value.to_string(),
+                        linga,
+                        class: kind.class(),
+                        cells,
+                    });
+                }
+            }
+            // The site feeds the m/n click the row's citation (m: `…AH`,
+            // n: `…Am`), so the ā-stem quirk table reads the bare stem.
+            let a_val = match kind {
+                KrtParadigm::DevaM => value.strip_suffix('H').unwrap_or(value),
+                KrtParadigm::PhalaN => value.strip_suffix('m').unwrap_or(value),
+                _ => value,
+            };
+            let special = if matches!(kind, KrtParadigm::MAlAF) {
+                // A short-a value under the माला ref takes the site's
+                // mixed a/ā table (वुन् strī धाकः/धाके/धाकाः).
+                i_value_mala_table(value).or_else(|| a_short_mala_table(value))
+            } else if matches!(kind, KrtParadigm::DevIF) {
+                a_value_devif_table(value).or_else(|| a_value_table(kind, a_val))
+            } else {
+                a_value_table(kind, a_val)
+            };
+            if let Some(cells) = special {
+                return Some(Paradigm {
+                    stem: value.to_string(),
+                    linga,
+                    class: kind.class(),
+                    cells,
+                });
+            }
             if let Some(weak) = kind.weak(value) {
-                if let Ok(tab) = decline(&weak, linga, &kind.class()) {
+                if let Ok(tab) = decline_krt(&weak, linga, &kind.class()) {
                     return Some(tab);
                 }
             }
@@ -7852,7 +8155,18 @@ pub fn krt_table(
         None => {}
     }
     let (class, weak) = krt_class(family, krt, field, value)?;
-    decline(&weak, linga, &class).ok()
+    decline_krt(&weak, linga, &class).ok()
+}
+
+/// Whether the site's कृत् reference table declines this linga at all
+/// (i.e. the site renders a click for the cell). Used to mask derived
+/// fields for prefixed-only कृत्स, which have no base cell to consult.
+#[must_use]
+pub fn krt_has_slot(family: &str, krt: &str, field: &str, baseindex: &str) -> bool {
+    matches!(
+        krt_ref_slot(family, krt, field, baseindex),
+        Some(KrtRefSlot::Paradigm(_))
+    )
 }
 
 /// Weak/declension stem for a class from a citation stem.
@@ -8122,6 +8436,15 @@ pub fn analyze<S: ::std::hash::BuildHasher>(
             if let Some(pre) = probe.strip_suffix(suffix) {
                 if pre.is_empty() {
                     continue;
+                }
+                if let Some(first_append) = append.as_bytes().first() {
+                    if let Some(last_pre) = pre.as_bytes().last() {
+                        if crate::engine::sandhi::is_vowel_byte(*last_pre)
+                            && crate::engine::sandhi::is_vowel_byte(*first_append)
+                        {
+                            continue;
+                        }
+                    }
                 }
                 let stem = format!("{pre}{append}");
                 // A known word's grid is the site's own — leave its slots to

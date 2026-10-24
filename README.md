@@ -37,7 +37,7 @@ engine tables. `check.sh` refreshes the trimmed file whenever the dump is
 present.
 
 Build-only ground truth (never shipped): skt-morph-data
-(`SKT_MORPH_DATA`, default `/home/edhiraj/Documents/projs/pypanini/skt-morph-data`)
+(`SKT_MORPH_DATA`, default `/home/edhiraj/Documents/projs/skt-morph-data/data`)
 pins the blob `ting_prefixed`/`krut_prefixed` backfill and the
 derive/backfill audits to the same corpus the site's engine version
 produced: corpus cells merge into vidyuṭ's slot grid slot-by-slot, and

@@ -1,7 +1,7 @@
 //! skt-morph-data ground-truth reader (build-side only, never shipped).
 //!
 //! The corpus (`SKT_MORPH_DATA`, default
-//! `/home/edhiraj/Documents/projs/pypanini/skt-morph-data`) is the same data
+//! `/home/edhiraj/Documents/projs/skt-morph-data/data`) is the same data
 //! the site's engine version produced: per dhātu,
 //! `upasarga_forms.<stack>.conjugations` holds one map per
 //! (family, pada-half) — `ting`+`yak` = shuddha, `nich`+`nich_yak`, …
@@ -37,9 +37,17 @@ pub struct BackfillStats {
 
 pub fn corpus_root() -> Option<PathBuf> {
     let root = std::env::var("SKT_MORPH_DATA")
-        .unwrap_or_else(|_| "/home/edhiraj/Documents/projs/pypanini/skt-morph-data".to_string());
+        .unwrap_or_else(|_| "/home/edhiraj/Documents/projs/skt-morph-data/data".to_string());
     let path = PathBuf::from(root);
-    path.is_dir().then_some(path)
+    if path.join("01").is_dir() {
+        Some(path)
+    } else if path.join("data/01").is_dir() {
+        Some(path.join("data"))
+    } else if path.is_dir() {
+        Some(path)
+    } else {
+        None
+    }
 }
 
 /// Flat SLP1 form arrays per (family, prayoga, lakāra) for one listed stack.

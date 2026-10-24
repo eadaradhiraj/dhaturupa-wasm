@@ -1,6 +1,11 @@
 /target/
 data/
+!functions/data/
 /pkg/
 /pkg-node/
 /dist/
+/dist-pages/
+.r2-upload-cache.json
+.wrangler/
+.env
 *.bak

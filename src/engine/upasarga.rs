@@ -224,6 +224,10 @@ fn starts_ay(base: &str) -> bool {
     matches!(b.first(), Some(b'a' | b'A')) && b.get(1) == Some(&b'y')
 }
 
+pub(crate) fn stack_surfaces(stack: &str, ctx: GenCtx) -> Vec<String> {
+    stack_surface(stack, ctx)
+}
+
 fn stack_surface(stack: &str, ctx: GenCtx) -> Vec<String> {
     let mut toks = split_prefix_stack(stack);
     if ctx.nitya_adi && toks.last() == Some(&"aDi") {
@@ -594,7 +598,13 @@ pub fn generate_prefixed(stack: &str, base_form: &str, ctx: GenCtx) -> Vec<Strin
                     push(raw);
                     continue;
                 }
-                let voiced = satva(&raw, acc, ctx.z_initial || ctx.s_voice, aug_keep);
+                let voiced = satva(
+                    &raw,
+                    acc,
+                    ctx.z_initial || ctx.s_voice,
+                    aug_keep,
+                    ctx.z_initial,
+                );
                 let surface_triggered = acc.bytes().any(|c| c == b'r' || c == b'z');
                 let satva_triggered = voiced != raw;
                 // Join-created triggers: `s`-final stacks (`nis`/`dus`)
@@ -617,6 +627,13 @@ pub fn generate_prefixed(stack: &str, base_form: &str, ctx: GenCtx) -> Vec<Strin
                 // either way (its `N`-lopa branch recurses); only `pre_len`
                 // consumers shift.
                 let pre = acc.len() - usize::from(acc.ends_with('N'));
+                let satva_boundary_keep = satva_triggered
+                    && voiced
+                        .as_bytes()
+                        .iter()
+                        .zip(raw.as_bytes())
+                        .enumerate()
+                        .any(|(i, (v, r))| i >= pre && v != r);
                 // Augmented-`s` + sibilant-third voice-doublet: `satva`
                 // blocks voicing before a sibilant third, but an augmented
                 // `s` voices under high-vowel-final surfaces anyway
@@ -1002,7 +1019,7 @@ pub fn generate_prefixed(stack: &str, base_form: &str, ctx: GenCtx) -> Vec<Strin
                         || (ctx.zadx_prati_keep && stack == "prati"))
                         && satva_triggered
                     {
-                        let kept = satva(&raw, acc, false, aug_keep);
+                        let kept = satva(&raw, acc, false, aug_keep, false);
                         if surface_triggered {
                             push(natva(
                                 &kept,
@@ -1019,6 +1036,10 @@ pub fn generate_prefixed(stack: &str, base_form: &str, ctx: GenCtx) -> Vec<Strin
                             push(kept);
                         }
                     }
+                    // The site's prefixed rows license the pre-णत्व
+                    // surface alongside the voiced one (दुर्निमिता AND
+                    // दुर्णिमिता).
+                    push(voiced.clone());
                 } else {
                     // Join-trigger voice alongside the keep (see
                     // `join_triggered` above): the keep stays canonical
@@ -1045,6 +1066,13 @@ pub fn generate_prefixed(stack: &str, base_form: &str, ctx: GenCtx) -> Vec<Strin
                 if let Some(w) = aug_s_voice {
                     push(w);
                 }
+                // Cross-prefix satva: the site prefixes the base surface
+                // without re-voicing its initial s (अभिसुषूषी vs
+                // अभिषुषूषी, अभिसोषूयितवती). License the plain join
+                // alongside the voiced surface for boundary slots.
+                if satva_boundary_keep {
+                    push(raw.clone());
+                }
             }
         }
         // `s`-āgama (`suṭ`) variant for kṛ-roots before `k`-stems: fold an
@@ -1066,7 +1094,13 @@ pub fn generate_prefixed(stack: &str, base_form: &str, ctx: GenCtx) -> Vec<Strin
                         with_s.push('z');
                     }
                     let joined = format!("{with_s}{base_plain}");
-                    let voiced = satva(&joined, &with_s, ctx.z_initial || ctx.s_voice, aug_keep);
+                    let voiced = satva(
+                        &joined,
+                        &with_s,
+                        ctx.z_initial || ctx.s_voice,
+                        aug_keep,
+                        false,
+                    );
                     let trig = with_s.bytes().any(|c| c == b'r' || c == b'z');
                     push(if trig || voiced != joined {
                         natva(
@@ -1112,8 +1146,13 @@ pub fn generate_prefixed(stack: &str, base_form: &str, ctx: GenCtx) -> Vec<Strin
                         }
                         for with_s in s_forms {
                             let joined = format!("{with_s}{deaug}");
-                            let voiced =
-                                satva(&joined, &with_s, ctx.z_initial || ctx.s_voice, aug_keep);
+                            let voiced = satva(
+                                &joined,
+                                &with_s,
+                                ctx.z_initial || ctx.s_voice,
+                                aug_keep,
+                                false,
+                            );
                             let trig = with_s.bytes().any(|c| c == b'r' || c == b'z');
                             push(if trig || voiced != joined {
                                 natva(

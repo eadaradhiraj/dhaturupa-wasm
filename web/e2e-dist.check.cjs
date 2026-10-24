@@ -169,7 +169,7 @@ check('kṛt readings link to their dhātu (शतृ of गम्)',
   const grAmaNI = t('ग्रामणी');
   check('ग्रामणी: identical masc/fem grids collapse into one section',
     grAmaNI.length === 1 && grAmaNI[0].lingaLabel === 'masculine, feminine' &&
-    grAmaNI[0].class === 'ashtadhyayi.com @grAmaNI1 @grAmaNI2');
+    grAmaNI[0].class === '');
   const eka = t('एक');
   check('एक: masculine + neuter grids, empty vocative, ablative variants',
     eka.length === 2 && eka[0].cells[0].forms[0] === 'एकः' &&

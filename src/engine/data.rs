@@ -149,10 +149,10 @@ impl DhatuFile {
     }
 }
 
-/// Workspace-relative default data directory: `<crate>/../skt-morph-data`.
+/// Workspace-relative default data directory: `<crate>/../skt-morph-data/data`.
 #[must_use]
 pub fn default_data_dir() -> PathBuf {
-    PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../skt-morph-data")
+    PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../skt-morph-data/data")
 }
 
 /// Loader failure.

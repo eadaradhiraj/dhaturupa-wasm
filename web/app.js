@@ -16,30 +16,43 @@ import {
   renderSearchReadings, tablePayload,
 } from './render.js';
 
-const GANAS = { 1: 'bhvādi', 2: 'adādi', 3: 'juhotyādi', 4: 'divādi', 5: 'svādi', 6: 'tudādi', 7: 'rudhādi', 8: 'tanādi', 9: 'kryādi', 10: 'curādi' };
 // Detail-page family order: shuddha first (the site's default view), not the
 // blob's alphabetical JSON key order (which made `nich` the default).
 const FAMILY_ORDER = ['shuddha', 'nich', 'san', 'yang', 'yangluk'];
 
 // Portal artifacts: hash shards over all forms + the subanta (declined) set.
 const SHARDS = 256;
-// Shard LRU: keep the last 8 loaded shard sets resident in the WASM index
+// Shard LRU: keep the last 32 loaded shard sets resident in the WASM index
 // cache (one query needs 2, a split verify needs its base shard).
 const shardKeys = new Set();
+const shardLoading = new Map();
 let splitterReady = false;
 
-async function loadShard(key, path) {
-  if (shardKeys.has(key)) shardKeys.delete(key);
-  else {
-    const text = await fetchText(path);
-    ok(index_load_key(key, text), 'shard');
+function loadShard(key, path) {
+  if (shardKeys.has(key)) {
+    shardKeys.delete(key);
+    shardKeys.add(key);
+    return Promise.resolve();
   }
-  shardKeys.add(key);
-  while (shardKeys.size > 8) {
-    const oldest = shardKeys.values().next().value;
-    index_drop_family(oldest);
-    shardKeys.delete(oldest);
+  if (shardLoading.has(key)) {
+    return shardLoading.get(key);
   }
+  const p = (async () => {
+    try {
+      const text = await fetchText(path);
+      ok(index_load_key(key, text), 'shard');
+      shardKeys.add(key);
+      while (shardKeys.size > 32) {
+        const oldest = shardKeys.values().next().value;
+        index_drop_family(oldest);
+        shardKeys.delete(oldest);
+      }
+    } finally {
+      shardLoading.delete(key);
+    }
+  })();
+  shardLoading.set(key, p);
+  return p;
 }
 
 // Vendored शब्दपाठः oracle: the site's own grids for every word it lists
@@ -111,33 +124,57 @@ function show(view) {
   });
 }
 
+function resolveDataUrl(path) {
+  if (typeof window !== 'undefined' && window.DATA_BASE_URL && typeof path === 'string') {
+    const base = window.DATA_BASE_URL.replace(/\/+$/, '');
+    if (path.startsWith('data/')) {
+      return `${base}/${path.slice(5)}`;
+    }
+  }
+  return path;
+}
+
 async function ensureList() {
   if (!dhatuList) {
     // First-load trim: the lite list carries only the fields the list/search
     // views read (build-list); the full site dump keeps feeding the builders.
-    dhatuList = await fetch('data/dhatu_data_lite.json')
+    dhatuList = await fetch(resolveDataUrl('data/dhatu_data_lite.json'))
       .then((r) => (r.ok ? r : null))
-      .then((r) => (r ? r.json() : fetch('data/dhatu_data.json').then((rr) => rr.json())));
+      .then((r) => (r ? r.json() : fetch(resolveDataUrl('data/dhatu_data.json')).then((rr) => rr.json())));
   }
   return dhatuList;
 }
 
+async function ensureSplitter() {
+  if (splitterReady) return;
+  await ensureList().catch(() => {});
+  if (!splitterReady && dhatuList) {
+    const names = dhatuList.upasarga_names
+      || [...new Set(dhatuList.data.flatMap((e) =>
+        (e.upasargas || []).map((u) => u.name)))];
+    ok(split_init(JSON.stringify(names)), 'splitter');
+    splitterReady = true;
+  }
+}
+
 async function getJson(path) {
-  const res = await fetch(path);
-  if (!res.ok) throw new Error(`HTTP ${res.status} ${path}`);
+  const url = resolveDataUrl(path);
+  const res = await fetch(url);
+  if (!res.ok) throw new Error(`HTTP ${res.status} ${url}`);
   return res.json();
 }
 
 // Fetches that can never hang the UI: a stalled shard fetch rejects loudly
 // with its URL instead of wedging the search forever.
 async function fetchText(path, timeoutMs = 20000) {
+  const url = resolveDataUrl(path);
   const ctrl = new AbortController();
   const timer = setTimeout(() => ctrl.abort(), timeoutMs);
   try {
-    const res = await fetch(path, { signal: ctrl.signal });
+    const res = await fetch(url, { signal: ctrl.signal });
     return await res.text();
   } catch (e) {
-    throw new Error(`fetch ${path}: ${e.name === 'AbortError' ? 'timed out' : e}`);
+    throw new Error(`fetch ${url}: ${e.name === 'AbortError' ? 'timed out' : e}`);
   } finally {
     clearTimeout(timer);
   }
@@ -146,6 +183,10 @@ async function fetchText(path, timeoutMs = 20000) {
 async function main() {
   await init();
 
+  if (typeof navigator !== 'undefined' && 'serviceWorker' in navigator && location.protocol.startsWith('http')) {
+    navigator.serviceWorker.register('sw.js').catch(() => {});
+  }
+
   // Artifact freshness (src/stamp.rs): served artifacts stamp the engine
   // build they came from; a mismatch says the heavy rebuild step was
   // skipped after an engine change. A missing manifest is unknown
@@ -153,18 +194,15 @@ async function main() {
   // unfenced: a console warning, not a UI gate.
   checkArtifactFreshness().catch(() => {});
 
-  // fill gana/pada dropdowns
-  const ganaSelect = el('list-gana');
-  Object.entries(GANAS).forEach(([k, v]) => {
-    const opt = document.createElement('option');
-    opt.value = k;
-    opt.textContent = v;
-    ganaSelect.appendChild(opt);
-  });
-
   await ensureList().catch((err) => status(String(err)));
   runListFilter();
   route();
+
+  // Pre-warm splitter on browser idle so first search has zero delay
+  const idle = typeof requestIdleCallback === 'function' ? requestIdleCallback : (fn) => setTimeout(fn, 200);
+  idle(() => {
+    ensureSplitter().catch(() => {});
+  });
 }
 
 function route() {
@@ -210,19 +248,7 @@ window.addEventListener('hashchange', route);
 
 function runListFilter() {
   const raw = el('list-q').value.trim();
-  const gana = el('list-gana').value;
-  const pada = el('list-pada').value;
-
   let rows = dhatuList.data;
-  if (gana) rows = rows.filter((r) => String(r.gana) === gana);
-  if (pada) rows = rows.filter((r) => r.pada === pada);
-  // ADDITIONS.md 3.2: the dhatu_data.json `settva` (S/A/V) and `karma`
-  // (S/A/D) fields as list dropdowns — the CLI already takes --settva/-
-  // karma over the same fields; rows with '-' are unmatched and drop out.
-  const settva = el('list-settva').value;
-  if (settva) rows = rows.filter((r) => r.settva === settva);
-  const karma = el('list-karma').value;
-  if (karma) rows = rows.filter((r) => r.karma === karma);
   if (raw) {
     // Exact dhātu match, compared in Devanagari: HK `dA` must normalize to
     // `दा` first; queries that decode to nothing fall through as-is.
@@ -469,8 +495,14 @@ function renderCellPrefixedKrut(stack, krutTables, family) {
   // carry the stale लृङ् dump build — never shown prefixed.
   const SYA_KRTS = new Set(['स्य-शतृ', 'स्य-शानच्', 'भावकर्म-शानच्', 'स्य-भावकर्म-शानच्']);
   const pKrut = {};
-  Object.entries(krutTables).forEach(([krt, rows]) => {
-    if (!rows || rows.length === 0) return;
+  // The site's prefixed view can show कृत्स that have no base cell at all
+  // (01.0001 अप् exists only under upasargas). Iterate the union of the
+  // base rows and the pinned prefixed set; row-less कृत्स derive with an
+  // empty upstream and mask by the कृत्'s own linga slots.
+  const krtNames = new Set(Object.keys(krutTables || {}));
+  Object.keys(pre || {}).forEach((k) => krtNames.add(k));
+  [...krtNames].forEach((krt) => {
+    const rows = (krutTables && krutTables[krt]) || [];
     // The site drops क्त्वा once an upasarga is selected
     // (`0<n.length&&"क्त्वा"==e`).
     if (krt === 'क्त्वा' && stack) return;
@@ -487,7 +519,7 @@ function renderCellPrefixedKrut(stack, krutTables, family) {
     if (derived) {
       // Mask avyaya cells: a field empty in every upstream row stays
       // empty (upstream emptiness marks indeclinables).
-      const filled = { m: false, f: false, n: false };
+      const filled = { m: rows.length === 0, f: rows.length === 0, n: rows.length === 0 };
       for (const r of rows) {
         for (const field of ['m', 'f', 'n']) {
           if (r[field] && r[field].trim() !== '') filled[field] = true;
@@ -721,11 +753,13 @@ async function runFormSearch() {
       const n = ok(index_shard(r.text, SHARDS), 'shard').shard;
       // Two sharded sets answer any query: base (ting/krt/prefixed) and
       // global subanta (declined) forms, under distinct cache keys.
-      for (const [prefix, path] of [
-        ['b', `data/shards/shard-${String(n).padStart(2, '0')}.index.json`],
-        ['u', `data/shards/sub-${String(n).padStart(2, '0')}.index.json`],
-      ]) {
-        await loadShard(prefix + n, path);
+      const shardPath = `data/shards/shard-${String(n).padStart(2, '0')}.index.json`;
+      const subPath = `data/shards/sub-${String(n).padStart(2, '0')}.index.json`;
+      await Promise.all([
+        loadShard('b' + n, shardPath),
+        loadShard('u' + n, subPath),
+      ]);
+      for (const prefix of ['b', 'u']) {
         const res = ok(index_query_family(prefix + n, r.text), 'query');
         for (const hit of res.hits) {
           const id = JSON.stringify(hit);
@@ -739,13 +773,7 @@ async function runFormSearch() {
     // Prefixed forms ship in neither shard set: split the query into
     // (upasarga, base) candidates and soundness-verify each by exact
     // regeneration — this also covers unlisted stacks.
-    if (!splitterReady) {
-      const names = dhatuList.upasarga_names
-        || [...new Set(dhatuList.data.flatMap((e) =>
-          (e.upasargas || []).map((u) => u.name)))];
-      ok(split_init(JSON.stringify(names)), 'splitter');
-      splitterReady = true;
-    }
+    await ensureSplitter();
     const triedSplits = new Set();
     for (const s of ok(split_query(q, SHARDS), 'splits').splits.slice(0, 8)) {
       if (!alive()) return;
@@ -757,8 +785,10 @@ async function runFormSearch() {
       // shards (e.g. प्रददद्भिः ← प्र + ददद्भिः).
       const file = `data/shards/shard-${String(s.shard).padStart(2, '0')}.index.json`;
       const sub = `data/shards/sub-${String(s.shard).padStart(2, '0')}.index.json`;
-      await loadShard('b' + s.shard, file);
-      await loadShard('u' + s.shard, sub);
+      await Promise.all([
+        loadShard('b' + s.shard, file),
+        loadShard('u' + s.shard, sub),
+      ]);
       const v = ok(verify_split(q, s.stack, s.base), 'verify');
       for (const hit of v.hits) {
         const key = JSON.stringify(hit);
@@ -792,6 +822,21 @@ async function runFormSearch() {
       } catch {
         readings = [];
       }
+    }
+    if (hits.length > 0) {
+      hits.sort((a, b) => {
+        const idA = a.baseindex || '';
+        const idB = b.baseindex || '';
+        if (idA !== idB) return idA.localeCompare(idB);
+        const pOrder = { kartari: 0, karmani: 1 };
+        const prA = pOrder[a.prayoga] ?? 2;
+        const prB = pOrder[b.prayoga] ?? 2;
+        if (prA !== prB) return prA - prB;
+        if (typeof a.pos === 'number' && typeof b.pos === 'number') {
+          return a.pos - b.pos;
+        }
+        return 0;
+      });
     }
     const html = hits.length > 0
       ? renderHits(hits.slice(0, 200), dhatuCards(), reads[0].text)
@@ -842,12 +887,12 @@ async function runWordForm() {
   try {
     const res = ok(subanta_analyze(q), 'word');
     const n = res.analyses.length;
-    const setNote = (count, site) => {
+    const setNote = (count) => {
       el('word-note').textContent =
         `${res.word} — ${n} reading${n === 1 ? '' : 's'}, ` +
-        `${count} declension table${count === 1 ? '' : 's'}${site ? ' · ashtadhyayi.com' : ''}`;
+        `${count} declension table${count === 1 ? '' : 's'}`;
     };
-    setNote(res.tables.length, false);
+    setNote(res.tables.length);
     el('word-readings').innerHTML = renderWordReadings(res.analyses);
     // The vendored शब्दपाठः is the oracle for every word it lists: once it
     // has loaded (lazily, first run), swap the site's own grids in place.
@@ -870,12 +915,14 @@ async function runWordForm() {
       if (site.length === 0) {
         // The corpus does not list this word: the derived tables stand in
         // (foreign names, fresh stems).
-        setNote(res.tables.length, false);
+        delete el('word-tables').dataset.source;
+        setNote(res.tables.length);
         el('word-tables').innerHTML = renderWordTables(res.tables);
         addCopyButtons(el('word-tables'));
         return;
       }
-      setNote(site.length, true);
+      el('word-tables').dataset.source = 'shabda';
+      setNote(site.length);
       el('word-tables').innerHTML = renderWordTables(site);
       addCopyButtons(el('word-tables'));
     });

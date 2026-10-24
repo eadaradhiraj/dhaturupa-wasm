@@ -1,0 +1,10 @@
+{
+  "name": "dhaturupa-wasm",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Sanskrit verbal and nominal generator in WebAssembly",
+  "scripts": {
+    "test": "./check.sh",
+    "deploy": "npx wrangler pages deploy dist --project-name dhaturupa --branch main --commit-dirty=true"
+  }
+}

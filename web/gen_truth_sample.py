@@ -2,7 +2,7 @@
 """Served ground-truth sample for the browser (WebDriver) prefixed-view test.
 
 Reads skt-morph-data (SKT_MORPH_DATA, default
-/home/edhiraj/Documents/projs/pypanini/skt-morph-data), transliterates via
+/home/edhiraj/Documents/projs/skt-morph-data/data), transliterates via
 the audited CLI path, and writes dist/data/prefixed_truth_sample.json:
 12 (dhātu, stack) combos covering the reported bug (01.1096+vi), facultative
 stem variants (10.0343), sam-su sandhi (01.0025), all three pada classes,
@@ -35,7 +35,7 @@ def main():
     here = os.path.dirname(os.path.abspath(__file__))
     root = os.path.join(here, "..")
     cor = os.environ.get(
-        "SKT_MORPH_DATA", "/home/edhiraj/Documents/projs/pypanini/skt-morph-data"
+        "SKT_MORPH_DATA", "/home/edhiraj/Documents/projs/skt-morph-data/data"
     )
     if not os.path.isdir(cor):
         print(f"gen_truth_sample: no corpus at {cor}, skipping")

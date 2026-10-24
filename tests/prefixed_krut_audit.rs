@@ -15,7 +15,7 @@
 //! they have no corpus truth, so only the export's shape is gated here.
 //!
 //! Corpus: `SKT_MORPH_DATA` (default
-//! `/home/edhiraj/Documents/projs/pypanini/skt-morph-data`); absent → skip
+//! `/home/edhiraj/Documents/projs/skt-morph-data/data`); absent → skip
 //! with notice, never false-green.
 //!
 //! Sampled tier runs in plain `cargo test`; exhaustive is `#[ignore]`d:
@@ -38,9 +38,17 @@ const FAMILIES: [(&str, &str); 5] = [
 
 fn corpus_root() -> Option<std::path::PathBuf> {
     let root = std::env::var("SKT_MORPH_DATA")
-        .unwrap_or_else(|_| "/home/edhiraj/Documents/projs/pypanini/skt-morph-data".to_string());
+        .unwrap_or_else(|_| "/home/edhiraj/Documents/projs/skt-morph-data/data".to_string());
     let path = std::path::PathBuf::from(root);
-    path.is_dir().then_some(path)
+    if path.join("01").is_dir() {
+        Some(path)
+    } else if path.join("data/01").is_dir() {
+        Some(path.join("data"))
+    } else if path.is_dir() {
+        Some(path)
+    } else {
+        None
+    }
 }
 
 struct Shared {

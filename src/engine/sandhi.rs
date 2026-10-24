@@ -933,7 +933,7 @@ fn triggered_left_strict(b: &[u8], i: usize) -> bool {
 ///
 /// `aug_keep` restores the opaque augment for roots whose post-augment `s`
 /// never voices (see [`crate::engine::upasarga::GenCtx`]).
-pub fn satva(s: &str, acc: &str, z_gate: bool, aug_keep: bool) -> String {
+pub fn satva(s: &str, acc: &str, z_gate: bool, aug_keep: bool, z_root: bool) -> String {
     let b = s.as_bytes();
     let ab = acc.as_bytes();
     let pre_len = ab.len();
@@ -1058,7 +1058,12 @@ pub fn satva(s: &str, acc: &str, z_gate: bool, aug_keep: bool) -> String {
             && b.get(i + 3..).is_some_and(|tail| {
                 tail.contains(&b'I') && !tail.windows(2).any(|w| w == b"RI" || w == b"nI")
             });
-        let third_ok = third_ok && !sats_keep && !sah_keep;
+        // A ṣ-upadeśa root's OWN inner ṣ (`z`) is not a dissimilar third:
+        // it must not block the satva of the reduplicant-initial `s`
+        // (01.0049 नि + सिषिध्वस् → निषिषिध्वस्, निषिषिधिषण…). Only the
+        // base-first slot; other positions keep the classical block.
+        let z_root_first = z_root && i == pre_len && b[pre_len..].contains(&b'z');
+        let third_ok = (third_ok || z_root_first) && !sats_keep && !sah_keep;
         let penult_ok = !penult_r
             || i + 2 >= b.len()
             || !SATVA_PENULT_R_BLOCK.contains(&b[i + 2])

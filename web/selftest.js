@@ -23,6 +23,13 @@ const ok = (name, cond, extra) => {
 const step = (where) => { out.textContent = `STEP: ${where}`; };
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 const $ = (id) => document.getElementById(id);
+const resolveDataUrl = (path) => {
+  if (typeof window !== 'undefined' && window.DATA_BASE_URL && typeof path === 'string' && path.startsWith('data/')) {
+    const base = window.DATA_BASE_URL.replace(/\/+$/, '');
+    return `${base}/${path.slice(5)}`;
+  }
+  return path;
+};
 const text = (el) => (el ? el.textContent : '');
 const waitFor = async (fn, { timeout = 10000, step = 50 } = {}) => {
   const t0 = performance.now();
@@ -68,16 +75,11 @@ try {
   ok('list: unknown dhātu → 0', text($('list-count')).startsWith('0 /'), text($('list-count')));
   $('list-q').value = 'eat'; $('list-go').click();
   ok('list: English gloss eat (93)', text($('list-count')) === '93 / 2259', text($('list-count')));
-  $('list-q').value = ''; $('list-pada').value = 'P'; $('list-go').click();
-  const padaCount = text($('list-count'));
-  ok('list: pada filter applies', /^[1-9]\d* \/ 2259$/.test(padaCount), padaCount);
-  $('list-pada').value = ''; $('list-go').click();
+  $('list-q').value = ''; $('list-go').click();
   ok('list: no upasarga box', !document.getElementById('list-upasarga'));
-  $('list-settva').value = 'V'; $('list-go').click();
-  ok('list: veṭ filter (41)', text($('list-count')) === '41 / 2259', text($('list-count')));
-  $('list-settva').value = ''; $('list-karma').value = 'D'; $('list-go').click();
-  ok('list: dvikarmaka filter (23)', text($('list-count')) === '23 / 2259', text($('list-count')));
-  $('list-karma').value = ''; $('list-go').click();
+  ok('list: no gana/pada/settva/karma dropdowns',
+    !document.getElementById('list-gana') && !document.getElementById('list-pada')
+    && !document.getElementById('list-settva') && !document.getElementById('list-karma'));
 
   // ---- form search: base, prefixed, declined-prefixed, kṛdanta-subanta, HK
   // Returns the result; stops waiting as soon as the search settles
@@ -259,7 +261,7 @@ try {
     );
     ok(`sweep ${id}: detail renders`, ready);
     if (!ready) continue;
-    const blob = await fetch(`data/blobs/${id}.json`).then((r) => r.json());
+    const blob = await fetch(resolveDataUrl(`data/blobs/${id}.json`)).then((r) => r.json());
     const kartari = (blob.ting.shuddha && blob.ting.shuddha.kartari) || {};
     const body = text($('detail-ting'));
     for (const [key, value] of Object.entries(kartari)) {
@@ -352,7 +354,7 @@ try {
     const pada = key.startsWith('p') ? 'परस्मैपदम्' : 'आत्मनेपदम्';
     return `${LAKARA_NAMES[key.slice(1)] || key} · ${pada}`;
   };
-  const truthSample = await fetch('data/prefixed_truth_sample.json')
+  const truthSample = await fetch(resolveDataUrl('data/prefixed_truth_sample.json'))
     .then((r) => (r.ok ? r.json() : null))
     .catch(() => null);
   if (!truthSample) {
@@ -459,13 +461,12 @@ try {
   const wn = await wordRun('Wrampena');
   ok('word: Wrampena reads only as itself', !/instrumental/.test(wn.readings), wn.readings.slice(0, 90));
 
-  // ---- word view: the vendored शब्दपाठः (dist/data/shabda2.json, the same
-  // dump ashtadhyayi.com renders its शब्द pages from) is the display oracle
-  // for every word the corpus lists: its own grids replace the derived
-  // candidates and the note credits the source. Words the corpus does not
-  // list (ठ्रम्पेण / Wrampena) keep the derived tables checked above.
+  // ---- word view: the vendored शब्दपाठः (dist/data/shabda2.json)
+  // is the display oracle for every word the corpus lists: its own grids
+  // replace the derived candidates. Words the corpus does not list
+  // (ठ्रम्पेण / Wrampena) keep the derived tables checked above.
   ok('word: unlisted Wrampena stays on derived tables',
-    !wn.note.includes('ashtadhyayi.com'), wn.note);
+    $('word-tables').dataset.source !== 'shabda', wn.note);
   // Copy bar rides on the word tables too; the TSV carries the labeled
   // grid chrome even for a derived/unlisted stem.
   const wCopy = $('word-tables').querySelector('.copy-btn[data-kind="tsv"]');
@@ -477,7 +478,7 @@ try {
       /विभक्तिः\t/.test(window.__lastCopy.text) && /प्रथमा\t/.test(window.__lastCopy.text),
       window.__lastCopy.text.slice(0, 90));
   }
-  const hasShabda = await fetch('data/shabda2.json')
+  const hasShabda = await fetch(resolveDataUrl('data/shabda2.json'))
     .then((r) => r.ok).catch(() => false);
   // The paradigms added for ADDITIONS 2.x read back, not just decline: the
   // word view lists the base word + case for the form the user typed.
@@ -499,7 +500,7 @@ try {
     const wordSite = async (q) => {
       const r = await wordRun(q);
       const credited = await waitFor(() =>
-        text($('word-note')).includes('ashtadhyayi.com'), { timeout: 15000 });
+        $('word-tables').dataset.source === 'shabda', { timeout: 15000 });
       const first = $('word-tables').querySelector('section.word-table');
       return {
         ...r, credited,
@@ -511,17 +512,17 @@ try {
     };
     const wls = await wordSite('लक्ष्मी');
     ok('word: लक्ष्मी shows the site @lakSmI1 grid',
-      wls.credited && /ashtadhyayi\.com @lakSmI1/.test(wls.head) &&
+      wls.credited && wls.head.includes('लक्ष्मी — feminine') &&
       wls.tables === 1 && wls.firstCell === 'लक्ष्मीः' && wls.grid.includes('लक्ष्मीणाम्'),
       `${wls.head} · ${wls.firstCell}`);
     const wns = await wordSite('नदी');
     ok('word: नदी shows the site ङ्यन्त grid (bare nominative)',
-      wns.credited && /ashtadhyayi\.com @nadI1/.test(wns.head) &&
+      wns.credited && wns.head.includes('नदी — feminine') &&
       wns.firstCell === 'नदी' && wns.grid.includes('नदीनाम्'),
       `${wns.head} · ${wns.firstCell}`);
     const wgs = await wordSite('गति');
     ok('word: गति shows the site grid with गत्या',
-      wgs.credited && /ashtadhyayi\.com @gati1/.test(wgs.head) &&
+      wgs.credited && wgs.head.includes('गति — feminine') &&
       wgs.grid.includes('गत्या'), `${wgs.head} · ${wgs.firstCell}`);
     const wss = await wordSite('सखि');
     ok('word: सखि shows the site grid with सखा',
@@ -530,7 +531,7 @@ try {
     // shows that word's grid, so सरिद्भ्याम् lands on @sarit1.
     const wsi = await wordSite('सरिद्भ्याम्');
     ok('word: सरिद्भ्याम् shows the site @sarit1 grid (inflected → base word)',
-      wsi.credited && /ashtadhyayi\.com @sarit1/.test(wsi.head) &&
+      wsi.credited && wsi.head.includes('सरित् — feminine') &&
       wsi.grid.includes('सरित्'), `${wsi.head} · ${wsi.firstCell}`);
   }
 

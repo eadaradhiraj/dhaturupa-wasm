@@ -120,6 +120,76 @@ fn decline_nominal(
     out
 }
 
+/// The row display for a prefixed कृदन्त cell. The site's prefixed rows
+/// always print the नुम् nominative of शतृ (`अधिबोभुवन्`), even where the
+/// click-through grid keeps the अभ्यस्त no-नुम् pair (`बोभुवत्/बोभुवद्`,
+/// its @dadat1 ref): the display and the grid genuinely differ there.
+fn display_nominal(
+    krt_slp1: &str,
+    field: &str,
+    stem_slp1: &str,
+    engine_family: &str,
+    baseindex: &str,
+) -> Vec<String> {
+    // A क्तवतु stem that never took the vant suffix cannot feed the site's
+    // @bhavat reference: it prints the bare stem for every linga
+    // (01.0119 उल्लाघ, 01.0442 क्षीब).
+    if krt_slp1 == "ktavatu" && !stem_slp1.ends_with('t') {
+        return vec![stem_slp1.to_string()];
+    }
+    if field == "m" && krt_slp1 == "Satf" {
+        // An empty baseindex selects the plain @gacchat1 (नुम्) paradigm.
+        if let Some(forms) = prathama_ekavacana("krut", "Satf", "m", stem_slp1, "") {
+            return forms;
+        }
+    }
+    // No table for this linga: show nothing rather than leaking the raw
+    // stem as a nominative (prefixed-only कृत्स mask by slot).
+    let forms = prathama_ekavacana(engine_family, krt_slp1, field, stem_slp1, baseindex)
+        .unwrap_or_default();
+    // The site's n citation of an आ-final stem carries the final -m
+    // (उपसर्याम्) while the click table's prathamā is the bare stem.
+    if field == "n" && stem_slp1.ends_with('A') && forms.len() == 1 && forms[0] == stem_slp1 {
+        return vec![format!("{stem_slp1}m")];
+    }
+    forms
+}
+
+fn prathama_ekavacana(
+    family: &str,
+    krt_slp1: &str,
+    field: &str,
+    stem_slp1: &str,
+    baseindex: &str,
+) -> Option<Vec<String>> {
+    use crate::engine::subanta::krt_table;
+    let table = krt_table(family, krt_slp1, field, stem_slp1, baseindex)?;
+    let forms: Vec<String> = table
+        .cells
+        .iter()
+        .filter(|slot| slot.vibhakti == "prathamA" && slot.vacana == "ekavacanam")
+        .flat_map(|slot| slot.forms.clone())
+        .collect();
+    (!forms.is_empty()).then_some(forms)
+}
+
+/// The site's prefixed क्वसु strī from the strong stem: strip the final
+/// `vas` and add `uṣī` with the stem-final vowel's sandhi — `yeti` →
+/// येत्युषी, `vivI` → विव्युषी, `baBU` → बभूषी, `vavand` → ववन्दुषी.
+fn kvasu_strong_f(stem_slp1: &str) -> Option<String> {
+    let root = stem_slp1.strip_suffix("vas")?;
+    if root.ends_with('i') || root.ends_with('I') {
+        Some(format!("{}yuzI", &root[..root.len() - 1]))
+    } else if root.ends_with('u') || root.ends_with('U') {
+        Some(format!("{root}zI"))
+    } else if root.ends_with('f') || root.ends_with('F') {
+        // Vocalic ṛ + uṣī → r + uṣī (चकृ → चक्रुषी).
+        Some(format!("{}ruzI", &root[..root.len() - 1]))
+    } else {
+        Some(format!("{root}uzI"))
+    }
+}
+
 /// Strī-pratyaya SLP1 stems that DIFFER from the input stem (feminine
 /// formation actually changed something).
 fn feminized_stems(vp: &Vyakarana, stem_slp1: &str) -> Vec<String> {
@@ -285,18 +355,45 @@ pub fn derive_prefixed_krut(
     // them would swap the site's two-row cells (10.0199 तृच्).
     stems.dedup();
     let engine_family = crate::forms::engine_krut_family(family).unwrap_or("krut");
-    let krt_slp1 = crate::translit::deva_to_slp1(krt_deva).unwrap_or_default();
+    // The स्य-/भावकर्म- display names carry a hyphen the SLP1 converter
+    // rejects; they decline under the base कृत् (शानच् → SAnac).
+    let krt_slp1 = crate::translit::deva_to_slp1(krt_deva)
+        .or_else(|| special_tag(krt_deva).and_then(crate::translit::deva_to_slp1))
+        .unwrap_or_default();
     let ctx = crate::genctx::ctx_for(slp1_dhatu, engine_category, dhatu_note);
+    // The site licenses BOTH prefix surfaces where `sam` meets a
+    // stop/nasal (`saMpra` + `sampra`; the corpus keeps both rows), while
+    // vidyuṭ emits only its own sandhi. Re-apply the stack's surface
+    // variants to each derived stem's prefix (same-length swaps only).
+    if !effective_stack_slp.is_empty() && !effective_stack_slp.contains('-') {
+        let surfaces = crate::engine::upasarga::stack_surfaces(&effective_stack_slp, ctx);
+        let mut extra: Vec<String> = Vec::new();
+        for stem in &stems {
+            for surface in &surfaces {
+                if surface.len() < stem.len() && stem.starts_with(surface.as_str()) {
+                    let rest = &stem[surface.len()..];
+                    for other in &surfaces {
+                        if other != surface && other.len() == surface.len() {
+                            let cand = format!("{other}{rest}");
+                            if !stems.contains(&cand) && !extra.contains(&cand) {
+                                extra.push(cand);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        stems.extend(extra);
+    }
 
     // Vidyuṭ rows: one per stem.
-    let mut rows: Vec<UpRow> = Vec::new();
-    for stem in &stems {
+    let build_row = |stem: &str| -> UpRow {
         let mut row: UpRow = HashMap::new();
-        row.insert("base".to_string(), vec![stem.clone()]);
+        row.insert("base".to_string(), vec![stem.to_string()]);
         for field in ["m", "n"] {
             row.insert(
                 field.to_string(),
-                decline_nominal(&krt_slp1, field, stem, engine_family, baseindex),
+                display_nominal(&krt_slp1, field, stem, engine_family, baseindex),
             );
         }
         let mut fem: Vec<String> = Vec::new();
@@ -309,7 +406,7 @@ pub fn derive_prefixed_krut(
             // `भवती`). शानच्-type rows feminize through the तका (माला
             // ref): the stem already carries ण् → its आ-nom pads.
             if stem.ends_with('t') {
-                let base = &stem[..stem.len() - 1];
+                let base = stem.strip_suffix('t').unwrap_or(stem);
                 for cand in [format!("{base}ntI"), format!("{base}tI")] {
                     for form in decline_nominal(&krt_slp1, "f", &cand, engine_family, baseindex) {
                         if !fem.contains(&form) {
@@ -331,18 +428,116 @@ pub fn derive_prefixed_krut(
                         fem.push(form);
                     }
                 }
+            } else if let Some(a_stem) = stem.strip_suffix('a') {
+                // शानच्-type a-stems (एधमान…): the strī is simply आ-final,
+                // and the site keeps the stem's own surface (संभावयमाना) —
+                // vidyuṭ's strī derivation normalizes it to the
+                // parasavarṇa twin (सम्भावयमाना).
+                for form in decline_nominal(
+                    &krt_slp1,
+                    "f",
+                    &format!("{a_stem}A"),
+                    engine_family,
+                    baseindex,
+                ) {
+                    if !fem.contains(&form) {
+                        fem.push(form);
+                    }
+                }
             }
         }
-        for fstem in feminized_stems(&engine.vp, stem) {
+        // The स्य-* block above owns the f field outright; vidyuṭ's own
+        // stryanta would add its parasavarṇa-normalized stem as an extra
+        // alternant the site does not list.
+        let mut fstems = if sy_only {
+            Vec::new()
+        } else {
+            feminized_stems(&engine.vp, stem)
+        };
+        // The site's prefixed strī formation can differ from vidyuṭ's own
+        // stryanta: शतृ shows both the strong …antī (अवादन्ती) and the
+        // weak …atī (अदती, सर्स्रती) of the त्-final stem, and a क्वसु
+        // strong stem with इट् (`…ivas`) feminizes from the strong stem
+        // minus `vas` plus `uṣī` — `yeti-vas` → येत्युषी, जक्षिवस् →
+        // जक्ष्युषी — while the an-iṭ stems (vavand-vas) keep the
+        // weak-stem …uṣī.
+        if krt_slp1 == "Satf" && stem.ends_with('t') {
+            fstems.clear();
+            let base = &stem[..stem.len() - 1];
+            fstems.push(format!("{base}ntI"));
+            fstems.push(format!("{base}tI"));
+        } else if krt_slp1 == "kvasu" {
+            if let Some(f) = kvasu_strong_f(stem) {
+                fstems.push(f);
+            }
+        } else if krt_slp1 == "GinuR" && stem.ends_with('n') {
+            // The site's prefixed घिनुण् strī is the dental stem + ई
+            // (प्रसारिनी), not vidyuṭ's ṇatva form (प्रसारिणी).
+            fstems.clear();
+            fstems.push(format!("{stem}I"));
+        } else if matches!(
+            krt_slp1.as_str(),
+            "ac" | "SAnac" | "sya-SAnac" | "BAvakarma-SAnac" | "sya-BAvakarma-SAnac"
+        ) && stem.ends_with('a')
+        {
+            fstems.clear();
+            // The site's prefixed अच्/शानच् strī keeps the stem's own
+            // anusvāra surface (संप्रसरा, संक्रीडमाना); vidyuṭ's stryanta
+            // normalizes it to the parasavarṇa twin (सम्प्रसरा).
+            fstems.push(format!("{}A", stem.strip_suffix('a').unwrap_or(stem)));
+        } else if matches!(
+            krt_slp1.as_str(),
+            "a" | "aN" | "Takan" | "Rvuc" | "ac" | "kyap"
+        ) && stem.ends_with('A')
+        {
+            fstems.clear();
+            // आ-final अ/अच् strī: the site keeps the stem's own surface
+            // (उपार्च्छा with the च् retained), not vidyuṭ's normalized
+            // upārchā.
+            fstems.push(stem.to_string());
+        } else if matches!(krt_slp1.as_str(), "Rvul" | "vuY" | "vun") && stem.ends_with("aka") {
+            fstems.clear();
+            // The site's -aka कृत्स take the vṛddhi strī -ikā
+            // (व्याभाषक → व्याभाषिका); vidyuṭ offers no strī here.
+            fstems.push(format!("{}ikA", &stem[..stem.len() - 3]));
+        } else if krt_slp1 == "vun" {
+            fstems.clear();
+            // The शुद्ध/यङ्लुग् वुन् strī is the bare stem itself
+            // (दाक, not दाका); the -aka forms took -ikā above.
+            fstems.push(stem.to_string());
+        } else if krt_slp1 == "ktin" {
+            fstems.clear();
+            // क्तिन्'s strī is the stem itself; vidyuṭ's stryanta
+            // normalizes the prefix anusvāra (संप्रत्ति → सम्प्रत्ति), the
+            // site keeps the stem's own surface.
+            fstems.push(stem.to_string());
+        } else if stem.ends_with('a') {
+            fstems.clear();
+            // The general a-stem strī is the stem's own surface + आ: the
+            // site keeps the prefix sandhi it was given (संप्रत्ता), while
+            // vidyuṭ's stryanta normalizes it to the parasavarṇa twin.
+            fstems.push(format!("{}A", stem.strip_suffix('a').unwrap_or(stem)));
+        }
+        for fstem in fstems {
             for form in decline_nominal(&krt_slp1, "f", &fstem, engine_family, baseindex) {
                 if !fem.contains(&form) {
                     fem.push(form);
                 }
             }
         }
+        if fem.is_empty() {
+            // क्तिन्/उ/अ-type कृत्स have no separate strī stem: the derived
+            // stem IS the feminine (निषेधिष्टिः, निषेधिषुः, निषेधिषा), so
+            // decline it in the कृत्'s f reference paradigm.
+            if let Some(forms) = prathama_ekavacana(engine_family, &krt_slp1, "f", stem, baseindex)
+            {
+                fem = forms;
+            }
+        }
         row.insert("f".to_string(), fem);
-        rows.push(row);
-    }
+        row
+    };
+    let mut rows: Vec<UpRow> = stems.iter().map(|stem| build_row(stem)).collect();
     // Vidyuṭ receives the stack via `Dhatu::with_prefixes`, so each stem
     // is ALREADY prefixed (`AN+BAvaka -> ABAvaka`, `sam+cokzuditum ->
     // saMcokzuditum`/`saYcokzuditum`): no second prefixing pass here.
@@ -373,12 +568,57 @@ pub fn derive_prefixed_krut(
     // (their लृङ् data is invisible there), and rows the engine cannot
     // derive are simply absent from the site's view.
     if !sy_only {
+        // `ava` + short `a`: the live site derives with the root in place
+        // (ava + √i + ana → avayana, avayām babhūva), not by prefixing the
+        // already-derived base cell (which would give the dīrgha avāyana).
+        // When a vidyut stem exists it is the site's surface; otherwise the
+        // base is prefixed with the site's pararūpa (av + ayana).
+        let last_is_ava = effective_stack_slp
+            .rsplit(';')
+            .next()
+            .is_some_and(|t| t == "ava");
+        let pararupa_stack = if last_is_ava {
+            let mut parts: Vec<&str> = effective_stack_slp.split(';').collect();
+            if let Some(last) = parts.last_mut() {
+                *last = "av";
+            }
+            parts.join(";")
+        } else {
+            String::new()
+        };
+        let vidyut_real = rows.iter().any(|r| {
+            r.get("base")
+                .is_some_and(|b| b.iter().any(|s| !s.is_empty()))
+        });
         for (base, m, f, n) in upstream {
+            let base_alts = split_alts(base);
+            let ava_a = last_is_ava
+                && !pararupa_stack.is_empty()
+                && !base_alts.is_empty()
+                && base_alts.iter().all(|a| a.starts_with('a'));
+            let chosen_stack = if ava_a {
+                let normal_match = base_alts.iter().any(|alt| {
+                    generate_prefixed(&effective_stack_slp, alt, ctx)
+                        .iter()
+                        .any(|v| surface_to_rows.contains_key(v))
+                });
+                if normal_match {
+                    effective_stack_slp.clone()
+                } else if vidyut_real {
+                    // The site's live derivation already supplied the row
+                    // (avayana); the dīrgha surface is a prefixing artifact.
+                    continue;
+                } else {
+                    pararupa_stack.clone()
+                }
+            } else {
+                effective_stack_slp.clone()
+            };
             // Base variants in generation order; their count sets the group
             // count for this upstream row's fields.
             let mut base_groups: Vec<Vec<String>> = Vec::new();
             let mut n_groups = 0_usize;
-            for alt in split_alts(base) {
+            for alt in base_alts {
                 // ल्यप् ships pre-prefixed (baked stack: `प्रभूय`, fused `प्रेड्य`);
                 // strip the baked code before applying the selected stack, else
                 // the supplement row double-prefixes and never matches vidyuṭ.
@@ -387,7 +627,7 @@ pub fn derive_prefixed_krut(
                 } else {
                     alt
                 };
-                let variants = generate_prefixed(&effective_stack_slp, &alt, ctx);
+                let variants = generate_prefixed(&chosen_stack, &alt, ctx);
                 n_groups = n_groups.max(variants.len());
                 base_groups.push(variants);
             }
@@ -399,7 +639,7 @@ pub fn derive_prefixed_krut(
             let field_groups = |text: &str| -> Vec<Vec<String>> {
                 let mut groups: Vec<Vec<String>> = vec![Vec::new(); n_groups];
                 for alt in split_alts(text) {
-                    let variants = generate_prefixed(&effective_stack_slp, &alt, ctx);
+                    let variants = generate_prefixed(&chosen_stack, &alt, ctx);
                     if variants.len() == 1 {
                         for group in &mut groups {
                             group.push(variants[0].clone());
@@ -443,9 +683,13 @@ pub fn derive_prefixed_krut(
                         .collect();
                     bases.sort();
                     bases.dedup();
-                    if !bases.is_empty() {
-                        row.insert("base".to_string(), bases);
+                    // A row without a base cannot be displayed or matched;
+                    // empty-base rows come from alternating supplement groups
+                    // whose other variant matched the vidyut row already.
+                    if bases.is_empty() {
+                        continue;
                     }
+                    row.insert("base".to_string(), bases);
                     if !f_groups[group].is_empty() {
                         row.insert("f".to_string(), f_groups[group].clone());
                     }
@@ -465,10 +709,19 @@ pub fn derive_prefixed_krut(
                     let Some(row) = rows.get_mut(idx) else {
                         continue;
                     };
-                    // f: always (upstream pre-feminized cells cover the
-                    // engine's at-stem/ī-stem gaps).
+                    // f: union (upstream pre-feminized cells cover the
+                    // engine's at-stem/ī-stem gaps, but the site's live
+                    // derivation can carry a different f class — e.g.
+                    // अच् सरा vs the base cell's सरी — so never drop the
+                    // engine's own form).
                     if !f_groups[group].is_empty() {
-                        row.insert("f".to_string(), f_groups[group].clone());
+                        let mut merged = row.get("f").cloned().unwrap_or_default();
+                        for form in &f_groups[group] {
+                            if !merged.contains(form) {
+                                merged.push(form.clone());
+                            }
+                        }
+                        row.insert("f".to_string(), merged);
                     }
                     // m/n: only for kṛts whose engine declension diverges
                     // from the corpus (see UPSTREAM_OVERRIDE_KRTS).
@@ -482,10 +735,112 @@ pub fn derive_prefixed_krut(
             }
         }
     } // !sy_only (supplement skipped for स्य-/भावकर्म- rows)
-      // Avyaya mask (portal rule): a field that NO upstream cell fills stays
-      // empty in every derived row — the audit masks truth the same way, and
-      // vidyuṭ's stem fallbacks (ल्युट्/तुमुन्-type) would otherwise leak
-      // nominative-looking forms into empty cells.
+      // The upstream supplement replaces `f` wholesale, dropping the
+      // site-only alternants build_row added for शतृ/क्वसु. Re-apply them
+      // to every row's own base stem.
+    if !sy_only {
+        for row in &mut rows {
+            let bases = row.get("base").cloned().unwrap_or_default();
+            for base in &bases {
+                let mut cands: Vec<String> = Vec::new();
+                if krt_slp1 == "Satf" && base.ends_with('t') {
+                    let root = &base[..base.len() - 1];
+                    cands.push(format!("{root}ntI"));
+                    cands.push(format!("{root}tI"));
+                } else if krt_slp1 == "kvasu" {
+                    if let Some(f) = kvasu_strong_f(base) {
+                        cands.push(f);
+                    }
+                } else if krt_slp1 == "GinuR" && base.ends_with('n') {
+                    cands.push(format!("{base}I"));
+                } else if krt_slp1 == "ktavatu" && base.ends_with('t') {
+                    // क्तवतु strī from the row's own surface (उपार्छितवती,
+                    // उपार्च्छितवती), not vidyuṭ's normalized stem.
+                    cands.push(format!("{base}I"));
+                }
+                for cand in cands {
+                    for form in decline_nominal(&krt_slp1, "f", &cand, engine_family, baseindex) {
+                        let f = row.entry("f".to_string()).or_default();
+                        if !f.contains(&form) {
+                            f.push(form);
+                        }
+                    }
+                }
+            }
+        }
+    }
+    // Natva-twin rows (दुर्निमित… / दुर्णिमित…) are separate rows in the
+    // corpus, each carrying its own f alternant. Copy an f form across a
+    // pair of rows whose bases differ only in n/Ṇ, mapping the same
+    // positions in the f form.
+    if !sy_only {
+        let bases: Vec<String> = rows
+            .iter()
+            .map(|row| {
+                row.get("base")
+                    .and_then(|b| b.first())
+                    .cloned()
+                    .unwrap_or_default()
+            })
+            .collect();
+        let mut additions: Vec<(usize, String)> = Vec::new();
+        for (i, row) in rows.iter().enumerate() {
+            let Some(forms) = row.get("f") else {
+                continue;
+            };
+            let base_i = bases[i].as_bytes();
+            for (j, base_j) in bases.iter().enumerate() {
+                if i == j || base_j.is_empty() || base_i.len() != base_j.len() {
+                    continue;
+                }
+                let bj = base_j.as_bytes();
+                let diffs: Vec<usize> = base_i
+                    .iter()
+                    .zip(bj)
+                    .enumerate()
+                    .filter(|(_, (a, b))| a != b)
+                    .map(|(k, _)| k)
+                    .collect();
+                if diffs.is_empty()
+                    || !diffs
+                        .iter()
+                        .all(|&k| matches!((base_i[k], bj[k]), (b'n', b'R') | (b'R', b'n')))
+                {
+                    continue;
+                }
+                for form in forms {
+                    let bytes = form.as_bytes();
+                    if diffs
+                        .iter()
+                        .any(|&k| k >= bytes.len() || !matches!(bytes[k], b'n' | b'R'))
+                    {
+                        continue;
+                    }
+                    let mut mapped = bytes.to_vec();
+                    for &k in &diffs {
+                        mapped[k] = bj[k];
+                    }
+                    let Ok(mapped) = String::from_utf8(mapped) else {
+                        continue;
+                    };
+                    if !rows[j]
+                        .get("f")
+                        .is_some_and(|existing| existing.contains(&mapped))
+                    {
+                        additions.push((j, mapped));
+                    }
+                }
+            }
+        }
+        for (j, form) in additions {
+            rows[j].entry("f".to_string()).or_default().push(form);
+        }
+    }
+
+    // Avyaya mask (portal rule): a field that NO upstream cell fills stays
+    // empty in every derived row — the audit masks truth the same way, and
+    // vidyuṭ's stem fallbacks (ल्युट्/तुमुन्-type) would otherwise leak
+    // nominative-looking forms into empty cells.
     let mut filled = [false; 3];
     for (_, m, f, n) in upstream {
         for (i, text) in [m, f, n].iter().enumerate() {
@@ -494,7 +849,15 @@ pub fn derive_prefixed_krut(
             }
         }
     }
+    // The site's prefixed view derives live: a linga the कृत्'s reference
+    // table declines is shown even when the base cell leaves that field
+    // empty (01.1001 नङ् prefixed pu संयाच्ञाः, base cell याच्ञा,,,).
     for (i, field) in ["m", "f", "n"].iter().enumerate() {
+        if !filled[i]
+            && crate::engine::subanta::krt_has_slot(engine_family, &krt_slp1, field, baseindex)
+        {
+            filled[i] = true;
+        }
         if !filled[i] {
             for row in &mut rows {
                 row.insert(field.to_string(), Vec::new());
@@ -505,19 +868,48 @@ pub fn derive_prefixed_krut(
     // unvoiced/voiced pairs while the corpus keeps only the voiced member.
     // The pairs can arrive split across rows (vidyuṭ row + upstream
     // supplement row), so scan over every form of a field across all rows.
-    for field in ["base", "m", "f", "n"] {
+    // स्य-/भावकर्म- rows are exempt: their सेध/सिध् grade variants are both
+    // real rows in the corpus (निषिषिधिषत् AND निषिषेधिषत्), and the strī
+    // alternants (…ती / …न्ती) twin across those rows too.
+    for (i, field) in ["base", "m", "f", "n"].iter().enumerate() {
         let mut all: Vec<String> = Vec::new();
         for row in &rows {
-            for form in row.get(field).cloned().unwrap_or_default() {
+            for form in row.get(*field).cloned().unwrap_or_default() {
                 if !all.contains(&form) {
                     all.push(form);
                 }
             }
         }
-        let kept = crate::prefix_krut::suppress_twins(&all);
+        let kept = if sy_only || *field == "f" {
+            // Strī cells carry real formation alternants (वुन् …क AND
+            // …का, घिनुण् dental प्रसारिनी), not a weak/strong pair.
+            all.clone()
+        } else {
+            crate::prefix_krut::suppress_twins(&all)
+        };
+        // Never drop a form the upstream cell itself lists: the corpus keeps
+        // both vowel grades where the dhātu really has them (01.0049 सन्
+        // ण्वुल् `निषिषिधिषक` AND `निषिषेधिषक`). Only engine-only twins are
+        // suppressed.
+        let mut upstream_forms: Vec<String> = Vec::new();
+        for (base, m, f, n) in upstream {
+            let text = match i {
+                0 => base,
+                1 => m,
+                2 => f,
+                _ => n,
+            };
+            for form in split_alts(text) {
+                for surface in generate_prefixed(&effective_stack_slp, &form, ctx) {
+                    if !upstream_forms.contains(&surface) {
+                        upstream_forms.push(surface);
+                    }
+                }
+            }
+        }
         for row in &mut rows {
-            if let Some(forms) = row.get_mut(field) {
-                forms.retain(|form| kept.contains(form));
+            if let Some(forms) = row.get_mut(*field) {
+                forms.retain(|form| kept.contains(form) || upstream_forms.contains(form));
             }
         }
     }
@@ -571,12 +963,63 @@ pub fn derive_prefixed_krut(
     });
     let mut seen: Vec<String> = Vec::new();
     let mut out = Vec::new();
+    // The site's `aBi-AN` typo-stack keeps the hyphen only where the
+    // displayed word is the hyphenated stem itself or a direct declension
+    // of it: the m/n of a-final stems and the strī of क्तिन्/वुन्/अङ्.
+    // Derived strī stems (दत्ता, दात्री, दायिका) and the transforming
+    // m/n stems (दातृ, ददिवस्, दत्तवत्, ददत्) are rebuilt without it.
+    let hyphen_stack = stack_deva.contains('-');
     for key in &order {
         let row = &merged[key];
+        let a_final = key.ends_with('a') || key.ends_with('A');
+        // कृत्स whose strī is the stem itself keep the hyphenated stem;
+        // derived feminines (दत्ता, दात्री, दायिका, दत्तवती) rebuild it.
+        // अच् is stem-final only in यङ्लुग् (दादा); the सन्/णिच्/यङ्
+        // feminines lengthen the final vowel and lose the hyphen.
+        let hyphen_f_kept = |form: &str| match krt_slp1.as_str() {
+            "ktin" | "aN" | "u" | "a" => true,
+            "vun" => !key.ends_with("aka"),
+            "ac" | "kyap" => form.starts_with(key.as_str()),
+            _ => false,
+        };
+        let m_kept = a_final || krt_slp1 == "u";
         let mut deva_row = HashMap::new();
         for field in ["base", "m", "f", "n"] {
-            let forms: Vec<String> = row.get(field).cloned().unwrap_or_default();
-            let forms = crate::prefix_krut::suppress_na_twins(&forms);
+            // The corpus's prefixed rows keep both the dental and the
+            // retroflex rows (दुर्निमात्री AND दुर्णिमात्री), so no
+            // na-twin suppression here.
+            let mut forms: Vec<String> = row.get(field).cloned().unwrap_or_default();
+            if hyphen_stack {
+                match field {
+                    // Derived strī stems drop the hyphen; क्तिन्/वुन्/अङ्
+                    // keep the hyphenated base itself.
+                    "f" => {
+                        for form in &mut forms {
+                            if !hyphen_f_kept(form) {
+                                form.retain(|c| c != '-');
+                            }
+                        }
+                    }
+                    // Non-a-final m stems transform (दातृ → दाता), so the
+                    // site's label is the hyphen-less surface.
+                    "m" if !m_kept => {
+                        for form in &mut forms {
+                            form.retain(|c| c != '-');
+                        }
+                    }
+                    // Non-a-final n rows carry BOTH the transformed form
+                    // and the stem-final form (दत्तवत्/दत्तवद्).
+                    "n" if !m_kept => {
+                        let stripped: Vec<String> = forms
+                            .iter()
+                            .map(|form| form.replace('-', ""))
+                            .filter(|form| !forms.contains(form))
+                            .collect();
+                        forms.extend(stripped);
+                    }
+                    _ => {}
+                }
+            }
             let mut devas: Vec<String> = forms
                 .iter()
                 .filter_map(|s| crate::translit::slp1_to_deva(s))

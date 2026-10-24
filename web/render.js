@@ -276,60 +276,188 @@ export function renderWordTables(tables) {
   }
   return tables.map((t) =>
     `<section class="word-table"><h4><span class="deva">${escapeHtml(t.stem)}</span>` +
-    ` — ${escapeHtml(t.lingaLabel || LINGAS[t.linga] || t.linga)} ` +
-    `(${escapeHtml(t.class)})</h4>` +
+    ` — ${escapeHtml(t.lingaLabel || LINGAS[t.linga] || t.linga)}` +
+    (t.class ? ` (${escapeHtml(t.class)})` : '') + `</h4>` +
     renderParadigm(t) + '</section>').join('');
+}
+
+function isSarvanama(word, forms) {
+  const cells = forms.split(';');
+  const cat = cells[9] || '';
+  const pan = cells[12] || '';
+  const sap = cells[18] || '';
+  const zazPl = cells[17] || '';
+  const prPl = cells[2] || '';
+
+  if (cat.includes('स्मै') || cat.includes('स्यै')) return true;
+  if (pan.includes('स्मात्') || pan.includes('स्माद्') || pan.includes('स्याः')) return true;
+  if (sap.includes('स्मिन्') || sap.includes('स्याम्')) return true;
+  if (zazPl && (zazPl.includes('षाम्') || zazPl.includes('साम्')) && !word.endsWith('स्') && !word.endsWith('न्')) return true;
+  if (word.endsWith('अ') && (prPl.includes('सर्वे') || prPl.includes('पूर्वे'))) return true;
+  if (['अस्मद्', 'युष्मद्', 'तद्', 'त्यद्', 'एतद्', 'इदम्', 'अदस्', 'एक', 'द्वि', 'त्रि', 'चतुर्', 'किम्'].includes(word)) return true;
+  return false;
 }
 
 // Vendored शब्दपाठः oracle (dist/data/shabda2.json, built by
 // web/build-shabda.cjs) -> declension sections. `byWord` maps a Devanagari
 // word to site entries `[linga, urlid, forms]`; `forms` is the site's raw
 // 24-cell string — vibhakti-major (pr, dvi, tft, cat, pan, zaz, sap, samb),
-// variants `-`-joined, empty cells `''`. These are the site's own grids, so
-// the word view shows exactly what ashtadhyayi.com renders for a listed
-// word; anything unlisted falls back to the derived engine tables.
-// Entries whose grids are cell-identical collapse into one section: the
-// site lists them once per लिङ्ग/urlid (ग्रामणी @grAmaNI1 masc + @grAmaNI2
-// fem), and two identical grids would read as a rendering bug.
+// variants `-`-joined, empty cells `''`.
+// Entries whose grids are cell-identical collapse into one section:
+// e.g. ग्रामणी masc + fem collapses into a single section with labeled genders.
 const SITE_VIB = [
   'prathamA', 'dvitIyA', 'tftIyA', 'caturTI', 'paJcamI', 'zazWI', 'saptamI',
   'sambodhana',
 ];
 const SITE_VAC = ['ekavacanam', 'dvivacanam', 'bahuvacanam'];
+const NOMINAL_SARVANAMA = new Set([
+  'पूर्व', 'पूर्वा',
+  'उत्तर', 'उत्तरा',
+  'दक्षिण', 'दक्षिणा',
+  'पर', 'परा',
+  'अपर', 'अपरा',
+  'अवर', 'अवरा',
+  'अधर', 'अधरा',
+  'स्व', 'स्वा',
+  'अन्तर', 'अन्तरा',
+  'सर्व', 'सर्वा',
+  'विश्व', 'विश्वा',
+  'सम', 'समा',
+  'सिम', 'सिमा',
+  'अन्य', 'अन्या',
+  'इतर', 'इतरा',
+]);
+
+const NATVA_STEMS = new Set([
+  'पूर्व', 'पूर्वा', 'सर्व', 'सर्वा', 'उत्तर', 'उत्तरा',
+  'पर', 'परा', 'अपर', 'अपरा', 'अवर', 'अवरा', 'अधर', 'अधरा',
+  'अन्तर', 'अन्तरा', 'इतर', 'इतरा',
+]);
+
+function applyNatva(word, suffix) {
+  return NATVA_STEMS.has(word) ? suffix.replace(/न/g, 'ण') : suffix;
+}
+
+function makeSamjnaForms(word, linga) {
+  if (linga === 'f' && word.endsWith('ा')) {
+    const base = word.slice(0, -1);
+    const nam = applyNatva(word, 'नाम्');
+    return [
+      base + 'ा', base + 'े', base + 'ाः',
+      base + 'ाम्', base + 'े', base + 'ाः',
+      base + 'या', base + 'ाभ्याम्', base + 'ाभिः',
+      base + 'ायै', base + 'ाभ्याम्', base + 'ाभ्यः',
+      base + 'ायाः', base + 'ाभ्याम्', base + 'ाभ्यः',
+      base + 'ायाः', base + 'योः', base + 'ा' + nam,
+      base + 'ायाम्', base + 'योः', base + 'ासु',
+      'हे ' + base + 'े', 'हे ' + base + 'े', 'हे ' + base + 'ाः',
+    ].join(';');
+  } else if (linga === 'm') {
+    const base = word;
+    const ena = applyNatva(word, 'ेन');
+    const nam = applyNatva(word, 'नाम्');
+    return [
+      base + 'ः', base + 'ौ', base + 'ाः',
+      base + 'म्', base + 'ौ', base + 'ान्',
+      base + ena, base + 'ाभ्याम्', base + 'ैः',
+      base + 'ाय', base + 'ाभ्याम्', base + 'ेभ्यः',
+      base + 'ाद्-' + base + 'ात्', base + 'ाभ्याम्', base + 'ेभ्यः',
+      base + 'स्य', base + 'योः', base + 'ा' + nam,
+      base + 'े', base + 'योः', base + 'ेषु',
+      'हे ' + base, 'हे ' + base + 'ौ', 'हे ' + base + 'ाः',
+    ].join(';');
+  } else if (linga === 'n') {
+    const base = word;
+    const ani = applyNatva(word, 'ानि');
+    const ena = applyNatva(word, 'ेन');
+    const nam = applyNatva(word, 'नाम्');
+    return [
+      base + 'म्', base + 'े', base + ani,
+      base + 'म्', base + 'े', base + ani,
+      base + ena, base + 'ाभ्याम्', base + 'ैः',
+      base + 'ाय', base + 'ाभ्याम्', base + 'ेभ्यः',
+      base + 'ाद्-' + base + 'ात्', base + 'ाभ्याम्', base + 'ेभ्यः',
+      base + 'स्य', base + 'योः', base + 'ा' + nam,
+      base + 'े', base + 'योः', base + 'ेषु',
+      'हे ' + base, 'हे ' + base + 'े', 'हे ' + base + ani,
+    ].join(';');
+  }
+  return null;
+}
+
 // The dump's लिङ्ग codes (P/S/N/A) vs. the engine's table codes (m/f/n/A).
 const SITE_LINGA_CODES = { P: 'm', S: 'f', N: 'n', A: 'A' };
 export function siteTables(byWord, word) {
   const entries = byWord && (byWord.get ? byWord.get(word) : byWord[word]);
   if (!entries || entries.length === 0) return [];
-  const groups = new Map(); // raw forms string -> {lingas, urlids}
+  const groups = new Map(); // raw forms string -> {lingas, urlids, forms}
   for (const [linga, urlid, forms] of entries) {
     let group = groups.get(forms);
-    if (!group) groups.set(forms, (group = { lingas: [], urlids: [] }));
+    if (!group) groups.set(forms, (group = { lingas: [], urlids: [], forms }));
     if (!group.lingas.includes(linga)) group.lingas.push(linga);
     group.urlids.push(urlid);
   }
-  return [...groups.entries()].map(([forms, group]) => ({
-    stem: word,
-    linga: SITE_LINGA_CODES[group.lingas[0]] || group.lingas[0],
-    lingaLabel: group.lingas
-      .map((l) => LINGAS[SITE_LINGA_CODES[l]] || l)
-      .join(', '),
-    class: `ashtadhyayi.com ${group.urlids.join(' ')}`,
-    cells: forms.split(';').map((raw, i) => {
-      const vibhakti = SITE_VIB[Math.floor(i / 3)];
-      const kept = raw === '' || raw === '-' ? [] : raw.split('-');
-      return {
-        vibhakti,
-        vacana: SITE_VAC[i % 3],
-        // The site keeps `हे ` inside the cell; renderParadigm re-adds it,
-        // so store the bare vocative.
-        forms: kept.map((form) => {
-          const trimmed = form.trim();
-          return vibhakti === 'sambodhana' ? trimmed.replace(/^हे /, '') : trimmed;
-        }),
-      };
-    }),
-  }));
+  if (NOMINAL_SARVANAMA.has(word)) {
+    const lingaCodes = { P: 'm', S: 'f', N: 'n' };
+    const presentLingas = new Set();
+    for (const g of groups.values()) {
+      for (const l of g.lingas) presentLingas.add(l);
+    }
+    for (const code of presentLingas) {
+      const lingaKey = lingaCodes[code];
+      const hasNonSarv = [...groups.values()].some(
+        (g) => g.lingas.includes(code) && !isSarvanama(word, g.forms)
+      );
+      if (!hasNonSarv && lingaKey) {
+        const forms = makeSamjnaForms(word, lingaKey);
+        if (forms) groups.set(forms, { lingas: [code], urlids: [], forms });
+      }
+    }
+  }
+  const groupList = [...groups.values()];
+  return groupList.map((group, idx) => {
+    let cls = '';
+    const sarv = isSarvanama(word, group.forms);
+    if (sarv) {
+      cls = 'सर्वनाम';
+    } else {
+      const hasSarvSibling = groupList.some(
+        (other) => other !== group && isSarvanama(word, other.forms) &&
+          other.lingas.some((l) => group.lingas.includes(l))
+      );
+      if (hasSarvSibling) {
+        cls = 'संज्ञा / noun';
+      } else {
+        const nonSarvSiblings = groupList.filter(
+          (other) => other !== group && !isSarvanama(word, other.forms) &&
+            other.lingas.some((l) => group.lingas.includes(l))
+        );
+        if (nonSarvSiblings.length > 0) {
+          cls = `variant ${idx + 1}`;
+        }
+      }
+    }
+    return {
+      stem: word,
+      linga: SITE_LINGA_CODES[group.lingas[0]] || group.lingas[0],
+      lingaLabel: group.lingas
+        .map((l) => LINGAS[SITE_LINGA_CODES[l]] || l)
+        .join(', '),
+      class: cls,
+      cells: group.forms.split(';').map((raw, i) => {
+        const vibhakti = SITE_VIB[Math.floor(i / 3)];
+        const kept = raw === '' || raw === '-' ? [] : raw.split('-');
+        return {
+          vibhakti,
+          vacana: SITE_VAC[i % 3],
+          forms: kept.map((form) => {
+            const trimmed = form.trim();
+            return vibhakti === 'sambodhana' ? trimmed.replace(/^हे /, '') : trimmed;
+          }),
+        };
+      }),
+    };
+  });
 }
 
 // Chandrika entries -> HTML; `<hl>` spans become highlights, quotes kept.
@@ -364,7 +492,12 @@ export function renderHits(hits, meta, form) {
   const gender = { m: 'masculine', f: 'feminine', n: 'neuter' };
   const detail = (hit) => {
     if (hit.kind === 'ting') {
-      return `ting · ${escapeHtml(hit.lakara)}[${hit.pos}]`;
+      const fam = hit.family && hit.family !== 'shuddha' ? ` · ${escapeHtml(hit.family)}` : '';
+      const prayoga = hit.prayoga ? ` · ${escapeHtml(hit.prayoga)}` : '';
+      const posLabel = typeof hit.pos === 'number' && hit.pos >= 0 && hit.pos < 9
+        ? ` (${escapeHtml(slotLabel(hit.pos, 9))})`
+        : '';
+      return `ting · ${escapeHtml(hit.lakara)}[${hit.pos}]${posLabel}${prayoga}${fam}`;
     }
     if (hit.kind === 'krt') {
       const gend = gender[hit.field] ? ` (${hit.field}, ${gender[hit.field]})` : '';
