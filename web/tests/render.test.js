@@ -133,12 +133,16 @@ test('renderHits links dhatu pages with cards', () => {
   const html = renderHits([
     { baseindex: '01.0001', kind: 'ting', lakara: 'plat', pos: 0 },
     { baseindex: '01.0001', kind: 'subanta', krt: 'शतृ', field: 'f', vibhakti: 'tftIyA', vacana: 'dvivacanam' },
+    { baseindex: '01.0868', kind: 'subanta', family: 'nich', krt: 'शतृ', field: 'm', vibhakti: 'tftIyA', vacana: 'ekavacanam' },
+    { baseindex: '01.0868', kind: 'krt', family: 'nich', krt: 'शतृ', row: 0, field: 'm' },
   ], meta, 'भवति');
   assert.match(html, /#dhatu\/01\.0001/);
   assert.match(html, /भू — सत्तायाम्/);
   assert.match(html, /plat\[0\]/);
   assert.match(html, /f, feminine/);
   assert.match(html, /tftIyA\.dvivacanam/);
+  assert.match(html, /subanta · शतृ \(m, masculine\) · nich · tftIyA\.ekavacanam/);
+  assert.match(html, /krdanta · शतृ\[0\]m \(m, masculine\) · nich/);
   assert.match(html, /“भवति”/);
   assert.equal(renderHits([], {}, ''), '<p>No matches.</p>');
   // Prefixed hits carry their stack in the hash: clicking opens the detail

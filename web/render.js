@@ -491,8 +491,8 @@ export function renderHits(hits, meta, form) {
   const match = form ? ` <span class="deva">“${escapeHtml(form)}”</span>` : '';
   const gender = { m: 'masculine', f: 'feminine', n: 'neuter' };
   const detail = (hit) => {
+    const fam = hit.family && hit.family !== 'shuddha' ? ` · ${escapeHtml(hit.family)}` : '';
     if (hit.kind === 'ting') {
-      const fam = hit.family && hit.family !== 'shuddha' ? ` · ${escapeHtml(hit.family)}` : '';
       const prayoga = hit.prayoga ? ` · ${escapeHtml(hit.prayoga)}` : '';
       const posLabel = typeof hit.pos === 'number' && hit.pos >= 0 && hit.pos < 9
         ? ` (${escapeHtml(slotLabel(hit.pos, 9))})`
@@ -501,13 +501,13 @@ export function renderHits(hits, meta, form) {
     }
     if (hit.kind === 'krt') {
       const gend = gender[hit.field] ? ` (${hit.field}, ${gender[hit.field]})` : '';
-      return `krdanta · ${escapeHtml(hit.krt)}[${hit.row}]${escapeHtml(hit.field)}${gend}`;
+      return `krdanta · ${escapeHtml(hit.krt)}[${hit.row}]${escapeHtml(hit.field)}${gend}${fam}`;
     }
     if (hit.kind === 'prefixed') {
       return `prefixed via <span class="deva">${escapeHtml(hit.stack)}</span> ← ${detail(hit.base)}`;
     }
     const gend = gender[hit.field] ? ` (${hit.field}, ${gender[hit.field]})` : '';
-    return `subanta · ${escapeHtml(hit.krt)}${gend} · ` +
+    return `subanta · ${escapeHtml(hit.krt)}${gend}${fam} · ` +
       `${escapeHtml(hit.vibhakti)}.${escapeHtml(hit.vacana)}`;
   };
   // Canonical hash: `#dhatu/NN.NNNN[/प्र]` — the stack suffix opens the

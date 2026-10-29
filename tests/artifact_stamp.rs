@@ -81,8 +81,12 @@ fn served_manifests_match_the_engine() {
 /// The `stamp` field from manifest text without extra parsing
 /// machinery: find `"stamp": "…"` in the shape the writer emits.
 fn stamp_field_of(text: &str) -> Option<String> {
-    let key = "\"stamp\": \"";
-    let at = text.find(key)? + key.len();
-    let end = text[at..].find('"')? + at;
-    Some(text[at..end].to_string())
+    for key in ["\"stamp\": \"", "\"engineStamp\": \""] {
+        if let Some(pos) = text.find(key) {
+            let at = pos + key.len();
+            let end = text[at..].find('"')? + at;
+            return Some(text[at..end].to_string());
+        }
+    }
+    None
 }

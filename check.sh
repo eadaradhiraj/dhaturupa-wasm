@@ -52,7 +52,7 @@ node web/build-shabda.cjs
 rm -f dist/app.html
 
 echo "== node render tests =="
-node --test web/tests/
+node --test 'web/tests/*.test.js'
 
 echo "== portal-flow e2e (dist artifacts) =="
 node web/e2e-dist.check.cjs
