@@ -208,6 +208,16 @@ try {
   await waitFor(() => text($('detail-title')).includes('01.0001'), { timeout: 10000 });
   ok('route: #dhatu/01.0001 opens भू', text($('detail-title')).includes('भू'), text($('detail-title')));
   ok('route: old-style #/dhatu/ tolerated', true);
+
+  // ---- deep linked dhatu navigation with family, prayoga, and stack
+  location.hash = 'dhatu/01.1160/निस्?fam=nich&prayoga=karmani';
+  await waitFor(() => text($('detail-title')).includes('01.1160') && $('detail-stack').value === 'निस्', { timeout: 10000 });
+  ok('route: deep-linked selects nich and karmani',
+    $('detail-family').value === 'nich' && $('detail-prayoga').value === 'karmani',
+    `family=${$('detail-family').value} prayoga=${$('detail-prayoga').value}`);
+  ok('route: deep-linked ting table renders निर्वास्यते',
+    text($('detail-ting')).includes('निर्वास्यते'),
+    text($('detail-ting')).slice(0, 80));
   location.hash = '/dhatu/01.0001';
   await waitFor(() => text($('detail-title')).includes('01.0001'), { timeout: 5000 });
 

@@ -153,6 +153,15 @@ test('renderHits links dhatu pages with cards', () => {
   ], {}, 'प्रददद्भिः');
   assert.match(prefixed, /href="#dhatu\/03\.0010\/%E0%A4%AA%E0%A5%8D%E0%A4%B0"/);
   assert.match(prefixed, /prefixed via/);
+
+  // Deep-link params: family and prayoga carry into the hash query
+  const deepLinked = renderHits([
+    {
+      baseindex: '01.1160', kind: 'prefixed', stack: 'निस्',
+      base: { kind: 'ting', family: 'nich', prayoga: 'karmani', lakara: 'alat', pos: 0 },
+    },
+  ], {}, 'निर्वास्यते');
+  assert.match(deepLinked, /href="#dhatu\/01\.1160\/%E0%A4%A8%E0%A4%BF%E0%A4%B8%E0%A5%8D\?fam=nich&prayoga=karmani"/);
 });
 
 test('renderMeta labels in English', () => {

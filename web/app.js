@@ -224,7 +224,12 @@ function route() {
   const hash = decodeURIComponent(path || '');
   if (hash.startsWith('dhatu/')) {
     const [id, stack] = hash.slice(6).split('/');
-    openDhatu(id, params.get('stack') || stack || '', params.get('fam') || '');
+    openDhatu(
+      id,
+      params.get('stack') || stack || '',
+      params.get('fam') || '',
+      params.get('prayoga') || '',
+    );
   } else if (hash === 'search') {
     show('view-search');
     const q = params.get('q') || '';
@@ -297,7 +302,7 @@ el('list-more').onclick = () => runListFilter();
 el('list-go').onclick = runListFilter;
 el('list-q').addEventListener('keypress', (e) => { if (e.key === 'Enter') runListFilter(); });
 
-async function openDhatu(id, stackWanted, famWanted) {
+async function openDhatu(id, stackWanted, famWanted, prayogaWanted) {
   baseindex = id;
   show('view-detail');
   status(`loading ${id}…`);
@@ -312,6 +317,17 @@ async function openDhatu(id, stackWanted, famWanted) {
   // Deep-linked family (`?fam=`): only when this dhātu carries it.
   if (famWanted && [...family.options].some((o) => o.value === famWanted)) {
     family.value = famWanted;
+  } else if ([...family.options].some((o) => o.value === 'shuddha')) {
+    family.value = 'shuddha';
+  } else if (family.options.length > 0) {
+    family.value = family.options[0].value;
+  }
+
+  const prayoga = el('detail-prayoga');
+  if (prayogaWanted && [...prayoga.options].some((o) => o.value === prayogaWanted)) {
+    prayoga.value = prayogaWanted;
+  } else {
+    prayoga.value = 'kartari';
   }
 
   // One unified upasarga list: this dhātu's listed stacks (some are combos

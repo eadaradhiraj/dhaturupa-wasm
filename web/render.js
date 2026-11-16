@@ -510,13 +510,32 @@ export function renderHits(hits, meta, form) {
     return `subanta · ${escapeHtml(hit.krt)}${gend}${fam} · ` +
       `${escapeHtml(hit.vibhakti)}.${escapeHtml(hit.vacana)}`;
   };
-  // Canonical hash: `#dhatu/NN.NNNN[/प्र]` — the stack suffix opens the
-  // detail page already prefixed (app.js route/route handler).
+  // Canonical hash: `#dhatu/NN.NNNN[/प्र][?fam=…&prayoga=…]` — the stack,
+  // family, and prayoga deep-link into the detail page so clicking a hit opens
+  // directly with the matching tables selected.
+  const hitFamily = (h) => {
+    if (!h) return '';
+    if (h.family && h.family !== 'shuddha') return h.family;
+    if (h.base) return hitFamily(h.base);
+    return '';
+  };
+  const hitPrayoga = (h) => {
+    if (!h) return '';
+    if (h.prayoga && h.prayoga !== 'kartari') return h.prayoga;
+    if (h.base) return hitPrayoga(h.base);
+    return '';
+  };
   const hitHref = (hit) => {
     const base = `#dhatu/${encodeURIComponent(hit.baseindex)}`;
-    return hit.kind === 'prefixed' && hit.stack
+    const path = hit.kind === 'prefixed' && hit.stack
       ? `${base}/${encodeURIComponent(hit.stack)}`
       : base;
+    const fam = hitFamily(hit);
+    const prayoga = hitPrayoga(hit);
+    const q = [];
+    if (fam) q.push(`fam=${encodeURIComponent(fam)}`);
+    if (prayoga) q.push(`prayoga=${encodeURIComponent(prayoga)}`);
+    return q.length > 0 ? `${path}?${q.join('&')}` : path;
   };
   return '<ol>' + hits.map((hit) =>
     `<li><a href="${hitHref(hit)}">` +
