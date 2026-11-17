@@ -729,6 +729,18 @@ fn test_verify_armati() {
 }
 
 #[test]
+fn split_direct_prefix_ranked_first() {
+    let _guard = CACHE_GUARD.lock().expect("guard");
+    ok(&wasm::split_init(r#"["आ", "अ", "निर्"]"#));
+    let splits: serde_json::Value =
+        serde_json::from_str(&wasm::split_query("आनयतु", 256)).expect("parses");
+    let arr = splits["splits"].as_array().expect("splits array");
+    assert!(!arr.is_empty());
+    assert_eq!(arr[0]["stack"], serde_json::json!("आ"));
+    assert_eq!(arr[0]["base"], serde_json::json!("नयतु"));
+}
+
+#[test]
 fn index_artifact_roundtrip() {
     let _guard = CACHE_GUARD.lock().expect("guard");
     let kartari = serde_json::json!({"01.0001": {"plat": "भवति;भवतः"}}).to_string();

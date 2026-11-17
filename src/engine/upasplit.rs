@@ -159,7 +159,24 @@ pub fn split_candidates<S: ::std::hash::BuildHasher>(
             }
         }
     }
-    out.sort();
+    out.sort_by(|(s_a, b_a), (s_b, b_b)| {
+        let is_direct_a = format!("{s_a}{b_a}") == form;
+        let is_direct_b = format!("{s_b}{b_b}") == form;
+        let rank_a = match (is_direct_a, form.starts_with(s_a.as_str())) {
+            (true, _) => 0,
+            (false, true) => 1,
+            _ => 2,
+        };
+        let rank_b = match (is_direct_b, form.starts_with(s_b.as_str())) {
+            (true, _) => 0,
+            (false, true) => 1,
+            _ => 2,
+        };
+        rank_a
+            .cmp(&rank_b)
+            .then_with(|| s_a.cmp(s_b))
+            .then_with(|| b_a.cmp(b_b))
+    });
     out
 }
 

@@ -105,6 +105,18 @@ for (const s of armatiSplits.slice(0, 16)) {
 check('armati finds 01.0989 via Aa prefix',
   armatiHits.some((h) => h.baseindex === '01.0989' && h.kind === 'prefixed' && h.base.lakara === 'plat'));
 
+const anayatuSplits = ok(w.split_query('आनयतु', 256), 'anayatu split').splits;
+check('anayatu splits direct prefix first (Aa + nayatu)',
+  anayatuSplits[0].stack === 'आ' && anayatuSplits[0].base === 'नयतु');
+let anayatuHits = [];
+for (const s of anayatuSplits.slice(0, 5)) {
+  loadShard('shard', s.base);
+  const v = ok(w.verify_split('आनयतु', s.stack, s.base), 'anayatu verify');
+  anayatuHits.push(...v.hits);
+}
+check('anayatu finds 01.1049 (nI)',
+  anayatuHits.some((h) => h.baseindex === '01.1049' && h.kind === 'prefixed'));
+
 // 7. per-dhatu detail searches from blob slices
 const stacks = JSON.stringify(blob.stacks);
 const dhatu = JSON.stringify({ family: 'shuddha', baseindex: '03.0010', slp1: blob.slp1, note: '' });

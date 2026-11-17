@@ -199,6 +199,9 @@ try {
   const arma = await formSearch('आरमति');
   ok('search: आरमति (pada-flipped via Aa prefix) finds 01.0989',
     arma.hits > 0 && text($('search-hits')).includes('01.0989') && !arma.note.includes('0 hits'), arma.note);
+  const anay = await formSearch('आनयतु');
+  ok('search: आनयतु finds 01.1049 (nI) without timeout',
+    anay.hits > 0 && text($('search-hits')).includes('01.1049') && !anay.note.includes('0 hits'), anay.note);
   // A noun paradigm is not in the corpus shards (they carry the kṛt
   // families), so the search falls back to the word analyzer: सरिद्भ्याम्
   // reads back to सरित्, the way the site's शब्द search resolves a form

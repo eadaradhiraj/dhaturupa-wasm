@@ -798,14 +798,16 @@ async function runFormSearch() {
       triedSplits.add(id);
       // The split base may live in either artifact set: tiṇanta/kṛdanta
       // cells in the base shards, declined (subanta) forms in the subanta
-      // shards (e.g. प्रददद्भिः ← प्र + ददद्भिः).
+      // shards (e.g. प्रददद्भिः ← प्र + ददद्भिः). Load base shard first;
+      // only load the heavy subanta shard lazily when no base hits match.
       const file = `data/shards/shard-${String(s.shard).padStart(2, '0')}.index.json`;
       const sub = `data/shards/sub-${String(s.shard).padStart(2, '0')}.index.json`;
-      await Promise.all([
-        loadShard('b' + s.shard, file),
-        loadShard('u' + s.shard, sub),
-      ]);
-      const v = ok(verify_split(q, s.stack, s.base), 'verify');
+      await loadShard('b' + s.shard, file).catch(() => {});
+      let v = ok(verify_split(q, s.stack, s.base), 'verify');
+      if (v.hits.length === 0) {
+        await loadShard('u' + s.shard, sub).catch(() => {});
+        v = ok(verify_split(q, s.stack, s.base), 'verify');
+      }
       for (const hit of v.hits) {
         const key = JSON.stringify(hit);
         if (!seen.has(key)) {
