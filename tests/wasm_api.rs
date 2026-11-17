@@ -710,6 +710,25 @@ fn split_verify_pada_flip() {
 }
 
 #[test]
+fn test_verify_armati() {
+    let _guard = CACHE_GUARD.lock().expect("guard");
+    let shard = serde_json::to_string(&serde_json::json!({
+        "v": 1,
+        "forms": {
+            "रमते": [["01.0989", "t", "shuddha", "kartari", "alat", 0]],
+        },
+    }))
+    .expect("json");
+    ok(&wasm::index_load_key("b175", &shard));
+    let hits: serde_json::Value =
+        serde_json::from_str(&wasm::verify_split("आरमति", "आ", "रमते")).expect("json");
+    assert_eq!(hits["total"], serde_json::json!(1));
+    assert_eq!(hits["hits"][0]["baseindex"], serde_json::json!("01.0989"));
+    assert_eq!(hits["hits"][0]["base"]["lakara"], serde_json::json!("plat"));
+    ok(&wasm::index_drop_family("b175"));
+}
+
+#[test]
 fn index_artifact_roundtrip() {
     let _guard = CACHE_GUARD.lock().expect("guard");
     let kartari = serde_json::json!({"01.0001": {"plat": "भवति;भवतः"}}).to_string();

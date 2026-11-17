@@ -85,13 +85,25 @@ const viramantiSplits = ok(w.split_query('विरमन्ति', 256), 'vira
 check('viramanti splits propose ramante counterpart',
   viramantiSplits.some((s) => s.stack === 'वि' && s.base === 'रमन्ते'));
 let viramantiHits = [];
-for (const s of viramantiSplits.slice(0, 8)) {
+for (const s of viramantiSplits.slice(0, 16)) {
   loadShard('shard', s.base);
   const v = ok(w.verify_split('विरमन्ति', s.stack, s.base), 'viramanti verify');
   viramantiHits.push(...v.hits);
 }
 check('viramanti finds 01.0989 (ram)',
   viramantiHits.some((h) => h.baseindex === '01.0989' && h.kind === 'prefixed' && h.base.lakara === 'plat'));
+
+const armatiSplits = ok(w.split_query('आरमति', 256), 'armati split').splits;
+check('armati splits propose ramate counterpart',
+  armatiSplits.some((s) => s.stack === 'आ' && s.base === 'रमते'));
+let armatiHits = [];
+for (const s of armatiSplits.slice(0, 16)) {
+  loadShard('shard', s.base);
+  const v = ok(w.verify_split('आरमति', s.stack, s.base), 'armati verify');
+  armatiHits.push(...v.hits);
+}
+check('armati finds 01.0989 via Aa prefix',
+  armatiHits.some((h) => h.baseindex === '01.0989' && h.kind === 'prefixed' && h.base.lakara === 'plat'));
 
 // 7. per-dhatu detail searches from blob slices
 const stacks = JSON.stringify(blob.stacks);

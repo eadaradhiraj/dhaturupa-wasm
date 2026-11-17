@@ -91,8 +91,18 @@ pub fn derive_prefixed_ting_slp1(
         .get(baseindex)
         .ok_or_else(|| format!("unknown dhatu {baseindex}"))?
         .clone();
-    let prefixes: Vec<&str> = stack_slp.split(';').collect();
-    dhatu = dhatu.with_prefixes(&prefixes);
+    let prefixes: Vec<String> = stack_slp
+        .split(';')
+        .map(|p| {
+            if p == "A" {
+                "AN".to_string()
+            } else {
+                p.to_string()
+            }
+        })
+        .collect();
+    let prefix_refs: Vec<&str> = prefixes.iter().map(String::as_str).collect();
+    dhatu = dhatu.with_prefixes(&prefix_refs);
     if let Some(sanadi) = sanadi_of(family) {
         dhatu = dhatu.with_sanadi(&[sanadi]);
     }
