@@ -293,7 +293,16 @@ pub fn derive_prefixed_krut(
     let mut stack_parts: Vec<String> = if stack_slp.is_empty() {
         Vec::new()
     } else {
-        stack_slp.split(';').map(str::to_string).collect()
+        stack_slp
+            .split(';')
+            .map(|p| {
+                if p == "A" {
+                    "AN".to_string()
+                } else {
+                    p.to_string()
+                }
+            })
+            .collect()
     };
     // 02.0041/02.0042 (the nitya-ādi pair) take अदि unless the stack
     // already ends in it; 02.0012 takes आ only when nothing is selected;
