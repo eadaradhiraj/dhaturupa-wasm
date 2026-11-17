@@ -162,3 +162,109 @@ pub fn split_candidates<S: ::std::hash::BuildHasher>(
     out.sort();
     out
 }
+
+/// Propose plausible opposite-pada counterparts for a verbal surface base in SLP1.
+///
+/// Under certain upasargas, verbal roots switch pada (e.g. 1.3.83 vyāṅparibhyo ramaḥ:
+/// ram becomes parasmaipadī with vi/ā/pari, 1.3.17 ner viśaḥ: viś becomes ātmanepadī with ni).
+/// The shard only stores the un-prefixed citation forms of the root; proposing
+/// these counterparts allows the search splitter to locate the root's shard bucket.
+#[must_use]
+pub fn pada_counterparts(slp: &str) -> Vec<String> {
+    let mut out = Vec::new();
+    let mut add = |stem: &str, endings: &[&str]| {
+        if !stem.is_empty() {
+            for end in endings {
+                out.push(format!("{stem}{end}"));
+            }
+        }
+    };
+
+    // 1. lat / lrut (present / future)
+    if let Some(stem) = slp.strip_suffix("anti") {
+        add(stem, &["ante", "ate"]);
+    } else if let Some(stem) = slp.strip_suffix("ati") {
+        add(stem, &["ate", "ante"]);
+    } else if let Some(stem) = slp.strip_suffix("ataH") {
+        add(stem, &["ete", "Ate"]);
+    } else if let Some(stem) = slp.strip_suffix("asi") {
+        add(stem, &["ase", "se"]);
+    } else if let Some(stem) = slp.strip_suffix("aTaH") {
+        add(stem, &["eTe", "ATe"]);
+    } else if let Some(stem) = slp.strip_suffix("aTa") {
+        add(stem, &["aDve", "Dve"]);
+    } else if let Some(stem) = slp.strip_suffix("Ami") {
+        add(stem, &["e"]);
+    } else if let Some(stem) = slp.strip_suffix("AvaH") {
+        add(stem, &["Avahe"]);
+    } else if let Some(stem) = slp.strip_suffix("AmaH") {
+        add(stem, &["Amahe"]);
+    } else if let Some(stem) = slp.strip_suffix("ti") {
+        add(stem, &["te"]);
+    } else if let Some(stem) = slp.strip_suffix("si") {
+        add(stem, &["se"]);
+    } else if let Some(stem) = slp.strip_suffix("mi") {
+        add(stem, &["e"]);
+    } else if let Some(stem) = slp.strip_suffix("ante") {
+        add(stem, &["anti"]);
+    } else if let Some(stem) = slp.strip_suffix("ate") {
+        add(stem, &["ati", "anti"]);
+    } else if let Some(stem) = slp.strip_suffix("ete") {
+        add(stem, &["ataH"]);
+    } else if let Some(stem) = slp.strip_suffix("Ate") {
+        add(stem, &["ataH"]);
+    } else if let Some(stem) = slp.strip_suffix("ase") {
+        add(stem, &["asi"]);
+    } else if let Some(stem) = slp.strip_suffix("se") {
+        add(stem, &["si", "asi"]);
+    } else if let Some(stem) = slp.strip_suffix("eTe") {
+        add(stem, &["aTaH"]);
+    } else if let Some(stem) = slp.strip_suffix("ATe") {
+        add(stem, &["aTaH"]);
+    } else if let Some(stem) = slp.strip_suffix("aDve") {
+        add(stem, &["aTa"]);
+    } else if let Some(stem) = slp.strip_suffix("Dve") {
+        add(stem, &["aTa"]);
+    } else if let Some(stem) = slp.strip_suffix("Avahe") {
+        add(stem, &["AvaH"]);
+    } else if let Some(stem) = slp.strip_suffix("Amahe") {
+        add(stem, &["AmaH"]);
+    } else if let Some(stem) = slp.strip_suffix("te") {
+        add(stem, &["ti"]);
+    } else if let Some(stem) = slp.strip_suffix("e") {
+        add(stem, &["Ami", "mi"]);
+    }
+
+    // 2. lot (imperative)
+    if let Some(stem) = slp.strip_suffix("tu") {
+        add(stem, &["tAm"]);
+    } else if let Some(stem) = slp.strip_suffix("ntu") {
+        add(stem, &["ntAm", "atAm"]);
+    } else if let Some(stem) = slp.strip_suffix("Ani") {
+        add(stem, &["E"]);
+    } else if let Some(stem) = slp.strip_suffix("ntAm") {
+        add(stem, &["ntu"]);
+    } else if let Some(stem) = slp.strip_suffix("sva") {
+        add(stem, &["hi", "a"]);
+    }
+
+    // 3. lang (imperfect)
+    if let Some(stem) = slp.strip_suffix("an") {
+        add(stem, &["anta", "ata"]);
+    } else if let Some(stem) = slp.strip_suffix("anta") {
+        add(stem, &["an"]);
+    }
+
+    // 4. vidhiling (potential)
+    if let Some(stem) = slp.strip_suffix("et") {
+        add(stem, &["eta"]);
+    } else if let Some(stem) = slp.strip_suffix("eyuH") {
+        add(stem, &["eran"]);
+    } else if let Some(stem) = slp.strip_suffix("eta") {
+        add(stem, &["et"]);
+    } else if let Some(stem) = slp.strip_suffix("eran") {
+        add(stem, &["eyuH"]);
+    }
+
+    out
+}

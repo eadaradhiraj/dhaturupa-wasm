@@ -80,6 +80,19 @@ for (const s of splits.slice(0, 5)) {
 }
 check('pradadat verifies end to end', found >= 1);
 
+// pada-flip prefixed form search (1.3.83 vyāṅparibhyo ramaḥ)
+const viramantiSplits = ok(w.split_query('विरमन्ति', 256), 'viramanti split').splits;
+check('viramanti splits propose ramante counterpart',
+  viramantiSplits.some((s) => s.stack === 'वि' && s.base === 'रमन्ते'));
+let viramantiHits = [];
+for (const s of viramantiSplits.slice(0, 8)) {
+  loadShard('shard', s.base);
+  const v = ok(w.verify_split('विरमन्ति', s.stack, s.base), 'viramanti verify');
+  viramantiHits.push(...v.hits);
+}
+check('viramanti finds 01.0989 (ram)',
+  viramantiHits.some((h) => h.baseindex === '01.0989' && h.kind === 'prefixed' && h.base.lakara === 'plat'));
+
 // 7. per-dhatu detail searches from blob slices
 const stacks = JSON.stringify(blob.stacks);
 const dhatu = JSON.stringify({ family: 'shuddha', baseindex: '03.0010', slp1: blob.slp1, note: '' });

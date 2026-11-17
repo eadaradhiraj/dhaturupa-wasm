@@ -667,6 +667,49 @@ fn split_verify_declined_subanta_base() {
 }
 
 #[test]
+fn split_verify_pada_flip() {
+    let _guard = CACHE_GUARD.lock().expect("guard");
+    // Under 1.3.83 vyāṅparibhyo ramaḥ, ram becomes parasmaipadī with vi/ā/pari.
+    // The shard stores ātmanepada ramante / ramate for 01.0989; search for
+    // viramanti must propose the pada-counterpart and verify via derive_prefixed_ting.
+    let shard = serde_json::to_string(&serde_json::json!({
+        "v": 1,
+        "forms": {
+            "रमन्ते": [["01.0989", "t", "shuddha", "kartari", "alat", 2]],
+        },
+    }))
+    .expect("json");
+    ok(&wasm::index_load_key("b97", &shard));
+    ok(&wasm::split_init(r#"["वि"]"#));
+    let splits: serde_json::Value =
+        serde_json::from_str(&wasm::split_query("विरमन्ति", 256)).expect("parses");
+    let pair = splits["splits"]
+        .as_array()
+        .expect("splits")
+        .iter()
+        .find(|s| s["base"] == "रमन्ते")
+        .expect("रमन्ते counterpart split proposed")
+        .clone();
+    let hits: serde_json::Value = serde_json::from_str(&wasm::verify_split(
+        "विरमन्ति",
+        pair["stack"].as_str().expect("stack"),
+        pair["base"].as_str().expect("base"),
+    ))
+    .expect("parses");
+    assert_eq!(hits["total"], serde_json::json!(1));
+    assert_eq!(hits["hits"][0]["baseindex"], serde_json::json!("01.0989"));
+    assert_eq!(hits["hits"][0]["kind"], serde_json::json!("prefixed"));
+    assert_eq!(hits["hits"][0]["stack"], serde_json::json!("वि"));
+    assert_eq!(hits["hits"][0]["base"]["lakara"], serde_json::json!("plat"));
+    assert_eq!(hits["hits"][0]["base"]["pos"], serde_json::json!(2));
+    assert_eq!(
+        hits["hits"][0]["base"]["prayoga"],
+        serde_json::json!("kartari")
+    );
+    ok(&wasm::index_drop_family("b97"));
+}
+
+#[test]
 fn index_artifact_roundtrip() {
     let _guard = CACHE_GUARD.lock().expect("guard");
     let kartari = serde_json::json!({"01.0001": {"plat": "भवति;भवतः"}}).to_string();

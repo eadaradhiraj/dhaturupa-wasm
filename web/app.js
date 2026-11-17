@@ -791,7 +791,7 @@ async function runFormSearch() {
     // regeneration — this also covers unlisted stacks.
     await ensureSplitter();
     const triedSplits = new Set();
-    for (const s of ok(split_query(q, SHARDS), 'splits').splits.slice(0, 8)) {
+    for (const s of ok(split_query(q, SHARDS), 'splits').splits.slice(0, 16)) {
       if (!alive()) return;
       const id = `${s.stack} ${s.base}`;
       if (triedSplits.has(id)) continue;

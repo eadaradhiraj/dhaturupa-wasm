@@ -984,20 +984,28 @@ pub fn split_query(query: &str, shards: u32) -> String {
         for (stack_slp, base_slp) in
             crate::engine::upasplit::split_candidates(&query_slp, surface_map, &no_prune)
         {
-            let (Some(stack), Some(base)) = (
-                display_stack(&stack_slp),
-                crate::translit::slp1_to_deva(&base_slp),
-            ) else {
-                continue;
-            };
-            if !seen.insert((stack.clone(), base.clone())) {
-                continue;
+            let mut cand_slps = vec![base_slp.clone()];
+            for cp in crate::engine::upasplit::pada_counterparts(&base_slp) {
+                if !cand_slps.contains(&cp) {
+                    cand_slps.push(cp);
+                }
             }
-            splits.push(serde_json::json!({
-                "stack": stack,
-                "base": base,
-                "shard": shard_of(&base, shards),
-            }));
+            for cand in cand_slps {
+                let (Some(stack), Some(base)) = (
+                    display_stack(&stack_slp),
+                    crate::translit::slp1_to_deva(&cand),
+                ) else {
+                    continue;
+                };
+                if !seen.insert((stack.clone(), base.clone())) {
+                    continue;
+                }
+                splits.push(serde_json::json!({
+                    "stack": stack,
+                    "base": base,
+                    "shard": shard_of(&base, shards),
+                }));
+            }
         }
     }
     ok_envelope(serde_json::json!({"query": query, "splits": splits}))
@@ -1026,6 +1034,11 @@ pub fn verify_split(query: &str, stack: &str, base: &str) -> String {
         crate::hk::hk_to_slp1(query)
     }) else {
         return err_envelope("query is not Devanagari or Harvard-Kyoto");
+    };
+    let query_deva = if contains_deva(query) {
+        query.to_string()
+    } else {
+        crate::translit::slp1_to_deva(&query_slp).unwrap_or_else(|| query.to_string())
     };
     let Some(stack_slp) = crate::translit::deva_stack_to_slp1(stack) else {
         return err_envelope("stack is not Devanagari upasargas");
@@ -1068,6 +1081,39 @@ pub fn verify_split(query: &str, stack: &str, base: &str) -> String {
                         inner: Box::new(posting.loc.clone()),
                     },
                 });
+            } else if matches!(&posting.loc, LocKind::Ting { .. }) {
+                // Engine-derived check for upasarga-conditioned pada flips (e.g. 1.3.83 vyāṅparibhyo ramaḥ)
+                let prayogas = match &posting.loc {
+                    LocKind::Ting { prayoga, .. } if prayoga == "karmani" => ["karmani", "kartari"],
+                    _ => ["kartari", "karmani"],
+                };
+                for prayoga in prayogas {
+                    if let Ok(derived) = crate::derive_ting::derive_prefixed_ting(
+                        stack, &baseindex, &family, prayoga,
+                    ) {
+                        for (lakara_key, rows_str) in &derived {
+                            let slots: Vec<&str> = rows_str.split(';').collect();
+                            for (pos, slot_forms) in slots.iter().enumerate() {
+                                for form in slot_forms.split(',') {
+                                    if form.trim() == query_deva {
+                                        hits.push(Posting {
+                                            baseindex: baseindex.clone(),
+                                            loc: LocKind::Prefixed {
+                                                stack: stack.to_string(),
+                                                inner: Box::new(LocKind::Ting {
+                                                    family: family.clone(),
+                                                    prayoga: prayoga.to_string(),
+                                                    lakara: lakara_key.clone(),
+                                                    pos,
+                                                }),
+                                            },
+                                        });
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
             }
         }
     }
