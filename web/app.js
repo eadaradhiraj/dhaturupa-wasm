@@ -790,30 +790,47 @@ async function runFormSearch() {
     // (upasarga, base) candidates and soundness-verify each by exact
     // regeneration — this also covers unlisted stacks.
     await ensureSplitter();
+    const splitCandidates = ok(split_query(q, SHARDS), 'splits').splits;
     const triedSplits = new Set();
-    for (const s of ok(split_query(q, SHARDS), 'splits').splits.slice(0, 16)) {
+    let hadDirectHits = false;
+    for (const s of splitCandidates.slice(0, 16)) {
       if (!alive()) return;
+      const isDirect = `${s.stack}${s.base}` === q;
+      if (hadDirectHits && !isDirect) {
+        // Direct splits have already answered the query; skip heavy sandhi hypotheses.
+        break;
+      }
       const id = `${s.stack} ${s.base}`;
       if (triedSplits.has(id)) continue;
       triedSplits.add(id);
-      // The split base may live in either artifact set: tiṇanta/kṛdanta
-      // cells in the base shards, declined (subanta) forms in the subanta
-      // shards (e.g. प्रददद्भिः ← प्र + ददद्भिः). Load base shard first;
-      // only load the heavy subanta shard lazily when no base hits match.
       const file = `data/shards/shard-${String(s.shard).padStart(2, '0')}.index.json`;
-      const sub = `data/shards/sub-${String(s.shard).padStart(2, '0')}.index.json`;
       await loadShard('b' + s.shard, file).catch(() => {});
-      let v = ok(verify_split(q, s.stack, s.base), 'verify');
-      if (v.hits.length === 0) {
-        await loadShard('u' + s.shard, sub).catch(() => {});
-        v = ok(verify_split(q, s.stack, s.base), 'verify');
-      }
+      const v = ok(verify_split(q, s.stack, s.base), 'verify');
       for (const hit of v.hits) {
         const key = JSON.stringify(hit);
         if (!seen.has(key)) {
           seen.add(key);
           hits.push(hit);
+          if (isDirect) hadDirectHits = true;
         }
+      }
+    }
+    // Only if base shards yield 0 hits, check whether the form is a declined
+    // subanta participle (e.g. प्रददद्भिः ← प्र + ददद्भिः).
+    if (hits.length === 0) {
+      for (const s of splitCandidates.slice(0, 8)) {
+        if (!alive()) return;
+        const sub = `data/shards/sub-${String(s.shard).padStart(2, '0')}.index.json`;
+        await loadShard('u' + s.shard, sub).catch(() => {});
+        const v = ok(verify_split(q, s.stack, s.base), 'verify');
+        for (const hit of v.hits) {
+          const key = JSON.stringify(hit);
+          if (!seen.has(key)) {
+            seen.add(key);
+            hits.push(hit);
+          }
+        }
+        if (hits.length > 0) break;
       }
     }
     // No index hit: the shards carry the kṛt families only, so a noun
