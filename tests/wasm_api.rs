@@ -729,6 +729,28 @@ fn test_verify_armati() {
 }
 
 #[test]
+fn test_verify_vyaramat() {
+    let _guard = CACHE_GUARD.lock().expect("guard");
+    let shard = serde_json::to_string(&serde_json::json!({
+        "v": 1,
+        "forms": {
+            "अरमत": [["01.0989", "t", "shuddha", "kartari", "alang", 0]],
+        },
+    }))
+    .expect("json");
+    ok(&wasm::index_load_key("b194", &shard));
+    let hits: serde_json::Value =
+        serde_json::from_str(&wasm::verify_split("व्यरमत्", "वि", "अरमत")).expect("json");
+    assert_eq!(hits["total"], serde_json::json!(1));
+    assert_eq!(hits["hits"][0]["baseindex"], serde_json::json!("01.0989"));
+    assert_eq!(
+        hits["hits"][0]["base"]["lakara"],
+        serde_json::json!("plang")
+    );
+    ok(&wasm::index_drop_family("b194"));
+}
+
+#[test]
 fn split_direct_prefix_ranked_first() {
     let _guard = CACHE_GUARD.lock().expect("guard");
     ok(&wasm::split_init(r#"["आ", "अ", "निर्"]"#));

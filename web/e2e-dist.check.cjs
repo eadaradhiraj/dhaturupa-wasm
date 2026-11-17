@@ -105,6 +105,18 @@ for (const s of armatiSplits.slice(0, 16)) {
 check('armati finds 01.0989 via Aa prefix',
   armatiHits.some((h) => h.baseindex === '01.0989' && h.kind === 'prefixed' && h.base.lakara === 'plat'));
 
+const vyaramatSplits = ok(w.split_query('व्यरमत्', 256), 'vyaramat split').splits;
+check('vyaramat splits propose aramata counterpart',
+  vyaramatSplits.some((s) => s.stack === 'वि' && s.base === 'अरमत'));
+let vyaramatHits = [];
+for (const s of vyaramatSplits.slice(0, 16)) {
+  loadShard('shard', s.base);
+  const v = ok(w.verify_split('व्यरमत्', s.stack, s.base), 'vyaramat verify');
+  vyaramatHits.push(...v.hits);
+}
+check('vyaramat finds 01.0989 in imperfect past tense',
+  vyaramatHits.some((h) => h.baseindex === '01.0989' && h.kind === 'prefixed' && h.base.lakara === 'plang'));
+
 const anayatuSplits = ok(w.split_query('आनयतु', 256), 'anayatu split').splits;
 check('anayatu splits direct prefix first (Aa + nayatu)',
   anayatuSplits[0].stack === 'आ' && anayatuSplits[0].base === 'नयतु');

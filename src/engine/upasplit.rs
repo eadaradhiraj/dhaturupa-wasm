@@ -259,17 +259,57 @@ pub fn pada_counterparts(slp: &str) -> Vec<String> {
         add(stem, &["ntAm", "atAm"]);
     } else if let Some(stem) = slp.strip_suffix("Ani") {
         add(stem, &["E"]);
+    } else if let Some(stem) = slp.strip_suffix("E") {
+        add(stem, &["Ani"]);
     } else if let Some(stem) = slp.strip_suffix("ntAm") {
+        add(stem, &["ntu"]);
+    } else if let Some(stem) = slp.strip_suffix("atAm") {
         add(stem, &["ntu"]);
     } else if let Some(stem) = slp.strip_suffix("sva") {
         add(stem, &["hi", "a"]);
+    } else if let Some(stem) = slp.strip_suffix("tAm") {
+        add(stem, &["tu", "etAm", "AtAm"]);
+    } else if let Some(stem) = slp.strip_suffix("etAm") {
+        add(stem, &["tAm"]);
+    } else if let Some(stem) = slp.strip_suffix("AtAm") {
+        add(stem, &["tAm"]);
+    } else if let Some(stem) = slp.strip_suffix("tam") {
+        add(stem, &["eTAm", "ATAm"]);
+    } else if let Some(stem) = slp.strip_suffix("eTAm") {
+        add(stem, &["tam"]);
+    } else if let Some(stem) = slp.strip_suffix("ATAm") {
+        add(stem, &["tam"]);
     }
 
     // 3. lang (imperfect)
-    if let Some(stem) = slp.strip_suffix("an") {
+    if let Some(stem) = slp.strip_suffix("at") {
+        add(stem, &["ata", "ta"]);
+    } else if let Some(stem) = slp.strip_suffix("ata") {
+        add(stem, &["at", "t"]);
+    } else if let Some(stem) = slp.strip_suffix("t") {
+        add(stem, &["ta", "ata"]);
+    } else if let Some(stem) = slp.strip_suffix("ta") {
+        add(stem, &["t", "at"]);
+    } else if let Some(stem) = slp.strip_suffix("an") {
         add(stem, &["anta", "ata"]);
     } else if let Some(stem) = slp.strip_suffix("anta") {
         add(stem, &["an"]);
+    } else if let Some(stem) = slp.strip_suffix("aTAH") {
+        add(stem, &["aH"]);
+    } else if let Some(stem) = slp.strip_suffix("TAH") {
+        add(stem, &["aH", "H"]);
+    } else if let Some(stem) = slp.strip_suffix("aH") {
+        add(stem, &["aTAH", "TAH"]);
+    } else if let Some(stem) = slp.strip_suffix("am") {
+        add(stem, &["e", "i"]);
+    } else if let Some(stem) = slp.strip_suffix("vahi") {
+        add(stem, &["va"]);
+    } else if let Some(stem) = slp.strip_suffix("Avahi") {
+        add(stem, &["Ava"]);
+    } else if let Some(stem) = slp.strip_suffix("mahi") {
+        add(stem, &["ma"]);
+    } else if let Some(stem) = slp.strip_suffix("Amahi") {
+        add(stem, &["Ama"]);
     }
 
     // 4. vidhiling (potential)
@@ -281,6 +321,18 @@ pub fn pada_counterparts(slp: &str) -> Vec<String> {
         add(stem, &["et"]);
     } else if let Some(stem) = slp.strip_suffix("eran") {
         add(stem, &["eyuH"]);
+    } else if let Some(stem) = slp.strip_suffix("etAm") {
+        add(stem, &["eyAtAm"]);
+    } else if let Some(stem) = slp.strip_suffix("eyAtAm") {
+        add(stem, &["etAm"]);
+    } else if let Some(stem) = slp.strip_suffix("eTAH") {
+        add(stem, &["eH"]);
+    } else if let Some(stem) = slp.strip_suffix("eH") {
+        add(stem, &["eTAH"]);
+    } else if let Some(stem) = slp.strip_suffix("eyam") {
+        add(stem, &["eya"]);
+    } else if let Some(stem) = slp.strip_suffix("eya") {
+        add(stem, &["eyam"]);
     }
 
     out
