@@ -670,6 +670,13 @@ pub fn derive_prefixed_krut(
             let m_groups = field_groups(m);
             let f_groups = field_groups(f);
             let n_forms_groups = field_groups(n);
+            let any_matched = (0..n_groups).any(|g| {
+                base_groups.iter().any(|variants| {
+                    variants
+                        .get(g)
+                        .is_some_and(|surface| surface_to_rows.contains_key(surface))
+                })
+            });
             for group in 0..n_groups {
                 let mut row_indices: Vec<usize> = Vec::new();
                 for variants in &base_groups {
@@ -682,6 +689,9 @@ pub fn derive_prefixed_krut(
                 row_indices.sort_unstable();
                 row_indices.dedup();
                 if row_indices.is_empty() {
+                    if any_matched || group > 0 {
+                        continue;
+                    }
                     // No vidyuṭ row for this variant (vidyuṭ cannot derive the
                     // kṛt, or omitted the variant): render the upstream cell
                     // prefixed whole.

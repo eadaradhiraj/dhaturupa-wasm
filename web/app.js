@@ -523,11 +523,12 @@ function renderCellPrefixedKrut(stack, krutTables, family) {
     // (`0<n.length&&"क्त्वा"==e`).
     if (krt === 'क्त्वा' && stack) return;
     let derived = null;
+    const pinnedCell = (pre && pre[krt]) || '';
     try {
       const res = ok(derive_prefixed_krut(
         stack, baseindex, family, krt,
         JSON.stringify(rows.map((r) => ({ base: r.base, m: r.m, f: r.f, n: r.n }))),
-        blob.slp1, category, blob.note || '', ''), 'derive-krut');
+        blob.slp1, category, blob.note || '', pinnedCell), 'derive-krut');
       if (res.rows && res.rows.length > 0) derived = res.rows;
     } catch (e) {
       status(String(e));

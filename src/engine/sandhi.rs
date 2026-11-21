@@ -152,6 +152,13 @@ pub fn join(left: &str, right: &str) -> Vec<String> {
     // (`a` keeps, evidence `upasTApayati`-type). Retroflex `sT` keeps
     // alongside (`aBisTaH`-type for `aBi`+`sTaH`, evidence `02.0060`
     // `ting.plat`; voice stays canonical `[0]`, membership-tested).
+    if HIGH_VOWELS.contains(&lf) && rb.starts_with(b"tasT") {
+        let mut out = String::with_capacity(left.len() + right.len());
+        out.push_str(left);
+        out.push_str("tazW");
+        out.push_str(&right[4..]);
+        return vec![out];
+    }
     if HIGH_VOWELS.contains(&lf) && rb.len() >= 2 && rb[0] == b's' && rb[1] == b'T' {
         let mut out = String::with_capacity(left.len() + right.len());
         out.push_str(left);
