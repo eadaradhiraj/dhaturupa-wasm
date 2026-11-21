@@ -23,6 +23,71 @@ section.word-table { margin-bottom: 1em; }
 .table-wrap { display: inline-block; vertical-align: top; }
 .copy-bar { margin: .1em 0; }
 .copy-btn { font-size: .75em; padding: 0 .5em; cursor: pointer; }
+.find-bar {
+  position: fixed;
+  top: 10px;
+  right: 16px;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: #ffffff;
+  border: 1px solid #bbb;
+  border-radius: 6px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.2);
+  padding: 6px 10px;
+  font-size: 0.9em;
+  max-width: calc(100vw - 32px);
+}
+.find-bar[hidden] { display: none !important; }
+.find-bar input {
+  padding: 4px 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 1em;
+  width: 220px;
+}
+.find-bar input:focus {
+  outline: none;
+  border-color: #0066cc;
+  box-shadow: 0 0 0 2px rgba(0, 102, 204, 0.2);
+}
+.find-bar button {
+  padding: 2px 6px;
+  border: 1px solid #ccc;
+  background: #f7f7f7;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.85em;
+  line-height: 1.4;
+}
+.find-bar button:hover { background: #e8e8e8; }
+#find-count {
+  font-size: 0.85em;
+  min-width: 48px;
+  text-align: center;
+  user-select: none;
+}
+#find-deva {
+  font-size: 0.95em;
+  color: #0066cc;
+  max-width: 120px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+mark.find-match {
+  background-color: #ffeb3b;
+  color: #000;
+  border-radius: 2px;
+  padding: 0 1px;
+}
+mark.find-match.find-active {
+  background-color: #ff9800;
+  color: #000;
+  outline: 2px solid #e65100;
+  font-weight: bold;
+}
 </style>
 </head>
 <body>
@@ -31,9 +96,19 @@ section.word-table { margin-bottom: 1em; }
 <button id="nav-list">Dhatu list</button>
 <button id="nav-search">Form search</button>
 <button id="nav-word">Decline a word</button>
+<button id="nav-find" title="Find in page (Ctrl+F)">🔍 Find</button>
 <span id="status" class="muted" role="status"></span>
 <span id="build" class="muted"></span>
 </nav>
+
+<div id="find-bar" class="find-bar" hidden>
+<input id="find-q" placeholder="Find in page (Devanagari or HK)..." size="24" autocomplete="off" spellcheck="false">
+<span id="find-deva" class="deva muted" title="Devanagari match target"></span>
+<span id="find-count" class="muted"></span>
+<button id="find-prev" title="Previous (Shift+Enter / ▲)" aria-label="Previous">▲</button>
+<button id="find-next" title="Next (Enter / ▼)" aria-label="Next">▼</button>
+<button id="find-close" title="Close (Escape)" aria-label="Close">✕</button>
+</div>
 
 <section id="view-list">
 <h2>Select dhātu</h2>

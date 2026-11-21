@@ -576,6 +576,63 @@ try {
     ok('word: ref click opens the dhātu page', openedW, text($('detail-title')));
   }
 
+  // ---- In-page Find Bar (Ctrl+F) with Harvard-Kyoto support
+  // Opens via nav button or Ctrl+F, finds Devanagari text from HK input,
+  // cycles matches, and cleans up marks on Escape.
+  $('nav-find').click();
+  ok('find-bar: nav button opens find bar', !$('find-bar').hidden, 'find bar visible');
+  $('find-q').value = 'gacchati';
+  $('find-q').dispatchEvent(new Event('input'));
+  await sleep(50);
+  const findMarks1 = document.querySelectorAll('mark.find-match');
+  ok('find-bar: HKacchati finds Devanagari गच्छति marks', findMarks1.length > 0,
+    `${findMarks1.length} matches · ${text($('find-count'))}`);
+  ok('find-bar: shows Devanagari transliteration preview',
+    text($('find-deva')).includes('गच्छति'), text($('find-deva')));
+  const activeBefore = document.querySelector('mark.find-match.find-active');
+  ok('find-bar: active match is highlighted', Boolean(activeBefore), 'has active mark');
+  $('find-next').click();
+  ok('find-bar: next button advances counter',
+    text($('find-count')).startsWith('2 of') || text($('find-count')) === '1 of 1',
+    text($('find-count')));
+
+  // Test nizAmya under 01.0929/नि?fam=nich
+  location.hash = 'dhatu/01.0929/नि?fam=nich';
+  await waitFor(() =>
+    !$('view-detail').hidden &&
+    text($('detail-title')).includes('01.0929') &&
+    $('detail-stack').value === 'नि' &&
+    text($('detail-krut')).includes('निशाम्य'),
+    { timeout: 15000 });
+  $('find-q').value = 'nizAmya';
+  $('find-q').dispatchEvent(new Event('input'));
+  await sleep(50);
+  const findMarks2 = document.querySelectorAll('mark.find-match');
+  ok('find-bar: HK nizAmya finds निशाम्य under 01.0929', findMarks2.length > 0,
+    `${findMarks2.length} matches · ${text($('find-count'))}`);
+
+  // Test vyatIyuH under 02.0040 with unlisted compound stack वि + अति
+  location.hash = 'dhatu/02.0040/वि%20%2B%20अति';
+  await waitFor(() =>
+    !$('view-detail').hidden &&
+    text($('detail-title')).includes('02.0040') &&
+    $('detail-stack').value === 'वि + अति' &&
+    text($('detail-ting')).includes('व्यतीयुः'),
+    { timeout: 15000 });
+  $('find-q').value = 'vyatIyuH';
+  $('find-q').dispatchEvent(new Event('input'));
+  await sleep(50);
+  const findMarks3 = document.querySelectorAll('mark.find-match');
+  ok('find-bar: HK vyatIyuH finds व्यतीयुः under 02.0040/वि + अति', findMarks3.length > 0,
+    `${findMarks3.length} matches · ${text($('find-count'))}`);
+
+  // Test close cleans up marks
+  $('find-close').click();
+  ok('find-bar: close button hides bar', $('find-bar').hidden, 'find bar hidden');
+  ok('find-bar: close clears all marks from DOM',
+    document.querySelectorAll('mark.find-match').length === 0,
+    'marks cleared');
+
   // ---- no console errors anywhere above
   ok('no console errors during the run', errors.length === 0, errors.slice(0, 3).join(' | '));
     })(),

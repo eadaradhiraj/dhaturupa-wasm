@@ -340,6 +340,7 @@ async function openDhatu(id, stackWanted, famWanted, prayogaWanted) {
     || [...new Set(dhatuList.data.flatMap((e) =>
       (e.upasargas || []).map((u) => u.name)))].filter((n) => !n.includes(' + '));
   for (const name of singles) names.add(name);
+  if (stackWanted) names.add(stackWanted);
   stack.innerHTML = '<option value="">—</option>' +
     [...names].sort((a, b) => a.localeCompare(b, 'sa'))
       .map((name) => `<option>${escapeHtml(name)}</option>`).join('');
@@ -395,6 +396,7 @@ function renderDetailTables() {
 
   el('detail-hits').innerHTML = '';
   el('detail-subanta').innerHTML = '';
+  if (isFindBarOpen()) runFind();
 }
 
 // ting blob shape: {lakara: 'row;row;…'} — each `;` row is a puruṣa slot,
@@ -876,7 +878,7 @@ async function runFormSearch() {
     }
     const html = hits.length > 0
       ? renderHits(hits.slice(0, 200), dhatuCards(), reads[0].text)
-      : renderSearchReadings(readings, q);
+      : renderSearchReadings(readings, (reads[0] && reads[0].text) || q);
     const ms = Math.round(performance.now() - t0);
     if (!alive()) return;
     el('search-hits').innerHTML = html;
@@ -1030,6 +1032,226 @@ el('search-q').addEventListener('keypress', (e) => { if (e.key === 'Enter') runF
 el('nav-list').onclick = () => { location.hash = ''; };
 el('nav-search').onclick = () => { location.hash = 'search'; };
 el('nav-word').onclick = () => { location.hash = 'word'; };
+
+// --- In-page Find Bar (Ctrl+F) with Harvard-Kyoto support ---
+let findMatches = [];
+let findActiveIndex = -1;
+
+function isFindBarOpen() {
+  const bar = el('find-bar');
+  return Boolean(bar && !bar.hidden);
+}
+
+function clearFindHighlights() {
+  const marks = document.querySelectorAll('mark.find-match');
+  const parents = new Set();
+  marks.forEach((m) => {
+    const parent = m.parentNode;
+    if (parent) {
+      parents.add(parent);
+      m.replaceWith(document.createTextNode(m.textContent));
+    }
+  });
+  parents.forEach((p) => p.normalize());
+  findMatches = [];
+  findActiveIndex = -1;
+}
+
+function openFindBar() {
+  const bar = el('find-bar');
+  if (!bar) return;
+  bar.hidden = false;
+  const input = el('find-q');
+  input.focus();
+  input.select();
+  if (input.value.trim()) {
+    runFind();
+  }
+}
+
+function closeFindBar() {
+  const bar = el('find-bar');
+  if (!bar) return;
+  bar.hidden = true;
+  clearFindHighlights();
+  el('find-count').textContent = '';
+  el('find-deva').textContent = '';
+}
+
+function getFindNeedles(query) {
+  const raw = query.trim();
+  if (!raw) return { deva: '', needles: [] };
+  let deva = raw;
+  try {
+    const res = ok(to_devanagari(raw), 'translit');
+    if (res && res.deva) deva = res.deva;
+  } catch {
+    // not valid HK or already Devanagari
+  }
+  const needles = [deva];
+  if (deva.endsWith('्') && deva.length > 1) {
+    needles.push(deva.slice(0, -1));
+  }
+  if (!needles.includes(raw)) {
+    needles.push(raw);
+  }
+  return { deva, needles };
+}
+
+function updateFindActive() {
+  findMatches.forEach((m, idx) => {
+    if (idx === findActiveIndex) {
+      m.classList.add('find-active');
+      m.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    } else {
+      m.classList.remove('find-active');
+    }
+  });
+  if (findMatches.length > 0 && findActiveIndex >= 0) {
+    el('find-count').textContent = `${findActiveIndex + 1} of ${findMatches.length}`;
+  } else if (el('find-q').value.trim()) {
+    el('find-count').textContent = '0 of 0';
+  } else {
+    el('find-count').textContent = '';
+  }
+}
+
+function findStep(delta) {
+  if (findMatches.length === 0) return;
+  findActiveIndex = (findActiveIndex + delta + findMatches.length) % findMatches.length;
+  updateFindActive();
+}
+
+function runFind() {
+  clearFindHighlights();
+  const q = el('find-q').value.trim();
+  if (!q) {
+    el('find-count').textContent = '';
+    el('find-deva').textContent = '';
+    return;
+  }
+  const { deva, needles } = getFindNeedles(q);
+  el('find-deva').textContent = deva !== q ? `→ ${deva}` : '';
+
+  // Active view container (exclude hidden sections, nav, find-bar)
+  const activeSections = [...document.querySelectorAll('section:not([hidden])')];
+  if (activeSections.length === 0) activeSections.push(document.body);
+
+  const textNodes = [];
+  activeSections.forEach((root) => {
+    const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, {
+      acceptNode(node) {
+        if (!node.nodeValue || !node.nodeValue.trim()) return NodeFilter.FILTER_REJECT;
+        const parent = node.parentElement;
+        if (!parent) return NodeFilter.FILTER_REJECT;
+        const tag = parent.tagName.toLowerCase();
+        if (tag === 'script' || tag === 'style' || tag === 'input' || tag === 'button' || tag === 'select' || tag === 'textarea') {
+          return NodeFilter.FILTER_REJECT;
+        }
+        if (parent.closest('#find-bar') || parent.closest('nav')) {
+          return NodeFilter.FILTER_REJECT;
+        }
+        return NodeFilter.FILTER_ACCEPT;
+      }
+    });
+    let curr;
+    while ((curr = walker.nextNode())) {
+      textNodes.push(curr);
+    }
+  });
+
+  const matchedMarks = [];
+  const activeNeedle = needles.find((n) => {
+    if (!n) return false;
+    const isAscii = /^[\x00-\x7F]*$/.test(n);
+    const sn = isAscii ? n.toLowerCase() : n;
+    return textNodes.some((node) => {
+      const sv = isAscii ? node.nodeValue.toLowerCase() : node.nodeValue;
+      return sv.includes(sn);
+    });
+  }) || needles[0];
+
+  if (activeNeedle) {
+    const isAscii = /^[\x00-\x7F]*$/.test(activeNeedle);
+    const searchNeedle = isAscii ? activeNeedle.toLowerCase() : activeNeedle;
+
+    textNodes.forEach((node) => {
+      const val = node.nodeValue;
+      const searchVal = isAscii ? val.toLowerCase() : val;
+      let i = searchVal.indexOf(searchNeedle);
+      if (i < 0) return;
+
+      const frag = document.createDocumentFragment();
+      let lastIndex = 0;
+      while (i >= 0) {
+        if (i > lastIndex) {
+          frag.appendChild(document.createTextNode(val.slice(lastIndex, i)));
+        }
+        const mark = document.createElement('mark');
+        mark.className = 'find-match';
+        mark.textContent = val.slice(i, i + activeNeedle.length);
+        frag.appendChild(mark);
+        matchedMarks.push(mark);
+        lastIndex = i + activeNeedle.length;
+        i = searchVal.indexOf(searchNeedle, lastIndex);
+      }
+      if (lastIndex < val.length) {
+        frag.appendChild(document.createTextNode(val.slice(lastIndex)));
+      }
+      node.replaceWith(frag);
+    });
+  }
+
+  findMatches = matchedMarks;
+  if (findMatches.length > 0) {
+    findActiveIndex = 0;
+    updateFindActive();
+  } else {
+    findActiveIndex = -1;
+    el('find-count').textContent = '0 of 0';
+  }
+}
+
+window.addEventListener('keydown', (e) => {
+  if ((e.ctrlKey || e.metaKey) && (e.key === 'f' || e.key === 'F')) {
+    e.preventDefault();
+    openFindBar();
+  } else if (e.key === 'Escape' && isFindBarOpen()) {
+    e.preventDefault();
+    closeFindBar();
+  }
+});
+
+el('find-q').addEventListener('input', runFind);
+el('find-q').addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') {
+    e.preventDefault();
+    findStep(e.shiftKey ? -1 : 1);
+  } else if (e.key === 'ArrowDown') {
+    e.preventDefault();
+    findStep(1);
+  } else if (e.key === 'ArrowUp') {
+    e.preventDefault();
+    findStep(-1);
+  }
+});
+
+el('nav-find').onclick = () => {
+  if (isFindBarOpen()) closeFindBar();
+  else openFindBar();
+};
+el('find-prev').onclick = () => findStep(-1);
+el('find-next').onclick = () => findStep(1);
+el('find-close').onclick = closeFindBar;
+
+window.__findBar = {
+  open: openFindBar,
+  close: closeFindBar,
+  run: runFind,
+  step: findStep,
+  isOpen: isFindBarOpen,
+  getMatches: () => findMatches,
+};
 
 // Exposed for the browser self-test (web/selftest.js) to await boot.
 window.__appReady = main();
